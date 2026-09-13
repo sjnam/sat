@@ -26,3 +26,14 @@
 /cdcl.scn
 /cdcl.log
 /cdcl.toc
+
+# examples 아래도 모두 문학적 프로그램이다: .w만 원본이고 .go는 생성물이다.
+# 라이브러리와 달리 이것들은 저장소에 넣지 않는다 --- 예제를 돌려 보려는 이는
+# 어차피 저장소를 받아 `make`를 돌릴 사람이기 때문이다.
+/examples/*/*.go
+/examples/*/*.tex
+/examples/*/*.pdf
+/examples/*/*.idx
+/examples/*/*.scn
+/examples/*/*.log
+/examples/*/*.toc

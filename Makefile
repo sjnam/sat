@@ -8,6 +8,14 @@
 #   io.w    크누스 형식과 DIMACS 형식 읽기
 #   cdcl.w  SAT13의 알맹이 (알고리즘 7.2.2.2C)
 #
+# examples 아래의 예제들도 모두 문학적 프로그램이다.
+#
+#   waerden.w  반 데르 바르덴 수
+#   queens.w   n-퀸, 해 하나 찾기와 모두 세기
+#   sudoku.w   스도쿠 풀기와 해가 하나뿐임의 증명
+#   life.w     생명 게임을 거꾸로 돌려 조상 찾기
+#   factor.w   곱셈기 회로를 거꾸로 돌려 인수분해하기
+#
 # knuth/ 아래는 크누스의 원본 CWEB 프로그램이다. 옮길 때 곁에 두고 읽는다.
 # testdata/ 아래는 크누스의 SATexamples.tgz에서 고른 작은 문제들이다.
 #
@@ -21,8 +29,11 @@ GTANGLE ?= gtangle
 GWEAVE  ?= gweave
 LUATEX  ?= luatex -interaction=nonstopmode
 
-LIB  := sat io cdcl
-JUNK := tex pdf idx scn log toc dvi
+LIB      := sat io cdcl
+EXAMPLES := waerden queens sudoku life factor
+EXGO     := $(foreach e,$(EXAMPLES),examples/$(e)/$(e).go)
+EXPDF    := $(foreach e,$(EXAMPLES),examples/$(e)/$(e).pdf)
+JUNK     := tex pdf idx scn log toc dvi
 
 .PHONY: all build test vet tangle pdf check clean
 
@@ -41,7 +52,12 @@ cdcl.go cdcl_test.go: cdcl.w
 	$(GTANGLE) $<
 	gofmt -w cdcl.go cdcl_test.go
 
-tangle: $(addsuffix .go,$(LIB))
+# 예제는 제 디렉터리에서 짜낸다. 정적 패턴 규칙이라 아래의 %-규칙보다 앞선다.
+$(EXGO): examples/%.go: examples/%.w
+	cd $(dir $@) && $(GTANGLE) $(notdir $<)
+	gofmt -w $@
+
+tangle: $(addsuffix .go,$(LIB)) $(EXGO)
 
 build: tangle
 	$(GO) build ./...
@@ -53,16 +69,21 @@ vet: tangle
 	$(GO) vet ./...
 
 # 조판은 두 번 돌린다. 상호 참조가 두 번째 판에서 맞춰진다.
-pdf: $(addsuffix .pdf,$(LIB))
+pdf: $(addsuffix .pdf,$(LIB)) $(EXPDF)
 
 %.pdf: %.w
 	$(GWEAVE) $<
 	$(LUATEX) $*.tex
 	$(LUATEX) $*.tex
 
+$(EXPDF): examples/%.pdf: examples/%.w
+	cd $(dir $@) && $(GWEAVE) $(notdir $<)
+	cd $(dir $@) && $(LUATEX) $(notdir $*).tex
+	cd $(dir $@) && $(LUATEX) $(notdir $*).tex
+
 # 조판 품질 검사: 로그에 경고나 잘못이 하나라도 있으면 실패한다.
 check: pdf
-	@bad=0; for f in $(LIB); do \
+	@bad=0; for f in $(LIB) $(foreach e,$(EXAMPLES),examples/$(e)/$(e)); do \
 	  n=$$(grep -ac 'Overfull\|Underfull\|Error\|Missing\|Undefined' $$f.log); \
 	  echo "$$f.log: $$n"; [ "$$n" = 0 ] || bad=1; \
 	done; exit $$bad
@@ -71,3 +92,6 @@ check: pdf
 clean:
 	rm -f $(addsuffix _test.go,$(LIB))
 	rm -f $(foreach x,$(JUNK),$(addsuffix .$(x),$(LIB)))
+	rm -f $(EXGO)
+	rm -f $(foreach e,$(EXAMPLES),$(foreach x,$(JUNK),examples/$(e)/$(e).$(x)))
+	rm -f $(foreach e,$(EXAMPLES),examples/$(e)/$(e))
