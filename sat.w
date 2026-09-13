@@ -5,6 +5,7 @@
 @s Stats int
 @s SimplifyParams int
 @s SimplifyStats int
+@s cdclState int
 
 \def\title{SAT}
 
@@ -48,7 +49,7 @@ clause learning) 풀이기다. 최신 풀이기의 온갖 장식까지 갖추지
 받아 쌓아 두는 풀이기의 겉모습을 담는다.
 \item{$\bullet$} 둘째 글 \.{io.w}는 크누스의 절 형식과 DIMACS 형식을 읽는다.
 \item{$\bullet$} 셋째 글 \.{cdcl.w}는 \.{SAT13}의 알맹이다. 쌓아 둔 절로 진짜
-자료 구조를 짓고 푼다.
+자료 구조를 짓고 푼다. 원본에 없는 가정 리터럴과 점진적 풀이도 여기 보탰다.
 \item{$\bullet$} 넷째 글 \.{simplify.w}는 \.{SAT12}의 전처리와 \.{SAT12-ERP}의 되살림이다.
 \smallskip\noindent
 어느 글이나 혼자 읽을 수 있게 썼다. 이 글의 뼈대는 다음과 같다.
@@ -103,8 +104,9 @@ func (l Lit) IsNeg() bool { return l&1 != 0 }
 \GO/의 조각(slice)은 저절로 자라므로 덩어리 사슬이 필요 없다. 그러나 두 단계로
 나누는 짜임새는 그대로 둔다. 되감기 때문에 절이 입력의 {\it 거꾸로\/} 쌓이고,
 그 차례가 mem 수에 그대로 드러나기 때문이다. 그래서 이 글의 풀이기는 임시 표만
-들고 있고, 진짜 자료 구조는 푸는 순간에 \.{cdcl.w}가 짓는다. 한 번 풀고 난 뒤에
-절을 더 보태는 일(점진적 풀이)은 나중에 생각한다.
+들고 있고, 진짜 자료 구조는 처음 푸는 순간에 \.{cdcl.w}가 짓는다. 한 번 풀고 난
+뒤에 절을 더 보태고 다시 풀어도 된다(점진적 풀이). 그때 무엇을 간직하고 무엇을
+다시 짓는지는 \.{cdcl.w}가 말한다.
 
 @<자료 구조@>=
 type Solver struct {
@@ -166,10 +168,12 @@ empty    bool // 빈 절을 받았는가
 통계와 해가 남는다. 이것들의 뜻은 \.{cdcl.w}에서 설명한다.
 
 @<|Solver|의 필드@>=
-Params Params // 푸는 방식을 정하는 매개변수
-stats  Stats  // 마지막 풀이의 통계
-model  []Lit  // 마지막 풀이에서 찾은 해, 트레일 차례대로
-truth  []bool // |truth[v]|는 그 해에서 변수 |v|의 값
+Params Params     // 푸는 방식을 정하는 매개변수
+stats  Stats      // 마지막 풀이의 통계
+model  []Lit      // 마지막 풀이에서 찾은 해, 트레일 차례대로
+truth  []bool     // |truth[v]|는 그 해에서 변수 |v|의 값
+failed []Lit      // 마지막 풀이를 만족할 수 없게 한 가정들
+state  *cdclState // 풀이 사이에 간직하는 상태, 없으면 nil
 
 @ 전처리에 쓰는 것들. 매개변수 |SimplifyParams|, 마지막 전처리의 통계, 그리고 줄인 절과
 erp 자료를 담은 결과다. 결과가 있으면 |Solve|는 줄인 절을 푼다. 이것들의 뜻은

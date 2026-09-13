@@ -7,6 +7,7 @@
 @s testing.T int
 @s Lit int
 @s Solver int
+@s cdclState int
 
 @* 들어가며.
 이 글은 크누스의 \.{SAT13}, 곧 {\sl TAOCP\/} 알고리즘~7.2.2.2C를 \GO/로 옮긴
@@ -39,6 +40,10 @@
 mem을 세지 않으므로 빼도 수가 달라지지 않는다. 다른 하나는 파일로 해를 막는 절이나
 배운 절, 극성을 적고 읽는 선택들(\.x, \.l, \.L, \.z, \.Z)이다. 꾸러미에서는
 다른 모양으로 내놓는 편이 낫겠다고 생각해서 나중으로 미뤘다.
+
+거꾸로 원본에 없는 것도 둘 보탰다. 하나는 MiniSat식 가정 리터럴이고, 다른 하나는
+풀이 사이에 배운 절과 활동도를 간직하는 점진적 풀이다. 둘 다 끝의 두 별표 절에 모았다.
+가정 없이 처음 푸는 풀이는 이것들 때문에 mem이 하나도 달라지지 않는다.
 
 @c
 package sat
@@ -294,21 +299,30 @@ func (s *Solver) Value(l Lit) bool {
 하나씩 펴 놓았다. 원본에 있지만 아무도 뛰어가지 않는 레이블(|square_one|,
 |newlevel|, |launch|)은 \GO/에서 잘못이 되므로 뺐다.
 
+뼈대에는 원본에 없는 갈래도 있다. 가정 리터럴을 받아 거짓인 가정을 만나면 |failed|로
+가고, 지난 풀이의 상태가 있으면 짓는 대신 그것을 이어 쓴다. 이 둘은 뒤의 별표 절
+``가정 리터럴''과 ``풀이 사이에 간직하기''에서 설명한다.
+
 @<함수들@>=
-func (s *Solver) Solve(ctx context.Context) (Status, error) {
+func (s *Solver) Solve(ctx context.Context, assumptions ...Lit) (Status, error) {
 	@<|Solve|의 지역 변수@>
-	if s.pre != nil {
-		return s.solvePreprocessed(ctx)
+	@<가정 리터럴들을 확인한다@>
+	@<전처리 결과나 빈 절이 있으면 곧바로 답한다@>
+	@<매개변수를 검사한다@>
+	if s.state != nil && s.state.key == key {
+		@<간직한 상태로 풀이를 준비한다@>
+	} else {
+		@<난수 발생기를 맞춘다@>
+		@<주 자료 구조를 짓는다@>
+		imems, mems = mems, 0
+		@<초기화를 마친다@>
 	}
-	if s.empty {
-		s.model, s.truth, s.stats = nil, nil, Stats{}
-		return Unsat, nil
-	}
-	@<매개변수를 검사하고 난수 발생기를 맞춘다@>
-	@<주 자료 구조를 짓는다@>
-	imems, mems = mems, 0
 	@<문제를 푼다@>
 unsat:
+	status, unsatisfiable = Unsat, true
+	goto allDone
+failed:
+	@<실패한 가정 |l|에 책임이 있는 가정들을 모은다@>
 	status = Unsat
 	goto allDone
 satisfied:
@@ -316,7 +330,23 @@ satisfied:
 	@<찾은 해를 적어 둔다@>
 allDone:
 	@<통계를 적어 둔다@>
+	@<풀이의 상태를 간직한다@>
 	return status, err
+}
+
+@ 전처리 결과가 있으면 줄인 절을 푸는 \.{simplify.w}의 문으로 넘긴다. 빈 절을 받았으면
+풀 것도 없다.
+
+@<전처리 결과나 빈 절이...@>=
+if s.pre != nil {
+	if len(assumptions) != 0 {
+		return Unknown, errors.New("sat: 전처리한 풀이기에는 가정을 줄 수 없다")
+	}
+	return s.solvePreprocessed(ctx)
+}
+if s.empty {
+	s.model, s.truth, s.stats, s.state = nil, nil, Stats{}, nil
+	return Unsat, nil
 }
 
 @ 크누스의 레지스터 변수들. 원본의 |s|는 받는 쪽 이름 |s|와 부딪히므로, 절의 크기로
@@ -343,21 +373,26 @@ var (
 	imems, mems, bytes, nodes uint64
 )
 
-@ 원본은 매개변수가 범위를 벗어나면 사용법을 찍고 끝낸다.
+@ 원본은 매개변수가 범위를 벗어나면 사용법을 찍고 끝낸다. |key|는 뒤에서 간직한
+상태를 이어 쓸 수 있는지 가를 때 쓴다.
 
-난수 발생기는 원본과 같은 자리에서 시작해야 한다. 원본은 입력을 읽기 전에
-|gb_init_rand|로 씨앗을 뿌리고, 해시 함수에 쓸 난수 표 |hash_bits[92..1][0..7]|을
-채우느라 난수를 $92\times8=736$개 먼저 뽑는다. 우리 읽개는 해시 표가 필요 없지만
-그 736개는 버려야 한다. 그래야 뒤의 무작위 선택들이 원본과 같아진다. Stanford
-GraphBase의 |gb_flip|은 \.{github.com/sjnam/go-sgb/gbflip}으로 이미 옮겨 두었다.
-
-@<매개변수를 검사하고 난수 발생기를 맞춘다@>=
+@<매개변수를 검사한다@>=
 par = s.Params
 if par.MemLog < 2 || par.MemLog > 31 || par.TrivialLimit <= 0 || par.Alpha < 0 ||
 	par.Alpha > 1 || par.RandProb < 0 || par.TrueProb < 0 || par.VarRho <= 0 ||
 	par.ClauseRho <= 0 {
 	return Unknown, errors.New("sat: 매개변수가 범위를 벗어났다")
 }
+key = par
+key.Timeout, key.Doomsday = 0, 0
+
+@ 난수 발생기는 원본과 같은 자리에서 시작해야 한다. 원본은 입력을 읽기 전에
+|gb_init_rand|로 씨앗을 뿌리고, 해시 함수에 쓸 난수 표 |hash_bits[92..1][0..7]|을
+채우느라 난수를 $92\times8=736$개 먼저 뽑는다. 우리 읽개는 해시 표가 필요 없지만
+그 736개는 버려야 한다. 그래야 뒤의 무작위 선택들이 원본과 같아진다. Stanford
+GraphBase의 |gb_flip|은 \.{github.com/sjnam/go-sgb/gbflip}으로 이미 옮겨 두었다.
+
+@<난수 발생기를 맞춘다@>=
 vars, clauses, cells = s.NumVars(), s.clauses, len(s.cells)
 rng = gbflip.New(int64(par.Seed))
 for k = 0; k < 736; k++ {
@@ -380,7 +415,7 @@ if status != Sat {
 	s.model, s.truth = nil, nil
 }
 s.stats = Stats{IMems: imems, Mems: mems, Bytes: bytes, Nodes: nodes,
-	Learned: totalLearned, CellsPrelearned: cellsPrelearned, CellsLearned: cellsLearned,
+	Learned: totalLearned - learnedBase, CellsPrelearned: cellsPrelearned, CellsLearned: cellsLearned,
 	MemCells: maxCellsUsed, Trivials: trivials, Discards: discards,
 	Subsumptions: subsumptions, Restarts: actualRestarts}
 
@@ -502,11 +537,7 @@ bytes += uint64(vars) * 4
 섞는다. 처음 값은 확률 |TrueProb|로 참이다. 원본에서 31비트 난수 하나는 mem 넷이다.
 
 @<힙을 무작위로 채운다@>=
-if par.TrueProb >= 1.0 {
-	trueProbThresh = 0x80000000
-} else {
-	trueProbThresh = int(float64(par.TrueProb) * 2147483648.0)
-}
+@<|trueProbThresh|를 정한다@>
 for k = 1; k <= vars; k++ {
 	mems++; heap[k-1] = k
 }
@@ -519,6 +550,15 @@ for hn = vars; hn > 1; {
 	}
 }
 @<힙의 변수들에 자리와 처음 값을 준다@>
+
+@ 뒤에서 새로 들어온 변수에 처음 값을 줄 때도 이 문턱을 쓴다.
+
+@<|trueProbThresh|를 정한다@>=
+if par.TrueProb >= 1.0 {
+	trueProbThresh = 0x80000000
+} else {
+	trueProbThresh = int(float64(par.TrueProb) * 2147483648.0)
+}
 
 @ @<힙의 변수들에 자리와...@>=
 for h = 0; h < vars; h++ {
@@ -642,19 +682,25 @@ for k = 0; ; {
 
 @<단위 절과 이진 절을...@>=
 if k < 2 {
-	l = int(mem[c]); v = l >> 1
-	mems++
-	if vmem[v].value == unset {
-		mems++; vmem[v].value = l & 1; vmem[v].tloc = eptr
-		mems++; trail[eptr] = l; eptr++
-	} else if vmem[v].value != l&1 {
-		goto unsat
-	}
+	l = int(mem[c])
+	@<리터럴 |l|을 수준 0의 트레일에 올린다; 어긋나면 |goto unsat|@>
 } else {
 	l, ll = int(mem[c]), int(mem[c+1])
 	mems += 2; lmem[l^1].bimpEnd++
 	mems += 2; lmem[ll^1].bimpEnd++
 	mems++; mem[jj] = uint32(l); mem[jj+1] = uint32(ll); jj += 2
+}
+
+@ 이 절은 뒤에서 간직해 둔 리터럴들을 트레일에 되돌릴 때도 쓴다.
+
+@<리터럴 |l|을 수준 0의 트레일에 올린다...@>=
+v = l >> 1
+mems++
+if vmem[v].value == unset {
+	mems++; vmem[v].value = l & 1; vmem[v].tloc = eptr
+	mems++; trail[eptr] = l; eptr++
+} else if vmem[v].value != l&1 {
+	goto unsat
 }
 
 @ 센 개수로 리터럴마다 |bmem|의 구간을 정하고, 잠시 적어 둔 이진 절들을 거기
@@ -695,7 +741,7 @@ bytes += uint64(vars)*(8+4+8+8+8) + buckets*4
 for k = 0; k < vars; k++ {
 	mems++; levstamp[k+k] = 0
 }
-rangedist = make([]int, buckets)
+rangedist = make([]int, buckets+1) // 끝의 한 칸은 늘 0
 for k = 0; k+k < buckets; k++ {
 	mems++; rangedist[k+k] = 0; rangedist[k+k+1] = 0
 }
@@ -1754,7 +1800,9 @@ for {
 recyclePoint = 0
 
 @ 눈금 |j| 이하의 절이 |budget|개를 넘도록 |j|를 정한다. 문턱 눈금에서 남는 몫은
-활동도로 가린다.
+활동도로 가린다. 배운 절이 모두 까닭 절이거나 수준 0에서 만족되면 |minrange|가
+|buckets| 그대로여서 원본은 |rangedist[buckets]|를 읽는다. 그래서 |rangedist|를 늘
+0인 칸 하나를 붙여 잡았다.
 
 @<데이터베이스를 압축한다@>=
 mems++; j = minrange; sz = asserts + rangedist[j]
@@ -1812,12 +1860,21 @@ h++
 값어치가 있느냐고 물을 만하다. 크누스는 중앙 눈금에 절이 꽤 몰리는 문제가 적지만
 분명히 있다는 Biere의 말을 따랐다.
 
+원본은 여기서 |jj|가 양수라고 믿는다. 재활용 간격이 아주 짧으면(\.{j1}이나 \.{j3})
+그 믿음이 깨진다. 남겨야 하는 까닭 절이 남길 몫 |budget|보다 많으면 |jj|가 0 이하가
+되고, 원본은 절 힙의 배열 밖을 읽고 쓴다. 그런 때는 문턱 눈금의 절을 모두 떨어뜨린다.
+원본이 제대로 도는 경우에는 이 갈래로 들어오지 않으므로 mem 수는 그대로다.
+
 @<문턱에서 |t=sz-budget|개의...@>=
 t = sz - budget
 jj = min(rangedist[j]-t, clauseHeapSize)
-@<눈금이 |j|인 절 |jj|개를 절 힙에 넣는다@>
-@<절 힙을 힙 차례로 세운다@>
-@<눈금이 |j|인 절 |t|개의 눈금을 |j+1|로 올린다@>
+if jj <= 0 {
+	j--
+} else {
+	@<눈금이 |j|인 절 |jj|개를 절 힙에 넣는다@>
+	@<절 힙을 힙 차례로 세운다@>
+	@<눈금이 |j|인 절 |t|개의 눈금을 |j+1|로 올린다@>
+}
 
 @ 절 힙의 값은 활동도가 먼저, 자리가 다음으로 정렬되게 묶는다. 활동도가 똑같이
 낮으면 활발해질 시간이 더 많았던 쪽, 곧 먼저 배운 쪽을 잊는다. 음이 아닌 |float|는
@@ -1941,8 +1998,6 @@ mems += 3; mem[c-3] = uint32(lmem[l].watch); lmem[l].watch = c
 레이블 |finishFull|을 붙였다.
 
 @<문제를 푼다@>=
-@<초기화를 마친다@>
-llevel, warmupCycles, lptr = 0, 0, 0
 startup:
 	conflictLevel = 0
 	fullRun = warmupCycles < par.Warmups
@@ -1952,6 +2007,7 @@ proceed:
 	@<한도에 이르렀으면 |goto allDone|@>
 	if eptr == vars {
 		if conflictLevel == 0 {
+			@<아직 참이 아닌 가정 리터럴 |l|을 찾는다; 거짓이면 |goto failed|@>
 			goto satisfied
 		}
 		goto finishFull
@@ -1967,7 +2023,7 @@ proceed:
 @ 트레일에 충돌한 리터럴이 없을 때만 이것들을 살핀다.
 
 @<doomsday와 재활용과...@>=
-if totalLearned >= par.Doomsday {
+if totalLearned >= doomsday {
 	err = ErrDoomsday
 	goto allDone
 }
@@ -1978,11 +2034,15 @@ if totalLearned >= nextRecycle {
 }
 
 @ 결정 리터럴은 까닭이 0이다. 여기 올 때 |lptr|은 |eptr|과 같으므로, 트레일에 올린
-뒤의 |lptr|은 새 리터럴의 자리다.
+뒤의 |lptr|은 새 리터럴의 자리다. 아직 값이 없는 가정 리터럴이 있으면 그것이 먼저
+결정된다.
 
 @<새 수준을 열고...@>=
+@<아직 참이 아닌 가정 리터럴 |l|을 찾는다...@>
 llevel += 2
-@<다음 결정 리터럴 |l|을 고른다@>
+if l == 0 {
+	@<다음 결정 리터럴 |l|을 고른다@>
+}
 mems++; lmem[l].reason = 0
 nodes++
 mems++; leveldat[llevel] = eptr
@@ -2011,7 +2071,22 @@ if mems >= nextCheck {
 @ @<자료 구조@>=
 const checkEvery = 1 << 22 // |context|를 묻는 mem 간격
 
-@ @<초기화를 마친다@>=
+@ 처음 풀 때만 하는 초기화다. 풀이마다 새로 정하는 값들은 따로 떼어 두었다. 원본에서는
+두 무리가 섞여 있지만 mem을 세는 것은 |leveldat|을 비우는 반복뿐이라, 차례를 바꾸어도
+수가 같다.
+
+@<초기화를 마친다@>=
+@<풀이마다 새로 정하는 값들을 정한다@>
+recycleBump = par.RecycleBump
+nextRecycle = min(recycleBump, doomsday)
+restartU, restartV, nextRestart = 1, 1, 1
+@<|leveldat|을 비워 둔다@>
+llevel, warmupCycles, lptr = 0, 0, 0
+
+@ |Doomsday|는 이번 풀이에서 배운 절의 수로 따진다. 처음 풀 때는 |totalLearned|가
+0이니 원본과 같다.
+
+@<풀이마다 새로 정하는 값들을 정한다@>=
 if par.RandProb >= 1.0 {
 	randProbThresh = 0x80000000
 } else {
@@ -2019,11 +2094,12 @@ if par.RandProb >= 1.0 {
 }
 varBumpFactor = 1.0 / float64(par.VarRho)
 clauseBumpFactor = float32(1.0 / float64(par.ClauseRho))
-recycleBump = par.RecycleBump
-nextRecycle = min(recycleBump, par.Doomsday)
 restartPsi = uint64(4294967296.0 * float64(par.RestartPsiFraction))
-restartU, restartV, nextRestart = 1, 1, 1
 nextCheck = checkEvery
+learnedBase = totalLearned
+doomsday = totalLearned + min(par.Doomsday, math.MaxUint64-totalLearned)
+
+@ @<|leveldat|을 비워 둔다@>=
 for k = 0; k < vars; k++ {
 	mems++; leveldat[k+k] = -1; leveldat[k+k+1] = 0
 }
@@ -2169,7 +2245,7 @@ if jumplev == minjumplev {
 if recyclePoint != 0 {
 	@<배운 절의 절반을 재활용한다@>
 	recycleBump += par.RecycleInc
-	nextRecycle = min(totalLearned+recycleBump, par.Doomsday)
+	nextRecycle = min(totalLearned+recycleBump, doomsday)
 }
 
 @ @<|minjumplev|에서 배운 리터럴들을...@>=
@@ -2194,7 +2270,7 @@ if restartU&-restartU == restartV {
 } else {
 	restartV <<= 1; restartThresh += restartThresh >> 4
 }
-nextRestart = min(totalLearned+uint64(restartV), par.Doomsday)
+nextRestart = min(totalLearned+uint64(restartV), doomsday)
 if uint64(agility) <= restartThresh {
 	@<리터럴들을 흘려보낸다@>
 }
@@ -2243,6 +2319,388 @@ var (
 	nextCheck                 uint64 // 다음에 |context|를 물을 mem
 )
 
+@* 가정 리터럴.
+여기서부터는 원본에 없는 것이다. 점진적 풀이를 쓰는 프로그램은 흔히 같은 절들에 조건을
+조금씩 바꿔 가며 묻는다. ``$x$가 참이고 $y$가 거짓이면 만족할 수 있는가?'' 조건을 단위
+절로 보태면 다음 물음에서 거둘 수가 없다. 그래서 E\'en과 S\"orensson은 MiniSat에
+{\it 가정 리터럴\/}(assumption)을 두었다. 가정은 절이 아니라, 푸는 동안 맨 아래
+수준들에서 억지로 내리는 결정이다. 결정일 뿐이니 배운 절은 가정에 기대지 않고, 다음
+물음에서도 그대로 쓸 수 있다.
+@^E\'en, Niklas@>
+@^S\"orensson, Niklas@>
+
+|Solve|는 가변 인자로 가정들을 받는다. 가정 아래에서 만족할 수 없으면 |Unsat|을 돌려주고,
+|Failed|는 주어진 가정들 가운데 그 결론에 책임이 있는 것들을 알려 준다. |Failed|가
+비어 있으면 가정과 상관없이 만족할 수 없다는 뜻이다. 거꾸로는 아니다. 절만으로 만족할 수
+없음을 증명하기 전에 거짓인 가정을 먼저 만나면 그 가정을 탓하기 때문이다.
+
+mem은 원본과 같은 방식으로 센다. 견줄 원본은 없지만 |Timeout|이 같은 잣대로 들어야 하기
+때문이다. 가정이 없으면 여기 보탠 코드는 mem을 하나도 세지 않는다.
+
+@<함수들@>=
+func (s *Solver) Failed() []Lit { return slices.Clone(s.failed) }
+
+@ 가정도 절의 리터럴처럼 이 풀이기의 것이어야 한다.
+
+@<가정 리터럴들을 확인한다@>=
+s.failed = nil
+for _, a := range assumptions {
+	if v := a.Var(); v == 0 || v >= len(s.names) {
+		panic(fmt.Sprintf("sat: 없는 변수의 가정 %d", uint32(a)))
+	}
+}
+asm, ai, acheck = assumptions, 0, make([]int, len(assumptions))
+
+@ @<|Solve|의 지역 변수@>=
+var (
+	asm    []Lit // 가정들
+	ai     int   // 살핀 가정의 수
+	acheck []int // 가정들이 모두 참이 된 수준
+)
+
+@ 가정은 결정 리터럴을 고르기 직전에 살핀다. 가정을 차례로 보되, 이미 참이면 건너뛰고,
+값이 없으면 그것을 결정 리터럴로 삼고, 거짓이면 가정 아래에서 만족할 수 없다.
+
+MiniSat은 이미 참인 가정에도 빈 수준을 하나씩 열어 수준 번호와 가정 번호를 맞춘다.
+여기서는 그럴 수 없다. \.{SAT13}은 수준마다 첫 리터럴이 결정이라고 믿기
+때문이다(자명한 절과 흘려보내기가 |trail[leveldat[k]]|를 읽는다). 그래서 따로 적어 둔다.
+|acheck[i]|는 가정 |asm[0]|부터 |asm[i]|까지가 모두 참이 된 가장 높은 수준의 두 배다.
+|ai|개를 살핀 뒤 되추적이 그 가운데 몇을 풀어 주었다면 |acheck[ai-1]|이 지금 수준보다
+높을 것이니, |ai|를 줄여 다시 살핀다.
+
+그러면 가정을 살피는 동안 트레일의 결정은 모두 가정이다. 가정이 아닌 결정은 가정을 모두
+살핀 뒤에야 내리고, 그 뒤로 |ai|가 줄어드는 것은 그 결정보다 낮게 되추적했을 때뿐이기
+때문이다. 책임질 가정을 모을 때 이 성질을 쓴다.
+
+@<아직 참이 아닌 가정 리터럴 |l|을 찾는다; 거짓이면 |goto failed|@>=
+l = 0
+for ai > 0 && acheck[ai-1] > llevel {
+	ai--
+}
+for ; ai < len(asm); ai++ {
+	@<가정 |asm[ai]|를 살핀다; 값이 없으면 |l|에 두고 |break|@>
+}
+
+@ 전체 달리기에서 충돌을 이미 기록했다면(|conflictLevel!=0|) 트레일이 어긋나 있을 수
+있다. 그때 거짓인 가정은 믿을 수 없으니 건너뛰고 지금 수준을 적어 둔다. 전체 달리기가
+끝나면 첫 충돌 수준보다 낮게 되추적하므로 그 가정은 다시 살피게 된다.
+
+@<가정 |asm[ai]|를...@>=
+t = 0
+if ai > 0 {
+	t = acheck[ai-1]
+}
+mems++; u = int(asm[ai]); v = vmem[u>>1].value
+if v == unset {
+	l, acheck[ai] = u, llevel+2
+	ai++
+	break
+}
+if (v^u)&1 == 0 {
+	acheck[ai] = max(t, v&^1)
+} else if conflictLevel == 0 {
+	l = u
+	goto failed
+} else {
+	acheck[ai] = max(t, llevel)
+}
+
+@ 가정 |l|이 거짓으로 드러났다. $\bar l$의 까닭을 트레일에서 거슬러 올라가며 거기 쓰인
+결정들을 모으면, 그것이 책임이 있는 가정들이다. MiniSat의 |analyzeFinal|과 같은 일이다.
+충돌에서 배울 때의 도장을 빌려 쓰되 분해한 절은 만들지 않는다. 수준 0의 리터럴은 가정
+없이도 참이니 따라가지 않는다.
+
+@<실패한 가정 |l|에...@>=
+@<|curstamp|를 새 값으로...@>
+mems++; vmem[l>>1].stamp = curstamp
+if llevel != 0 {
+	mems++; t = leveldat[2]
+	for j = eptr - 1; j >= t; j-- {
+		mems++; ll = trail[j]
+		mems++
+		if vmem[ll>>1].stamp != curstamp {
+			continue
+		}
+		@<|ll|의 까닭에 든 리터럴들에 도장을 찍는다@>
+	}
+}
+@<도장이 찍힌 가정들을 |s.failed|에 모은다@>
+
+@ 결정이면 도장을 |curstamp+1|로 바꾸어 책임이 있다는 표를 남긴다.
+
+@<|ll|의 까닭에 든...@>=
+mems++; c = lmem[ll].reason
+if c == 0 {
+	mems++; vmem[ll>>1].stamp = curstamp + 1
+} else if c < 0 {
+	lll = -c
+	@<수준 0이 아니면 |lll|의 변수에 도장을 찍는다@>
+} else {
+	mems++; sz = int(mem[c-1])
+	for k = c + sz - 1; k > c; k-- {
+		mems++; lll = int(mem[k])
+		@<수준 0이 아니면...@>
+	}
+}
+
+@ @<수준 0이 아니면...@>=
+mems++
+if vmem[lll>>1].value&^1 != 0 {
+	mems++; vmem[lll>>1].stamp = curstamp
+}
+
+@ 주어진 차례대로 모으고, 같은 가정이 두 번 있으면 한 번만 넣는다. 거짓으로 드러난 |l|
+자신은 늘 들어간다. 같은 수의 두 리터럴을 함께 가정했다면 둘 다 들어간다.
+
+@<도장이 찍힌 가정들을...@>=
+for i = 0; i < len(asm); i++ {
+	u = int(asm[i]); v = u >> 1
+	mems++
+	if u == l {
+		l = 0
+	} else if vmem[v].stamp == curstamp+1 && (vmem[v].value^u)&1 == 0 {
+		mems++; vmem[v].stamp = curstamp + 2
+	} else {
+		continue
+	}
+	s.failed = append(s.failed, Lit(u))
+}
+
+@* 풀이 사이에 간직하기.
+|Solve|를 다시 부르면 처음부터 새로 짓지 않고 지난 풀이의 상태를 이어 쓴다. 배운 절,
+변수의 활동도와 옛 값, 수준 0에서 참이 된 리터럴, 재활용과 다시 시작의 일정, 난수열이
+모두 이어진다. 배운 절과 수준 0의 리터럴은 입력 절만으로 따라 나오는 것이니 절을 더
+보태도 여전히 참이다. 가정은 결정일 뿐이므로 거기에 기댄 것도 없다.
+
+그래서 풀이기는 풀고 난 뒤 크누스의 전역 변수들을 |cdclState|에 담아 두고, 다음 |Solve|는
+그것들을 지역 변수로 도로 불러온다. 조각(slice)은 참조이므로 담고 부르는 품이 작다.
+원본의 코드가 지역 변수를 그대로 쓰니 손댈 곳도 없다. 필드를 곧바로 쓰지 않는 까닭이
+하나 더 있다. \GO/ 컴파일러는 지역 변수를 레지스터에 둘 수 있지만, 필드에 닿으려면 늘
+포인터를 거쳐야 한다.
+
+@<자료 구조@>=
+type cdclState struct {
+	key                  Params // |Timeout|과 |Doomsday|를 0으로 둔 매개변수
+	unsat                bool   // 가정 없이도 만족할 수 없는가
+	rng                  *gbflip.RNG
+	vars, clauses, cells int
+	bytes                uint64
+	@<|cdclState|의 필드@>
+}
+
+@ 나머지 필드는 |Solve|의 같은 이름의 지역 변수를 담는다.
+
+@<|cdclState|의 필드@>=
+mem, bmem                             []uint32
+memsize, minLearned, firstLearned     int
+maxLearned, maxCellsUsed, maxLit      int
+lmem                                  []literal
+vmem                                  []variable
+heap, trail, leveldat, conflictdat    []int
+learn, stack, levstamp, rangedist     []int
+hn, eptr, lptr, llevel                int
+agility                               uint32
+varBump                               float64
+clauseBump                            float32
+curstamp, prevLearned, clauseHeapSize int
+totalLearned, nextRecycle, recycleBump uint64
+clauseHeap                            []uint64
+warmupCycles, restartU, restartV      int
+restartThresh, nextRestart            uint64
+
+@ @<|Solve|의 지역 변수@>=
+var (
+	key           Params // 상태를 이어 쓸 수 있는지 가르는 매개변수
+	unsatisfiable bool   // 가정 없이도 만족할 수 없는가
+	learnedBase   uint64 // 이번 풀이를 시작할 때의 |totalLearned|
+	doomsday      uint64 // 이번 풀이에서 배운 절 수의 한도
+)
+
+@ 간직한 상태를 버리고 처음부터 짓는 때가 둘 있다. |mem|이 모자랐으면 상태가 반쯤 고쳐진
+채일 수 있으니 버린다. 매개변수를 바꾸었어도 버린다(|Solve|의 뼈대가 |key|를 견준다).
+다만 |Timeout|과 |Doomsday|는 풀이마다 새로 정하는 한도이므로 바꾸어도 이어 쓴다.
+그러니 다른 매개변수를 한 번 바꾸었다 되돌리면 원본과 같은 mem 수를 다시 볼 수 있다.
+
+@<풀이의 상태를 간직한다@>=
+if err == ErrMemory {
+	s.state = nil
+} else {
+	s.state = &cdclState{key: key, unsat: unsatisfiable, rng: rng,
+		vars: vars, clauses: clauses, cells: cells, bytes: bytes,
+		@<|cdclState|의 필드를 채운다@>
+	}
+}
+
+@ @<|cdclState|의 필드를 채운다@>=
+mem: mem, bmem: bmem, memsize: memsize, minLearned: minLearned,
+firstLearned: firstLearned, maxLearned: maxLearned,
+maxCellsUsed: maxCellsUsed, maxLit: maxLit, lmem: lmem, vmem: vmem,
+heap: heap, trail: trail, leveldat: leveldat, conflictdat: conflictdat,
+learn: learn, stack: stack, levstamp: levstamp, rangedist: rangedist,
+hn: hn, eptr: eptr, lptr: lptr, llevel: llevel, agility: agility,
+varBump: varBump, clauseBump: clauseBump, curstamp: curstamp,
+prevLearned: prevLearned, clauseHeapSize: clauseHeapSize,
+totalLearned: totalLearned, nextRecycle: nextRecycle,
+recycleBump: recycleBump, clauseHeap: clauseHeap,
+warmupCycles: warmupCycles, restartU: restartU, restartV: restartV,
+restartThresh: restartThresh, nextRestart: nextRestart,
+
+@ 이어 쓸 때는 상태를 불러오고, 수준 0으로 되돌아가고, 절이나 변수가 새로 들어왔으면
+다시 짓는다. 만족할 수 없음이 이미 드러났으면 절을 더 보태도 마찬가지이니 곧바로 답한다.
+
+@<간직한 상태로 풀이를 준비한다@>=
+@<간직한 상태를 불러온다@>
+if unsatisfiable {
+	goto unsat
+}
+@<수준 0으로 되돌아간다@>
+if vars != s.NumVars() || cells != len(s.cells) {
+	@<새 절과 새 변수를 들여 다시 짓는다@>
+}
+imems, mems = mems, 0
+@<풀이마다 새로 정하는 값들을 정한다@>
+
+@ @<간직한 상태를 불러온다@>=
+d := s.state
+unsatisfiable, rng, vars, clauses, cells = d.unsat, d.rng, d.vars, d.clauses, d.cells
+bytes, mem, bmem, memsize = d.bytes, d.mem, d.bmem, d.memsize
+minLearned, firstLearned, maxLearned = d.minLearned, d.firstLearned, d.maxLearned
+maxCellsUsed, maxLit, lmem, vmem = d.maxCellsUsed, d.maxLit, d.lmem, d.vmem
+heap, trail, leveldat, conflictdat = d.heap, d.trail, d.leveldat, d.conflictdat
+learn, stack, levstamp, rangedist = d.learn, d.stack, d.levstamp, d.rangedist
+hn, eptr, lptr, llevel, agility = d.hn, d.eptr, d.lptr, d.llevel, d.agility
+varBump, clauseBump, curstamp = d.varBump, d.clauseBump, d.curstamp
+prevLearned, clauseHeapSize, clauseHeap = d.prevLearned, d.clauseHeapSize, d.clauseHeap
+totalLearned, nextRecycle, recycleBump = d.totalLearned, d.nextRecycle, d.recycleBump
+warmupCycles, restartU, restartV = d.warmupCycles, d.restartU, d.restartV
+restartThresh, nextRestart = d.restartThresh, d.nextRestart
+
+@ 지난 풀이는 어느 수준에서든 멈췄을 수 있다. 멈추는 곳은 늘 강제를 마친 뒤이므로 수준
+0의 리터럴은 모두 전파되어 있다. 해를 찾았다면 모든 변수에 값이 있는데, 수준 0으로
+되추적하면 그 값들이 |oldval|에 남는다. 그러니 다음 풀이는 지난 해 가까이에서 찾기
+시작한다. 해를 하나씩 막는 절을 더해 가며 모두 세는 프로그램에 딱 맞는 성질이다.
+
+@<수준 0으로 되돌아간다@>=
+if llevel != 0 {
+	jumplev = 0
+	@<|jumplev|로 되추적한다@>
+}
+
+@ 절이나 변수가 새로 들어왔으면 다시 짓는다. 이진 함의 |bmem|은 리터럴마다 빈틈 없이
+붙은 구간이라 사이에 끼워 넣을 수 없다. 입력 절은 |mem|에서 배운 절보다 앞에 있어야
+재활용이 건드리지 않는다. 그러니 가장 곧은 길은 원본의 짓는 절들을 한 번 더 돌리는 것이다.
+활동도와 옛 값, 힙의 차례는 그대로 두고, 배운 절은 새 |mem|의 뒤쪽으로 옮겨 심고, 수준
+0의 리터럴은 트레일에 되돌린다. 조금씩 보태며 자주 푼다면 짓는 품이 들지만, 원본의
+코드를 그대로 쓸 수 있다는 값어치가 더 크다고 보았다.
+
+되돌린 리터럴은 |lptr=0|부터 모두 다시 전파한다. 새 입력 절이 그 리터럴들의 부정을
+감시하고 있을지도 모르기 때문이다.
+
+@<새 절과 새 변수를 들여 다시 짓는다@>=
+zero = append(zero[:0], trail[:eptr]...)
+for _, l = range zero {
+	mems++; vmem[l>>1].value = unset
+}
+oldMem, oldFirst, oldMax = mem, firstLearned, maxLearned
+vars, clauses, cells = s.NumVars(), s.clauses, len(s.cells)
+bytes = uint64(vars+1)*40 + uint64(vars)*4
+@<새 변수들을 |vmem|과 힙에 들인다@>
+@<다른 주 배열들을 마련한다@>
+@<임시 칸들을 |mem|, |bmem|, |trail|로 옮긴다@>
+@<보조 배열들을 마련한다@>
+@<|leveldat|을 비워 둔다@>
+for _, l = range zero {
+	@<리터럴 |l|을 수준 0의 트레일에 올린다...@>
+}
+@<간직한 배운 절들을 새 |mem|에 옮겨 심는다@>
+lptr, prevLearned = 0, 0
+
+@ @<|Solve|의 지역 변수@>=
+var (
+	zero             []int    // 떼어 둔 수준 0의 리터럴들
+	oldMem           []uint32 // 옮겨 심을 배운 절이 든 옛 |mem|
+	oldFirst, oldMax int      // 옛 |mem|에서 배운 절의 구간
+)
+
+@ 새 변수는 원본이 처음에 하던 대로 활동도 0과 무작위 처음 값으로 힙에 넣는다. 활동도가
+0이니 힙의 맨 끝에 붙는다.
+
+@<새 변수들을 |vmem|과 힙에 들인다@>=
+@<|trueProbThresh|를 정한다@>
+for k = len(vmem); k <= vars; k++ {
+	mems++; vmem = append(vmem, variable{value: unset, tloc: -1, oldval: 1})
+	heap = append(heap, 0)
+	v = k
+	if trueProbThresh != 0 {
+		mems += 4
+		if int(rng.Next()) < trueProbThresh {
+			vmem[v].oldval = 0
+		}
+	}
+	@<|v|를 힙에 넣는다@>
+}
+
+@ 배운 절을 하나씩 새 |mem|의 뒤에 옮긴다. 재활용의 압축과 같은 방법으로, 수준 0에서
+거짓인 리터럴은 빼고 참인 리터럴이 있는 절은 버린다. 크기가 1로 줄면 수준 0에서
+강제하고, 0이 되면 만족할 수 없다. 활동도는 그대로 옮기고, 범위는 다음 재활용이 새로
+매긴다.
+
+@<간직한 배운 절들을...@>=
+for q = oldFirst; q < oldMax; q = endc + learnedExtra {
+	mems++; endc = q + int(oldMem[q-1]); jj = endc
+	for {
+		mems++
+		if oldMem[endc]&signBit == 0 {
+			break
+		}
+		endc++
+	}
+	@<옛 절 |q|를 |maxLearned|에 옮기거나 버린다@>
+}
+mems++; mem[maxLearned-learnedExtra] = 0
+
+@ @<옛 절 |q|를...@>=
+c = maxLearned
+@<|mem|에 절 |q|가 들어갈 자리를 마련한다@>
+for kk, k = c, q; k < jj; k++ {
+	mems++; l = int(oldMem[k])
+	mems++; v = vmem[l>>1].value
+	if v != unset {
+		if (v^l)&1 != 0 {
+			continue
+		}
+		break
+	}
+	mems++; mem[kk] = uint32(l); kk++
+}
+if k < jj {
+	continue
+}
+if kk >= c+2 {
+	mems += 3; mem[c-1] = uint32(kk - c); mem[c-5] = oldMem[q-5]; mem[c-4] = 0
+	@<절 |c|의 앞 두 리터럴로 감시한다@>
+	maxLearned = kk + learnedExtra
+} else if kk == c {
+	goto unsat
+} else {
+	mems++; l = int(mem[c])
+	@<리터럴 |l|을 수준 0의 트레일에 올린다...@>
+}
+
+@ 배운 절을 적을 때와 같은 방법으로 자리를 늘린다.
+
+@<|mem|에 절 |q|가...@>=
+t = c + jj - q + learnedExtra
+if t > maxCellsUsed {
+	if t >= memsize {
+		err = ErrMemory
+		goto allDone
+	}
+	bytes += uint64(t-maxCellsUsed) * 4
+	maxCellsUsed = t
+	@<|mem|을 |maxCellsUsed|칸 이상으로...@>
+}
+
 @* 시험.
 시험은 \.{cdcl\_test.go}로 따로 짜낸다. 가장 중요한 시험은 원본과의 대조다. 수들은
 \CEE/ 원본 \.{SAT13}을 |ctangle|로 짜내어 FMA 없이(\.{-ffp-contract=off}) 컴파일하고
@@ -2254,8 +2712,10 @@ package sat
 import (
 	"context"
 	"errors"
+	"math/rand/v2"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -2416,6 +2876,157 @@ func TestSolveCancelAndParams(t *testing.T) {
 	}
 }
 
+@ 여섯째 시험부터는 원본에 없는 가정과 점진적 풀이를 본다. 견줄 원본이 없으니 답이
+옳은지를 본다. 먼저 변수 열둘의 무작위 3-SAT 식이다. 한 풀이기에 절을 다섯 개씩 보태 가며
+그때마다 무작위 가정을 주어 풀고, 모든 배정을 따지는 무식한 방법과 견준다. 전체 달리기와
+재활용, 자명한 절, 무작위 결정이 잦도록 매개변수를 바꾼 판도 돌린다.
+
+@<시험들@>=
+func TestSolveAssumptions(t *testing.T) {
+	const n = 12
+	rng := rand.New(rand.NewPCG(7, 13))
+	for _, opts := range []string{"", "w1 j3 J1 t1 p0.3 f0.9"} {
+		for range 30 {
+			s := New()
+			for range n {
+				s.NewVar()
+			}
+			setOpts(t, s, opts)
+			var cls [][]Lit
+			for range 12 {
+				@<무작위 3-절 다섯을 |s|와 |cls|에 보탠다@>
+				@<무작위 가정으로 풀고 무식한 방법과 견준다@>
+			}
+		}
+	}
+}
+
+@ @<무작위 3-절 다섯을...@>=
+for range 5 {
+	c := make([]Lit, 3)
+	for i := range c {
+		c[i] = randomLit(rng, n)
+	}
+	s.AddClause(c...)
+	cls = append(cls, c)
+}
+
+@ @<무작위 가정으로 풀고...@>=
+asm := make([]Lit, rng.IntN(4))
+for i := range asm {
+	asm[i] = randomLit(rng, n)
+}
+st, err := s.Solve(context.Background(), asm...)
+if err != nil || (st == Sat) != bruteSat(n, cls, asm) {
+	t.Fatalf("[%s] 가정 %v에서 %v, %v가 나왔다", opts, asm, st, err)
+}
+checkAnswer(t, s, st, cls, asm, func(units []Lit) bool { return bruteSat(n, cls, units) })
+
+@ 일곱째 시험은 큰 문제를 조금씩 쌓아 가며 푼다. \.{testdata}의 문제 넷을 절 차례대로
+넷으로 나눠 보태며 그때마다 무작위 가정 셋을 주어 풀고, 마지막에는 가정 없이 푼다. 마지막
+답은 원본의 답과 같아야 한다. 중간에 나온 |Unsat|은 새 풀이기로 그때까지의 절과 |Failed|를
+풀어 확인한다. 재활용과 전체 달리기가 잦도록 \.{j50 J20 w1}을 준다.
+
+@<시험들@>=
+func TestSolveIncremental(t *testing.T) {
+	rng := rand.New(rand.NewPCG(3, 5))
+	for _, name := range []string{"queen-5x5-5", "poset-nomax-b-12-minus-one",
+		"mutex-fourbits-lemmas-1", "mutilated-10-10"} {
+		full := readFile(t, filepath.Join("testdata", name+".sat"))
+		all, n := slices.Collect(full.Clauses()), full.NumVars()
+		s := New()
+		setOpts(t, s, "j50 J20 w1")
+		for range n {
+			s.NewVar()
+		}
+		for part := 1; part <= 4; part++ {
+			@<절의 |part|/4까지를 보태고 무작위 가정으로 풀어 본다@>
+		}
+		@<가정 없이 풀어 원본의 답과 견준다@>
+	}
+}
+
+@ @<절의 |part|/4까지를...@>=
+cls := all[:len(all)*part/4]
+for _, c := range all[len(all)*(part-1)/4 : len(cls)] {
+	s.AddClause(c...)
+}
+asm := []Lit{randomLit(rng, n), randomLit(rng, n), randomLit(rng, n)}
+st, err := s.Solve(context.Background(), asm...)
+if err != nil {
+	t.Fatal(err)
+}
+checkAnswer(t, s, st, cls, asm, func(units []Lit) bool { return freshSat(t, n, cls, units) })
+
+@ @<가정 없이 풀어...@>=
+want := Unknown
+for _, row := range goldenRows(t, "sat13-runs.golden") {
+	if row[0] == name && row[1] == "" {
+		want = knuthStatus[row[2]]
+	}
+}
+st, err := s.Solve(context.Background())
+if err != nil || st != want || (st == Unsat && s.Failed() != nil) {
+	t.Errorf("%s: %v, %v, %v인데 %v여야 한다", name, st, err, s.Failed(), want)
+}
+if st == Sat {
+	checkAnswer(t, s, st, all, nil, nil)
+}
+
+@ 여덟째 시험은 이어 쓰기의 규칙이다. Rivest의 일곱 절을 다시 풀면 짓지 않고 이어 쓰니
+준비에 드는 mem이 처음보다 적어야 한다. 매개변수를 바꾸었다가 되돌리면 처음부터 다시
+지으니 원본과 같은 작별 인사가 나와야 한다.
+
+@<시험들@>=
+func TestSolveResume(t *testing.T) {
+	const seven = "x2 x3 ~x4\nx1 x3 x4\n~x1 x2 x4\n~x1 ~x2 x3\n" +
+		"~x2 ~x3 x4\n~x1 ~x3 ~x4\nx1 ~x2 ~x4\n"
+	s := solveText(t, seven, "", Sat, nil)
+	solveSolver(t, s, "", Sat, nil)
+	if s.Stats().IMems >= 291 {
+		t.Errorf("다시 풀면서 %d mem을 들여 지었다", s.Stats().IMems)
+	}
+	solveSolver(t, s, "s1", Sat, nil)
+	solveSolver(t, s, "s0", Sat, nil)
+	wantLine(t, "rivest7", s, "Altogether 291+142 mems, 5752 bytes, 2 nodes,"+
+		" 0 clauses learned, 47 memcells.")
+	@<책임이 있는 가정들을 본다@>
+	@<전처리한 풀이기에 가정을 주어 본다@>
+}
+
+@ $x_1$과 $\bar x_1$을 함께 가정하면 둘 다 책임이 있다. 일곱 절에 $x_1$을 더하면 만족할
+수 없으니, $x_1$만 가정하면 $x_1$이 책임을 진다. 이때 풀이기는 $\bar x_1$을 배워 수준 0에
+두므로, 그다음에 $\bar x_2$를 곁들여 가정해도 책임은 $x_1$에게만 있다. 여덟째 절을 보태고
+가정 없이 풀면 만족할 수 없고 |Failed|가 비어야 한다. 그 뒤로는 가정을 주어도 곧바로 같은
+답이 나온다.
+
+@<책임이 있는 가정들을...@>=
+x1, x2, x3 := s.Lookup("x1"), s.Lookup("x2"), s.Lookup("x3")
+for _, tc := range [][2][]Lit{{{x1, x1.Not()}, {x1, x1.Not()}}, {{x1}, {x1}},
+	{{x2.Not(), x1}, {x1}}} {
+	if st, _ := s.Solve(context.Background(), tc[0]...); st != Unsat ||
+		!slices.Equal(s.Failed(), tc[1]) {
+		t.Errorf("가정 %v에서 %v, %v가 나왔다", tc[0], st, s.Failed())
+	}
+}
+s.AddClause(x1, x2, x3.Not())
+solveSolver(t, s, "", Unsat, nil)
+if st, _ := s.Solve(context.Background(), x1); st != Unsat || s.Failed() != nil {
+	t.Errorf("여덟 절에서 %v, %v가 나왔다", st, s.Failed())
+}
+
+@ @<전처리한 풀이기에...@>=
+s = New()
+if err := s.ReadKnuth(strings.NewReader(seven)); err != nil {
+	t.Fatal(err)
+}
+if _, err := s.Simplify(context.Background()); err != nil {
+	t.Fatal(err)
+}
+if _, err := s.Solve(context.Background(), s.Lookup("x1")); err == nil {
+	t.Error("전처리한 풀이기가 가정을 받았다")
+}
+
 @ 글자로 적힌 문제를 읽어 푸는 문.
 
 @<시험에 쓰는 함수들@>=
@@ -2435,11 +3046,7 @@ func solveText(t *testing.T, text, opts string, want Status, wantErr error) *Sol
 @<시험에 쓰는 함수들@>=
 func solveSolver(t *testing.T, s *Solver, opts string, want Status, wantErr error) {
 	t.Helper()
-	for _, o := range strings.Fields(opts) {
-		if err := s.Params.Set(o); err != nil {
-			t.Fatal(err)
-		}
-	}
+	setOpts(t, s, opts)
 	st, err := s.Solve(context.Background())
 	if st != want || !errors.Is(err, wantErr) {
 		t.Errorf("[%s] %v, %v인데 %v, %v여야 한다", opts, st, err, want, wantErr)
@@ -2471,6 +3078,113 @@ func wantLine(t *testing.T, name string, s *Solver, want string) {
 	if got != want {
 		t.Errorf("%s:\n  %s\n인데\n  %s\n여야 한다", name, got, want)
 	}
+}
+
+@ 크누스식 선택들을 매개변수에 반영하는 문.
+
+@<시험에 쓰는 함수들@>=
+func setOpts(t *testing.T, s *Solver, opts string) {
+	t.Helper()
+	for _, o := range strings.Fields(opts) {
+		if err := s.Params.Set(o); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+@ 변수 $1..n$ 가운데 하나의 리터럴을 무작위로 고르는 문.
+
+@<시험에 쓰는 함수들@>=
+func randomLit(rng *rand.Rand, n int) Lit {
+	return Pos(1+rng.IntN(n)) | Lit(rng.IntN(2))
+}
+
+@ 가정 아래에서 나온 답을 따지는 문. 해가 나오면 절 |cls|와 가정 |asm|을 모두 만족해야
+한다. |Unsat|이면 |Failed|가 가정의 일부여야 하고, 그것만 가정해도 만족할 수 없다는 것을
+|sat|으로 확인한다. |Failed|가 비었으면 절만으로 만족할 수 없어야 한다는 뜻이 된다.
+
+@<시험에 쓰는 함수들@>=
+func checkAnswer(t *testing.T, s *Solver, st Status, cls [][]Lit, asm []Lit,
+	sat func([]Lit) bool) {
+	t.Helper()
+	switch st {
+	case Sat:
+		@<해가 절 |cls|와 가정 |asm|을 모두 만족하는지 본다@>
+	case Unsat:
+		failed := s.Failed()
+		for _, a := range failed {
+			if !slices.Contains(asm, a) {
+				t.Fatalf("책임진 가정 %v가 가정 %v에 없다", failed, asm)
+			}
+		}
+		if sat(failed) {
+			t.Fatalf("가정 %v 가운데 %v만으로는 만족할 수 없어야 한다", asm, failed)
+		}
+	}
+}
+
+@ @<해가 절 |cls|와...@>=
+for _, c := range cls {
+	if !slices.ContainsFunc(c, s.Value) {
+		t.Fatalf("해가 절 %v를 만족하지 않는다", c)
+	}
+}
+for _, a := range asm {
+	if !s.Value(a) {
+		t.Fatalf("해가 가정 %v를 어긴다", a)
+	}
+}
+
+@ 변수 $n\le 32$개의 절들에 단위 절 |units|를 더한 식을 만족하는 배정이 있는지, 모든
+배정을 따져 보는 문. 절마다 양의 리터럴과 음의 리터럴의 비트 마스크를 만들어 두면 배정
+|x|가 절을 만족하는지는 비트 연산 한 번이다.
+
+@<시험에 쓰는 함수들@>=
+func bruteSat(n int, cls [][]Lit, units []Lit) bool {
+	var masks [][2]uint32
+	for _, c := range cls {
+		var m [2]uint32
+		for _, l := range c {
+			m[l&1] |= 1 << (l.Var() - 1)
+		}
+		masks = append(masks, m)
+	}
+	for _, u := range units {
+		var m [2]uint32
+		m[u&1] = 1 << (u.Var() - 1)
+		masks = append(masks, m)
+	}
+next:
+	for x := uint64(0); x < 1<<n; x++ {
+		for _, m := range masks {
+			if uint32(x)&m[0]|^uint32(x)&m[1] == 0 {
+				continue next
+			}
+		}
+		return true
+	}
+	return false
+}
+
+@ 새 풀이기로 절들과 단위 절들을 풀어 만족할 수 있는지 알려 주는 문.
+
+@<시험에 쓰는 함수들@>=
+func freshSat(t *testing.T, n int, cls [][]Lit, units []Lit) bool {
+	s := New()
+	for range n {
+		s.NewVar()
+	}
+	for _, c := range cls {
+		s.AddClause(c...)
+	}
+	for _, u := range units {
+		s.AddClause(u)
+	}
+	st, err := s.Solve(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	return st == Sat
 }
 
 @* 색인.

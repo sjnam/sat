@@ -5695,7 +5695,7 @@ record:
 	return status, err
 }
 
-//line simplify.w:1459
+//line simplify.w:1460
 func (s *Solver) solvePreprocessed(ctx context.Context) (Status, error) {
 	pre := s.pre
 	s.model, s.truth, s.stats = nil, nil, Stats{}
@@ -5705,7 +5705,7 @@ func (s *Solver) solvePreprocessed(ctx context.Context) (Status, error) {
 	var sol []Lit
 	if len(pre.cells) > 0 {
 
-//line simplify.w:1479
+//line simplify.w:1480
 		red := New()
 		red.Params = s.Params
 		renum, old := make([]int, s.NumVars()+1), []int{0}
@@ -5717,7 +5717,7 @@ func (s *Solver) solvePreprocessed(ctx context.Context) (Status, error) {
 			}
 			l &^= firstLit
 
-//line simplify.w:1494
+//line simplify.w:1495
 			if renum[l.Var()] == 0 {
 				renum[l.Var()] = red.NewVar().Var()
 				old = append(old, l.Var())
@@ -5728,13 +5728,13 @@ func (s *Solver) solvePreprocessed(ctx context.Context) (Status, error) {
 			}
 			clause = append(clause, nl)
 
-//line simplify.w:1490
+//line simplify.w:1491
 		}
 		red.AddClause(clause...)
 
-//line simplify.w:1468
+//line simplify.w:1469
 
-//line simplify.w:1505
+//line simplify.w:1506
 		st, err := red.Solve(ctx)
 		s.stats = red.stats
 		if st != Sat {
@@ -5748,10 +5748,10 @@ func (s *Solver) solvePreprocessed(ctx context.Context) (Status, error) {
 			sol = append(sol, ol)
 		}
 
-//line simplify.w:1469
+//line simplify.w:1470
 	}
 
-//line simplify.w:1523
+//line simplify.w:1524
 	val := make([]int8, 2*s.NumVars()+2)
 	model := make([]Lit, 0, s.NumVars())
 	for i := len(sol) - 1; i >= 0; i-- {
@@ -5759,7 +5759,7 @@ func (s *Solver) solvePreprocessed(ctx context.Context) (Status, error) {
 		val[sol[i]], val[sol[i]^1] = 1, -1
 	}
 
-//line simplify.w:1543
+//line simplify.w:1544
 	v := true
 	for i := len(pre.erp); i > 0; {
 		vv := false
@@ -5771,7 +5771,7 @@ func (s *Solver) solvePreprocessed(ctx context.Context) (Status, error) {
 				break
 			}
 
-//line simplify.w:1562
+//line simplify.w:1563
 			if val[e.lit] == 0 {
 				model = append(model, e.lit)
 				val[e.lit], val[e.lit^1] = 1, -1
@@ -5780,13 +5780,13 @@ func (s *Solver) solvePreprocessed(ctx context.Context) (Status, error) {
 				vv = true
 			}
 
-//line simplify.w:1554
+//line simplify.w:1555
 			if e.flag == erpFirst {
 				break
 			}
 		}
 
-//line simplify.w:1571
+//line simplify.w:1572
 		if e.flag != erpDef {
 			v = v && vv
 			continue
@@ -5800,21 +5800,21 @@ func (s *Solver) solvePreprocessed(ctx context.Context) (Status, error) {
 		}
 		v = true
 
-//line simplify.w:1559
+//line simplify.w:1560
 	}
 
-//line simplify.w:1530
+//line simplify.w:1531
 	s.model = model
 	s.truth = make([]bool, s.NumVars()+1)
 	for _, l := range model {
 		s.truth[l.Var()] = !l.IsNeg()
 	}
 
-//line simplify.w:1471
+//line simplify.w:1472
 	return Sat, nil
 }
 
-//line simplify.w:1589
+//line simplify.w:1590
 func (s *Solver) WriteSimplified(w io.Writer) error {
 	if s.pre == nil {
 		return errors.New("sat: 전처리한 결과가 없다")
@@ -5834,7 +5834,7 @@ func (s *Solver) WriteSimplified(w io.Writer) error {
 	return err
 }
 
-//line simplify.w:1611
+//line simplify.w:1612
 func (s *Solver) WriteERP(w io.Writer) error {
 	if s.pre == nil {
 		return errors.New("sat: 전처리한 결과가 없다")
@@ -5843,7 +5843,7 @@ func (s *Solver) WriteERP(w io.Writer) error {
 	erp := s.pre.erp
 	for i := 0; i < len(erp); {
 
-//line simplify.w:1625
+//line simplify.w:1626
 		j, k := i+1, 0
 		for ; j < len(erp) && erp[j].flag != erpDef; j++ {
 			if erp[j].flag == erpFirst {
@@ -5863,7 +5863,7 @@ func (s *Solver) WriteERP(w io.Writer) error {
 		}
 		i = j
 
-//line simplify.w:1619
+//line simplify.w:1620
 	}
 	_, err := io.WriteString(w, b.String())
 	return err

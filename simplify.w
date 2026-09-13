@@ -1453,7 +1453,8 @@ s.simpStats = SimplifyStats{IMems: imems, Mems: mems, Bytes: bytes, Cells: xcell
 @* 줄인 절 풀기와 되돌리기.
 |Simplify| 뒤에 |Solve|를 부르면 \.{cdcl.w}의 |Solve|가 곧바로 이 문으로 넘어온다.
 줄인 절로 풀이기를 새로 지어 풀고, 해가 나오면 erp 자료로 원래 변수 모두의 값을 채운다.
-파일 경계를 넘어 부르므로 이름 있는 절 대신 문으로 두었다.
+파일 경계를 넘어 부르므로 이름 있는 절 대신 문으로 두었다. 가정 리터럴은 받지 않는다.
+전처리가 없앤 변수에 가정을 걸면 erp 자료로는 답할 길이 없기 때문이다.
 
 @<함수들@>=
 func (s *Solver) solvePreprocessed(ctx context.Context) (Status, error) {
