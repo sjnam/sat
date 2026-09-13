@@ -16,6 +16,7 @@
 #   sudoku.w   스도쿠 풀기와 해가 하나뿐임의 증명
 #   life.w     생명 게임을 거꾸로 돌려 조상 찾기
 #   factor.w   곱셈기 회로를 거꾸로 돌려 인수분해하기
+#   hamsat.w   컷셋 절을 보태 가며 해밀턴 순환 찾기
 #
 # knuth/ 아래는 크누스의 원본 CWEB 프로그램이다. 옮길 때 곁에 두고 읽는다.
 # testdata/ 아래는 크누스의 SATexamples.tgz에서 고른 작은 문제들이다.
@@ -31,7 +32,7 @@ GWEAVE  ?= gweave
 LUATEX  ?= luatex -interaction=nonstopmode
 
 LIB      := sat io cdcl simplify
-EXAMPLES := waerden queens sudoku life factor
+EXAMPLES := waerden queens sudoku life factor hamsat
 EXGO     := $(foreach e,$(EXAMPLES),examples/$(e)/$(e).go)
 EXPDF    := $(foreach e,$(EXAMPLES),examples/$(e)/$(e).pdf)
 JUNK     := tex pdf idx scn log toc dvi
