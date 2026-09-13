@@ -297,6 +297,9 @@ func (s *Solver) Value(l Lit) bool {
 @<함수들@>=
 func (s *Solver) Solve(ctx context.Context) (Status, error) {
 	@<|Solve|의 지역 변수@>
+	if s.pre != nil {
+		return s.solvePreprocessed(ctx)
+	}
 	if s.empty {
 		s.model, s.truth, s.stats = nil, nil, Stats{}
 		return Unsat, nil

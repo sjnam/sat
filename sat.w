@@ -3,6 +3,8 @@
 @s testing.T int
 @s Params int
 @s Stats int
+@s SimplifyParams int
+@s SimplifyStats int
 
 \def\title{SAT}
 
@@ -40,13 +42,14 @@ clause learning) 풀이기다. 최신 풀이기의 온갖 장식까지 갖추지
 절을 쌓는 차례까지 원본과 같아야 하기 때문이다. 이 글의 절 쌓기가 조금 유난스러워
 보인다면 그 까닭이다.
 
-@ 꾸러미는 세 편의 글로 짓는다.
+@ 꾸러미는 네 편의 글로 짓는다.
 \smallskip
 \item{$\bullet$} 첫째 글 \.{sat.w}는 지금 읽는 이 글이다. 리터럴을 적는 법과, 절을
 받아 쌓아 두는 풀이기의 겉모습을 담는다.
 \item{$\bullet$} 둘째 글 \.{io.w}는 크누스의 절 형식과 DIMACS 형식을 읽는다.
 \item{$\bullet$} 셋째 글 \.{cdcl.w}는 \.{SAT13}의 알맹이다. 쌓아 둔 절로 진짜
 자료 구조를 짓고 푼다.
+\item{$\bullet$} 넷째 글 \.{simplify.w}는 \.{SAT12}의 전처리와 \.{SAT12-ERP}의 되살림이다.
 \smallskip\noindent
 어느 글이나 혼자 읽을 수 있게 썼다. 이 글의 뼈대는 다음과 같다.
 
@@ -168,13 +171,22 @@ stats  Stats  // 마지막 풀이의 통계
 model  []Lit  // 마지막 풀이에서 찾은 해, 트레일 차례대로
 truth  []bool // |truth[v]|는 그 해에서 변수 |v|의 값
 
+@ 전처리에 쓰는 것들. 매개변수 |SimplifyParams|, 마지막 전처리의 통계, 그리고 줄인 절과
+erp 자료를 담은 결과다. 결과가 있으면 |Solve|는 줄인 절을 푼다. 이것들의 뜻은
+\.{simplify.w}에서 설명한다.
+
+@<|Solver|의 필드@>=
+SimplifyParams SimplifyParams // 전처리의 매개변수
+simpStats      SimplifyStats  // 마지막 전처리의 통계
+pre            *preprocessed  // 전처리 결과, 없으면 nil
+
 @ 새 풀이기를 만드는 문. 번호 0짜리 자리를 미리 채우고, 매개변수는 크누스의
 기본값으로 둔다.
 
 @<함수들@>=
 func New() *Solver {
 	return &Solver{names: []string{""}, stamp: []int{0}, index: map[string]int{},
-		Params: defaultParams}
+		Params: defaultParams, SimplifyParams: defaultSimplifyParams}
 }
 
 @ 이름 없는 변수를 새로 만들고 그 양의 리터럴을 돌려주는 문. 조합 문제를 절로
@@ -260,8 +272,12 @@ func (s *Solver) LitName(l Lit) string {
 받으면 곧바로 읽기를 멈춘다. 이 세 걸음은 |AddClause|, 그리고 \.{io.w}의 두 읽개가
 함께 쓴다.
 
+절을 시작할 때는 전처리 결과를 버린다. 전처리가 없앤 변수가 든 절이 새로 들어오면
+erp 자료가 더는 맞지 않기 때문이다.
+
 @<함수들@>=
 func (s *Solver) beginClause() {
+	s.pre = nil
 	s.serial++
 	s.start = len(s.cells)
 }

@@ -7,6 +7,7 @@
 #   sat.w   리터럴, 풀이기의 겉모습, 절 쌓기
 #   io.w    크누스 형식과 DIMACS 형식 읽기
 #   cdcl.w  SAT13의 알맹이 (알고리즘 7.2.2.2C)
+#   simplify.w  SAT12 전처리와 SAT12-ERP 되살림
 #
 # examples 아래의 예제들도 모두 문학적 프로그램이다.
 #
@@ -29,7 +30,7 @@ GTANGLE ?= gtangle
 GWEAVE  ?= gweave
 LUATEX  ?= luatex -interaction=nonstopmode
 
-LIB      := sat io cdcl
+LIB      := sat io cdcl simplify
 EXAMPLES := waerden queens sudoku life factor
 EXGO     := $(foreach e,$(EXAMPLES),examples/$(e)/$(e).go)
 EXPDF    := $(foreach e,$(EXAMPLES),examples/$(e)/$(e).pdf)
@@ -51,6 +52,10 @@ io.go io_test.go: io.w
 cdcl.go cdcl_test.go: cdcl.w
 	$(GTANGLE) $<
 	gofmt -w cdcl.go cdcl_test.go
+
+simplify.go simplify_test.go: simplify.w
+	$(GTANGLE) $<
+	gofmt -w simplify.go simplify_test.go
 
 # 예제는 제 디렉터리에서 짜낸다. 정적 패턴 규칙이라 아래의 %-규칙보다 앞선다.
 $(EXGO): examples/%.go: examples/%.w
@@ -84,7 +89,7 @@ $(EXPDF): examples/%.pdf: examples/%.w
 # 조판 품질 검사: 로그에 경고나 잘못이 하나라도 있으면 실패한다.
 check: pdf
 	@bad=0; for f in $(LIB) $(foreach e,$(EXAMPLES),examples/$(e)/$(e)); do \
-	  n=$$(grep -ac 'Overfull\|Underfull\|Error\|Missing\|Undefined' $$f.log); \
+	  n=$$(grep -ac 'Overfull\|Underfull\|Error\|Missing\|Undefined\|^!' $$f.log); \
 	  echo "$$f.log: $$n"; [ "$$n" = 0 ] || bad=1; \
 	done; exit $$bad
 

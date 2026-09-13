@@ -17,8 +17,12 @@
 | 1 | `sat.w` | 리터럴, 풀이기의 겉모습, 절 쌓기 | 완료 |
 | 1 | `io.w` | 크누스 형식과 DIMACS 형식 읽기 | 완료 |
 | 2 | `cdcl.w` | SAT13의 알맹이: 강제, 활동도, 충돌 학습, 절 재활용 | 완료 |
-| 3 | `simplify.w` | SAT12 전처리와 SAT12-ERP 되살림 | 다음 |
-| 4 | | 가정 리터럴을 쓰는 점진적 풀이 | |
+| 3 | `simplify.w` | SAT12 전처리와 SAT12-ERP 되살림 | 완료 |
+| 4 | | 가정 리터럴을 쓰는 점진적 풀이 | 다음 |
+
+SAT12 전처리도 벤치마크 113개 전부에서 C 원본과 mem, 줄인 절, erp 파일이 모두 같다.
+`testdata`의 문제 여덟은 매개변수 여덟 가지로 전처리한 뒤 SAT13으로 풀고 해를
+되살리기까지 원본 파이프라인(`sat12 | sat13 | sat12-erp`)과 견준다.
 
 크누스의 벤치마크 113개 전부를 mem 10⁸에서 끊어 C 원본과 견주었고, 준비 mem과
 풀이 mem이 모두 한 개도 틀리지 않는다. `testdata`의 작은 문제 여섯은 매개변수를
@@ -37,6 +41,17 @@ if st == sat.Sat {
     fmt.Println(s.Value(x), s.Model()) // 리터럴 하나의 값, 트레일 차례의 해
 }
 fmt.Println(s.Stats()) // 크누스의 작별 인사와 같은 꼴
+```
+
+크누스의 SAT12 전처리를 먼저 돌릴 수도 있다. 전처리가 없앤 변수의 값은 풀이 뒤에
+erp 자료로 되살아나므로 `Value`와 `Model`은 여전히 원래 변수들로 답한다.
+
+```go
+st, err := s.Simplify(ctx) // Unsat: 전처리만으로 증명, Sat: 절이 모두 사라짐, Unknown: 남은 절이 있음
+st, err = s.Solve(ctx)     // 줄인 절을 풀고 해를 되살린다
+fmt.Println(s.SimplifyStats())
+s.WriteSimplified(w)       // 원본 sat12가 찍는 꼴의 줄인 절
+s.WriteERP(w)              // 원본 sat12가 쓰는 erp 파일의 꼴
 ```
 
 파일에서 읽을 수도 있다.
