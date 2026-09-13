@@ -1,5 +1,9 @@
 \input kotexgweb
 
+@s testing.T int
+@s Params int
+@s Stats int
+
 \def\title{SAT}
 
 @* 들어가며.
@@ -42,7 +46,7 @@ clause learning) 풀이기다. 최신 풀이기의 온갖 장식까지 갖추지
 받아 쌓아 두는 풀이기의 겉모습을 담는다.
 \item{$\bullet$} 둘째 글 \.{io.w}는 크누스의 절 형식과 DIMACS 형식을 읽는다.
 \item{$\bullet$} 셋째 글 \.{cdcl.w}는 \.{SAT13}의 알맹이다. 쌓아 둔 절로 진짜
-자료 구조를 짓고 푼다. (다음 차례다.)
+자료 구조를 짓고 푼다.
 \smallskip\noindent
 어느 글이나 혼자 읽을 수 있게 썼다. 이 글의 뼈대는 다음과 같다.
 
@@ -155,11 +159,22 @@ unaries  int  // 그 가운데 리터럴이 하나인 절의 수
 binaries int  // 리터럴이 둘인 절의 수
 empty    bool // 빈 절을 받았는가
 
-@ 새 풀이기를 만드는 문. 번호 0짜리 자리를 미리 채워 둔다.
+@ 푸는 데 쓰는 것들. 매개변수 |Params|는 크누스의 명령 줄 선택들이고, 푼 뒤에는
+통계와 해가 남는다. 이것들의 뜻은 \.{cdcl.w}에서 설명한다.
+
+@<|Solver|의 필드@>=
+Params Params // 푸는 방식을 정하는 매개변수
+stats  Stats  // 마지막 풀이의 통계
+model  []Lit  // 마지막 풀이에서 찾은 해, 트레일 차례대로
+truth  []bool // |truth[v]|는 그 해에서 변수 |v|의 값
+
+@ 새 풀이기를 만드는 문. 번호 0짜리 자리를 미리 채우고, 매개변수는 크누스의
+기본값으로 둔다.
 
 @<함수들@>=
 func New() *Solver {
-	return &Solver{names: []string{""}, stamp: []int{0}, index: map[string]int{}}
+	return &Solver{names: []string{""}, stamp: []int{0}, index: map[string]int{},
+		Params: defaultParams}
 }
 
 @ 이름 없는 변수를 새로 만들고 그 양의 리터럴을 돌려주는 문. 조합 문제를 절로

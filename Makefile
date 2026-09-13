@@ -6,6 +6,7 @@
 #
 #   sat.w   리터럴, 풀이기의 겉모습, 절 쌓기
 #   io.w    크누스 형식과 DIMACS 형식 읽기
+#   cdcl.w  SAT13의 알맹이 (알고리즘 7.2.2.2C)
 #
 # knuth/ 아래는 크누스의 원본 CWEB 프로그램이다. 옮길 때 곁에 두고 읽는다.
 # testdata/ 아래는 크누스의 SATexamples.tgz에서 고른 작은 문제들이다.
@@ -20,7 +21,7 @@ GTANGLE ?= gtangle
 GWEAVE  ?= gweave
 LUATEX  ?= luatex -interaction=nonstopmode
 
-LIB  := sat io
+LIB  := sat io cdcl
 JUNK := tex pdf idx scn log toc dvi
 
 .PHONY: all build test vet tangle pdf check clean
@@ -35,6 +36,10 @@ sat.go sat_test.go: sat.w
 io.go io_test.go: io.w
 	$(GTANGLE) $<
 	gofmt -w io.go io_test.go
+
+cdcl.go cdcl_test.go: cdcl.w
+	$(GTANGLE) $<
+	gofmt -w cdcl.go cdcl_test.go
 
 tangle: $(addsuffix .go,$(LIB))
 

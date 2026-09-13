@@ -1,4 +1,4 @@
-//line io.w:20
+//line io.w:22
 package sat
 
 import (
@@ -8,18 +8,18 @@ import (
 	"strconv"
 )
 
-//line io.w:39
+//line io.w:41
 type ParseError struct {
 	Line int    // 잘못이 난 줄, 1부터 센다
 	Msg  string // 무엇이 잘못인가
 }
 
-//line io.w:45
+//line io.w:47
 func (e *ParseError) Error() string {
 	return fmt.Sprintf("sat: %d번째 줄: %s", e.Line, e.Msg)
 }
 
-//line io.w:86
+//line io.w:88
 func (s *Solver) ReadKnuth(r io.Reader) error {
 	sc := bufio.NewScanner(r)
 	sc.Buffer(nil, 1<<30)
@@ -37,7 +37,7 @@ lines:
 				break
 			}
 
-//line io.w:118
+//line io.w:120
 			if buf[j] < ' ' || buf[j] > '~' {
 				return &ParseError{line, fmt.Sprintf("쓸 수 없는 글자 %#02x", buf[j])}
 			}
@@ -54,7 +54,7 @@ lines:
 				continue lines
 			}
 
-//line io.w:140
+//line io.w:142
 			if buf[i] == '~' {
 				return &ParseError{line, fmt.Sprintf("이름 %q가 ~로 시작한다", buf[i:j])}
 			}
@@ -67,7 +67,7 @@ lines:
 				l = l.Not()
 			}
 
-//line io.w:103
+//line io.w:105
 			if !s.addLit(l) {
 				continue lines
 			}
@@ -79,7 +79,7 @@ lines:
 	return sc.Err()
 }
 
-//line io.w:181
+//line io.w:183
 func (s *Solver) ReadDIMACS(r io.Reader) error {
 	sc := bufio.NewScanner(r)
 	sc.Buffer(nil, 1<<30)
@@ -91,7 +91,7 @@ lines:
 		line++
 		buf := sc.Bytes()
 
-//line io.w:206
+//line io.w:208
 		j := 0
 		for j < len(buf) && (buf[j] == ' ' || buf[j] == '\t') {
 			j++
@@ -103,7 +103,7 @@ lines:
 			break lines
 		case buf[j] == 'p':
 
-//line io.w:233
+//line io.w:235
 			if dimacs != nil {
 				return &ParseError{line, "머리줄이 두 번 나왔다"}
 			}
@@ -114,7 +114,7 @@ lines:
 			}
 			dimacs = make([]int, n+1)
 
-//line io.w:217
+//line io.w:219
 			continue
 		case dimacs == nil:
 			return &ParseError{line, "p cnf 머리줄보다 절이 먼저 나왔다"}
@@ -127,7 +127,7 @@ lines:
 				break
 			}
 
-//line io.w:248
+//line io.w:250
 			neg := buf[j] == '-'
 			if neg {
 				j++
@@ -144,9 +144,9 @@ lines:
 				return &ParseError{line, fmt.Sprintf("변수 %d가 머리줄의 %d보다 크다", x, len(dimacs)-1)}
 			}
 
-//line io.w:229
+//line io.w:231
 
-//line io.w:268
+//line io.w:270
 			if !open {
 				s.beginClause()
 				open, dead = true, false
@@ -170,10 +170,10 @@ lines:
 			}
 			dead = !s.addLit(l)
 
-//line io.w:230
+//line io.w:232
 		}
 
-//line io.w:192
+//line io.w:194
 	}
 	if err := sc.Err(); err != nil {
 		return err

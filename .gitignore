@@ -1,6 +1,6 @@
 # GWEB 문학적 프로그램: .w 파일만이 원본이고 나머지는 모두 생성물이다.
 #
-# 다만 라이브러리 API의 .go(sat, io)는 예외로 저장소에 넣는다. 이 저장소는
+# 다만 라이브러리 API의 .go(sat, io, cdcl)는 예외로 저장소에 넣는다. 이 저장소는
 # `go get`으로 남의 프로그램에 딸려 들어가는데, 그쪽에 GWEB을 깔라고 할 수는
 # 없기 때문이다. 시험 파일과 조판 결과는 넣지 않는다.
 /sat_test.go
@@ -18,3 +18,11 @@
 /io.scn
 /io.log
 /io.toc
+
+/cdcl_test.go
+/cdcl.tex
+/cdcl.pdf
+/cdcl.idx
+/cdcl.scn
+/cdcl.log
+/cdcl.toc

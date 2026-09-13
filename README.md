@@ -13,14 +13,18 @@
 ## 진행
 
 | 단계 | 글 | 내용 | 상태 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 1 | `sat.w` | 리터럴, 풀이기의 겉모습, 절 쌓기 | 완료 |
 | 1 | `io.w` | 크누스 형식과 DIMACS 형식 읽기 | 완료 |
-| 2 | `cdcl.w` | SAT13의 알맹이: 강제, 활동도, 충돌 학습, 절 치우기 | 다음 |
-| 3 | `simplify.w` | SAT12 전처리와 SAT12-ERP 되살림 | |
+| 2 | `cdcl.w` | SAT13의 알맹이: 강제, 활동도, 충돌 학습, 절 재활용 | 완료 |
+| 3 | `simplify.w` | SAT12 전처리와 SAT12-ERP 되살림 | 다음 |
 | 4 | | 가정 리터럴을 쓰는 점진적 풀이 | |
 
-## 맛보기 (지금 되는 것)
+크누스의 벤치마크 113개 전부를 mem 10⁸에서 끊어 C 원본과 견주었고, 준비 mem과
+풀이 mem이 모두 한 개도 틀리지 않는다. `testdata`의 작은 문제 여섯은 매개변수를
+바꿔 가며 끝까지 풀어 견준다.
+
+## 맛보기
 
 ```go
 s := sat.New()
@@ -28,9 +32,24 @@ x, y := s.NewVar(), s.Lookup("y") // 이름 없는 변수와 이름 있는 변�
 s.AddClause(x, y.Not())
 s.AddClause(y)
 
+st, err := s.Solve(context.Background()) // sat.Sat, sat.Unsat, sat.Unknown
+if st == sat.Sat {
+    fmt.Println(s.Value(x), s.Model()) // 리터럴 하나의 값, 트레일 차례의 해
+}
+fmt.Println(s.Stats()) // 크누스의 작별 인사와 같은 꼴
+```
+
+파일에서 읽을 수도 있다.
+
+```go
 f, _ := os.Open("foo.cnf")
 err := s.ReadDIMACS(f) // 또는 s.ReadKnuth(f)
 ```
+
+매개변수는 크누스의 명령 줄 선택과 같다. `s.Params.Set("s3")`처럼 원본의 선택
+글자로 줄 수도 있고, `s.Params.Timeout = 1e9`처럼 필드에 직접 넣을 수도 있다.
+mem 한도에 이르면 `sat.ErrTimeout`, `context`를 거두면 `ctx.Err()`와 함께
+`sat.Unknown`을 돌려준다.
 
 리터럴은 크누스를 따라 변수 k에 대해 `2k`(양)와 `2k+1`(음)이다.
 변수 번호는 이름이 처음 나온 차례로 매겨진다. DIMACS 변수 k의 이름은 `"k"`다.

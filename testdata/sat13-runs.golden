@@ -1,0 +1,37 @@
+langfordprime-10||UNSAT|Altogether 22071+190482492 mems, 586789 bytes, 22516 nodes, 20137 clauses learned (ave 35.9->16.7), 135458 memcells.
+langfordprime-10|s3|UNSAT|Altogether 22087+216138030 mems, 594257 bytes, 22934 nodes, 20638 clauses learned (ave 36.1->16.5), 137325 memcells.
+langfordprime-10|w2|UNSAT|Altogether 22071+234011027 mems, 625845 bytes, 23425 nodes, 20942 clauses learned (ave 37.1->17.8), 145222 memcells.
+langfordprime-10|j100 J50|UNSAT|Altogether 22071+256343241 mems, 312021 bytes, 38459 nodes, 33675 clauses learned (ave 34.9->18.7), 67666 memcells.
+langfordprime-10|p0.3 P0.9|UNSAT|Altogether 22071+528607183 mems, 901013 bytes, 42593 nodes, 36447 clauses learned (ave 39.4->19.2), 214014 memcells.
+langfordprime-10|f0.5 a0.1 r0.8 R0.99|UNSAT|Altogether 22071+1205920432 mems, 1167805 bytes, 195994 nodes, 51532 clauses learned (ave 39.9->23.0), 280712 memcells.
+langfordprime-10|t2|UNSAT|Altogether 22071+136674743 mems, 530125 bytes, 21526 nodes, 19238 clauses learned (ave 31.1->14.0), 121292 memcells.
+mutex-fourbits-lemmas-1||UNSAT|Altogether 8326+2227753 mems, 71977 bytes, 2406 nodes, 592 clauses learned (ave 34.4->16.2), 12431 memcells.
+mutex-fourbits-lemmas-1|s3|UNSAT|Altogether 8334+1477134 mems, 57753 bytes, 1750 nodes, 476 clauses learned (ave 32.3->13.0), 8875 memcells.
+mutex-fourbits-lemmas-1|w2|UNSAT|Altogether 8326+1488575 mems, 54265 bytes, 1855 nodes, 449 clauses learned (ave 30.5->12.6), 8003 memcells.
+mutex-fourbits-lemmas-1|j100 J50|UNSAT|Altogether 8326+1966990 mems, 39941 bytes, 2305 nodes, 591 clauses learned (ave 33.1->14.4), 5322 memcells.
+mutex-fourbits-lemmas-1|p0.3 P0.9|UNSAT|Altogether 8326+1995809 mems, 68989 bytes, 2081 nodes, 612 clauses learned (ave 32.5->14.1), 11684 memcells.
+mutex-fourbits-lemmas-1|f0.5 a0.1 r0.8 R0.99|UNSAT|Altogether 8326+2174659 mems, 63061 bytes, 2708 nodes, 548 clauses learned (ave 30.7->13.8), 10202 memcells.
+mutex-fourbits-lemmas-1|t2|UNSAT|Altogether 8326+1327451 mems, 54349 bytes, 1838 nodes, 451 clauses learned (ave 28.5->12.2), 8024 memcells.
+mutilated-10-10||UNSAT|Altogether 12569+30273084 mems, 239704 bytes, 9445 nodes, 6960 clauses learned (ave 13.0->10.9), 52544 memcells.
+mutilated-10-10|s3|UNSAT|Altogether 12553+24609685 mems, 204116 bytes, 8781 nodes, 6172 clauses learned (ave 13.1->10.8), 43647 memcells.
+mutilated-10-10|w2|UNSAT|Altogether 12569+22610609 mems, 193132 bytes, 8140 nodes, 5773 clauses learned (ave 12.6->10.5), 40901 memcells.
+mutilated-10-10|j100 J50|UNSAT|Altogether 12569+24139851 mems, 108244 bytes, 11316 nodes, 7854 clauses learned (ave 12.1->10.4), 20579 memcells.
+mutilated-10-10|p0.3 P0.9|UNSAT|Altogether 12569+92865030 mems, 376228 bytes, 22316 nodes, 15437 clauses learned (ave 15.4->12.4), 86675 memcells.
+mutilated-10-10|f0.5 a0.1 r0.8 R0.99|UNSAT|Altogether 12569+49521778 mems, 249476 bytes, 25781 nodes, 8211 clauses learned (ave 12.6->10.7), 54987 memcells.
+mutilated-10-10|t2|UNSAT|Altogether 12569+30140431 mems, 230292 bytes, 10356 nodes, 7656 clauses learned (ave 12.8->8.6), 50191 memcells.
+poset-nomax-b-12-minus-one||!SAT!|Altogether 9175+36906 mems, 35648 bytes, 201 nodes, 12 clauses learned (ave 13.5->12.6), 3426 memcells.
+poset-nomax-b-12-minus-one|s3|!SAT!|Altogether 9187+71502 mems, 36372 bytes, 347 nodes, 20 clauses learned (ave 15.4->14.6), 3607 memcells.
+poset-nomax-b-12-minus-one|w2|!SAT!|Altogether 9175+679522761 mems, 1165232 bytes, 147664 nodes, 111533 clauses learned (ave 19.3->13.2), 285822 memcells.
+poset-nomax-b-12-minus-one|j100 J50|!SAT!|Altogether 9175+36906 mems, 32048 bytes, 201 nodes, 12 clauses learned (ave 13.5->12.6), 3426 memcells.
+poset-nomax-b-12-minus-one|p0.3 P0.9|!SAT!|Altogether 9175+43285 mems, 35548 bytes, 240 nodes, 10 clauses learned (ave 14.6->13.6), 3401 memcells.
+poset-nomax-b-12-minus-one|f0.5 a0.1 r0.8 R0.99|!SAT!|Altogether 9175+37675 mems, 35648 bytes, 208 nodes, 12 clauses learned (ave 13.5->12.6), 3426 memcells.
+poset-nomax-b-12-minus-one|t2|!SAT!|Altogether 9175+36906 mems, 35648 bytes, 201 nodes, 12 clauses learned (ave 13.5->12.6), 3426 memcells.
+queen-5x5-5||!SAT!|Altogether 14976+7238 mems, 33341 bytes, 24 nodes, 2 clauses learned (ave 9.0->9.0), 1805 memcells.
+queen-5x5-5|s3|!SAT!|Altogether 14984+6157 mems, 33341 bytes, 21 nodes, 1 clauses learned (ave 11.0->11.0), 1805 memcells.
+queen-5x5-5|w2|!SAT!|Altogether 14976+13104 mems, 33341 bytes, 39 nodes, 2 clauses learned (ave 9.5->9.5), 1805 memcells.
+queen-5x5-5|j100 J50|!SAT!|Altogether 14976+7238 mems, 29741 bytes, 24 nodes, 2 clauses learned (ave 9.0->9.0), 1805 memcells.
+queen-5x5-5|p0.3 P0.9|!SAT!|Altogether 14976+12483 mems, 33341 bytes, 59 nodes, 4 clauses learned (ave 7.2->7.2), 1805 memcells.
+queen-5x5-5|f0.5 a0.1 r0.8 R0.99|!SAT!|Altogether 14976+7238 mems, 33341 bytes, 24 nodes, 2 clauses learned (ave 9.0->9.0), 1805 memcells.
+queen-5x5-5|t2|!SAT!|Altogether 14976+7238 mems, 33341 bytes, 24 nodes, 2 clauses learned (ave 9.0->9.0), 1805 memcells.
+rand-3-1061-250-314159||!SAT!|Altogether 17207+726745360 mems, 885366 bytes, 83854 nodes, 72037 clauses learned (ave 17.2->12.4), 212755 memcells.
+rand-3-1061-250-314159|t2|!SAT!|Altogether 17207+936264136 mems, 788882 bytes, 116391 nodes, 101296 clauses learned (ave 16.2->10.3), 188634 memcells.

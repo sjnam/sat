@@ -2,6 +2,8 @@
 
 \def\title{절 읽기}
 
+@s io.Reader int
+@s testing.T int
 @s Lit int
 @s Solver int
 
