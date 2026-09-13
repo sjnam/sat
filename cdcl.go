@@ -120,10 +120,10 @@ const (
 	badlevel = 16.0 // 이보다 큰 범위는 사실상 무한
 )
 
-//line cdcl.w:2072
+//line cdcl.w:2086
 const checkEvery = 1 << 22 // |context|를 묻는 mem 간격
 
-//line cdcl.w:2482
+//line cdcl.w:2496
 type cdclState struct {
 	key                  Params // |Timeout|과 |Doomsday|를 0으로 둔 매개변수
 	unsat                bool   // 가정 없이도 만족할 수 없는가
@@ -131,7 +131,7 @@ type cdclState struct {
 	vars, clauses, cells int
 	bytes                uint64
 
-//line cdcl.w:2494
+//line cdcl.w:2508
 	mem, bmem                              []uint32
 	memsize, minLearned, firstLearned      int
 	maxLearned, maxCellsUsed, maxLit       int
@@ -149,7 +149,7 @@ type cdclState struct {
 	warmupCycles, restartU, restartV       int
 	restartThresh, nextRestart             uint64
 
-//line cdcl.w:2489
+//line cdcl.w:2503
 }
 
 //line cdcl.w:80
@@ -400,7 +400,7 @@ func (s *Solver) Solve(ctx context.Context, assumptions ...Lit) (Status, error) 
 		recycleBump    uint64   // 다음 재활용까지의 간격
 	)
 
-//line cdcl.w:2311
+//line cdcl.w:2325
 	var (
 		warmupCycles              int    // 다시 시작한 뒤의 전체 달리기 수
 		nextLearned               int    // |minjumplev|에서 배운 리터럴 더미의 꼭대기
@@ -412,14 +412,14 @@ func (s *Solver) Solve(ctx context.Context, assumptions ...Lit) (Status, error) 
 		nextCheck                 uint64 // 다음에 |context|를 물을 mem
 	)
 
-//line cdcl.w:2355
+//line cdcl.w:2369
 	var (
 		asm    []Lit // 가정들
 		ai     int   // 살핀 가정의 수
 		acheck []int // 가정들이 모두 참이 된 수준
 	)
 
-//line cdcl.w:2512
+//line cdcl.w:2526
 	var (
 		key           Params // 상태를 이어 쓸 수 있는지 가르는 매개변수
 		unsatisfiable bool   // 가정 없이도 만족할 수 없는가
@@ -427,7 +427,7 @@ func (s *Solver) Solve(ctx context.Context, assumptions ...Lit) (Status, error) 
 		doomsday      uint64 // 이번 풀이에서 배운 절 수의 한도
 	)
 
-//line cdcl.w:2619
+//line cdcl.w:2633
 	var (
 		zero             []int    // 떼어 둔 수준 0의 리터럴들
 		oldMem           []uint32 // 옮겨 심을 배운 절이 든 옛 |mem|
@@ -436,7 +436,7 @@ func (s *Solver) Solve(ctx context.Context, assumptions ...Lit) (Status, error) 
 
 //line cdcl.w:309
 
-//line cdcl.w:2346
+//line cdcl.w:2360
 	s.failed = nil
 	for _, a := range assumptions {
 		if v := a.Var(); v == 0 || v >= len(s.names) {
@@ -474,7 +474,7 @@ func (s *Solver) Solve(ctx context.Context, assumptions ...Lit) (Status, error) 
 //line cdcl.w:312
 	if s.state != nil && s.state.key == key {
 
-//line cdcl.w:2564
+//line cdcl.w:2578
 		d := s.state
 		unsatisfiable, rng, vars, clauses, cells = d.unsat, d.rng, d.vars, d.clauses, d.cells
 		bytes, mem, bmem, memsize = d.bytes, d.mem, d.bmem, d.memsize
@@ -489,34 +489,34 @@ func (s *Solver) Solve(ctx context.Context, assumptions ...Lit) (Status, error) 
 		warmupCycles, restartU, restartV = d.warmupCycles, d.restartU, d.restartV
 		restartThresh, nextRestart = d.restartThresh, d.nextRestart
 
-//line cdcl.w:2553
+//line cdcl.w:2567
 		if unsatisfiable {
 			goto unsat
 		}
 
-//line cdcl.w:2584
+//line cdcl.w:2598
 		if llevel != 0 {
 			jumplev = 0
 
-//line cdcl.w:2130
+//line cdcl.w:2144
 			mems++
 			k = leveldat[jumplev+2]
-//line cdcl.w:2131
+//line cdcl.w:2145
 			for eptr > k {
 				eptr--
 				mems++
 				l = trail[eptr]
 				v = l >> 1
-//line cdcl.w:2133
+//line cdcl.w:2147
 				mems += 2
 				vmem[v].oldval = vmem[v].value
-//line cdcl.w:2134
+//line cdcl.w:2148
 				mems++
 				vmem[v].value = unset
-//line cdcl.w:2135
+//line cdcl.w:2149
 				mems++
 				lmem[l].reason = 0
-//line cdcl.w:2136
+//line cdcl.w:2150
 				if eptr < lptr {
 					mems++
 					if vmem[v].hloc < 0 {
@@ -576,25 +576,25 @@ func (s *Solver) Solve(ctx context.Context, assumptions ...Lit) (Status, error) 
 //line cdcl.w:1028
 						}
 
-//line cdcl.w:2140
+//line cdcl.w:2154
 					}
 				}
 			}
 			lptr = eptr
 			llevel = jumplev
 
-//line cdcl.w:2587
+//line cdcl.w:2601
 		}
 
-//line cdcl.w:2557
+//line cdcl.w:2571
 		if vars != s.NumVars() || cells != len(s.cells) {
 
-//line cdcl.w:2600
+//line cdcl.w:2614
 			zero = append(zero[:0], trail[:eptr]...)
 			for _, l = range zero {
 				mems++
 				vmem[l>>1].value = unset
-//line cdcl.w:2603
+//line cdcl.w:2617
 			}
 			oldMem, oldFirst, oldMax = mem, firstLearned, maxLearned
 			vars, clauses, cells = s.NumVars(), s.clauses, len(s.cells)
@@ -607,11 +607,11 @@ func (s *Solver) Solve(ctx context.Context, assumptions ...Lit) (Status, error) 
 				trueProbThresh = int(float64(par.TrueProb) * 2147483648.0)
 			}
 
-//line cdcl.w:2630
+//line cdcl.w:2644
 			for k = len(vmem); k <= vars; k++ {
 				mems++
 				vmem = append(vmem, variable{value: unset, tloc: -1, oldval: 1})
-//line cdcl.w:2632
+//line cdcl.w:2646
 				heap = append(heap, 0)
 				v = k
 				if trueProbThresh != 0 {
@@ -676,7 +676,7 @@ func (s *Solver) Solve(ctx context.Context, assumptions ...Lit) (Status, error) 
 //line cdcl.w:1028
 				}
 
-//line cdcl.w:2641
+//line cdcl.w:2655
 			}
 
 //line cdcl.w:605
@@ -841,15 +841,15 @@ func (s *Solver) Solve(ctx context.Context, assumptions ...Lit) (Status, error) 
 			clauseHeap = make([]uint64, clauseHeapSize)
 			bytes += uint64(clauseHeapSize) * 8
 
-//line cdcl.w:2103
+//line cdcl.w:2117
 			for k = 0; k < vars; k++ {
 				mems++
 				leveldat[k+k] = -1
 				leveldat[k+k+1] = 0
-//line cdcl.w:2105
+//line cdcl.w:2119
 			}
 
-//line cdcl.w:2612
+//line cdcl.w:2626
 			for _, l = range zero {
 
 //line cdcl.w:697
@@ -868,15 +868,15 @@ func (s *Solver) Solve(ctx context.Context, assumptions ...Lit) (Status, error) 
 					goto unsat
 				}
 
-//line cdcl.w:2614
+//line cdcl.w:2628
 			}
 
-//line cdcl.w:2649
+//line cdcl.w:2663
 			for q = oldFirst; q < oldMax; q = endc + learnedExtra {
 				mems++
 				endc = q + int(oldMem[q-1])
 				jj = endc
-//line cdcl.w:2651
+//line cdcl.w:2665
 				for {
 					mems++
 					if oldMem[endc]&signBit == 0 {
@@ -885,10 +885,10 @@ func (s *Solver) Solve(ctx context.Context, assumptions ...Lit) (Status, error) 
 					endc++
 				}
 
-//line cdcl.w:2663
+//line cdcl.w:2677
 				c = maxLearned
 
-//line cdcl.w:2693
+//line cdcl.w:2707
 				t = c + jj - q + learnedExtra
 				if t > maxCellsUsed {
 					if t >= memsize {
@@ -905,17 +905,17 @@ func (s *Solver) Solve(ctx context.Context, assumptions ...Lit) (Status, error) 
 						mem = grown
 					}
 
-//line cdcl.w:2702
+//line cdcl.w:2716
 				}
 
-//line cdcl.w:2665
+//line cdcl.w:2679
 				for kk, k = c, q; k < jj; k++ {
 					mems++
 					l = int(oldMem[k])
-//line cdcl.w:2667
+//line cdcl.w:2681
 					mems++
 					v = vmem[l>>1].value
-//line cdcl.w:2668
+//line cdcl.w:2682
 					if v != unset {
 						if (v^l)&1 != 0 {
 							continue
@@ -925,7 +925,7 @@ func (s *Solver) Solve(ctx context.Context, assumptions ...Lit) (Status, error) 
 					mems++
 					mem[kk] = uint32(l)
 					kk++
-//line cdcl.w:2675
+//line cdcl.w:2689
 				}
 				if k < jj {
 					continue
@@ -935,29 +935,29 @@ func (s *Solver) Solve(ctx context.Context, assumptions ...Lit) (Status, error) 
 					mem[c-1] = uint32(kk - c)
 					mem[c-5] = oldMem[q-5]
 					mem[c-4] = 0
-//line cdcl.w:2681
+//line cdcl.w:2695
 
-//line cdcl.w:1988
+//line cdcl.w:2002
 					mems++
 					l = int(mem[c])
-//line cdcl.w:1989
+//line cdcl.w:2003
 					mems += 3
 					mem[c-2] = uint32(lmem[l].watch)
 					lmem[l].watch = c
-//line cdcl.w:1990
+//line cdcl.w:2004
 					l = int(mem[c+1])
 					mems += 3
 					mem[c-3] = uint32(lmem[l].watch)
 					lmem[l].watch = c
 
-//line cdcl.w:2682
+//line cdcl.w:2696
 					maxLearned = kk + learnedExtra
 				} else if kk == c {
 					goto unsat
 				} else {
 					mems++
 					l = int(mem[c])
-//line cdcl.w:2687
+//line cdcl.w:2701
 
 //line cdcl.w:697
 					v = l >> 1
@@ -975,22 +975,22 @@ func (s *Solver) Solve(ctx context.Context, assumptions ...Lit) (Status, error) 
 						goto unsat
 					}
 
-//line cdcl.w:2688
+//line cdcl.w:2702
 				}
 
-//line cdcl.w:2659
+//line cdcl.w:2673
 			}
 			mems++
 			mem[maxLearned-learnedExtra] = 0
 
-//line cdcl.w:2616
+//line cdcl.w:2630
 			lptr, prevLearned = 0, 0
 
-//line cdcl.w:2559
+//line cdcl.w:2573
 		}
 		imems, mems = mems, 0
 
-//line cdcl.w:2090
+//line cdcl.w:2104
 		if par.RandProb >= 1.0 {
 			randProbThresh = 0x80000000
 		} else {
@@ -1260,7 +1260,7 @@ func (s *Solver) Solve(ctx context.Context, assumptions ...Lit) (Status, error) 
 //line cdcl.w:317
 		imems, mems = mems, 0
 
-//line cdcl.w:2090
+//line cdcl.w:2104
 		if par.RandProb >= 1.0 {
 			randProbThresh = 0x80000000
 		} else {
@@ -1273,43 +1273,43 @@ func (s *Solver) Solve(ctx context.Context, assumptions ...Lit) (Status, error) 
 		learnedBase = totalLearned
 		doomsday = totalLearned + min(par.Doomsday, math.MaxUint64-totalLearned)
 
-//line cdcl.w:2080
+//line cdcl.w:2094
 		recycleBump = par.RecycleBump
 		nextRecycle = min(recycleBump, doomsday)
 		restartU, restartV, nextRestart = 1, 1, 1
 
-//line cdcl.w:2103
+//line cdcl.w:2117
 		for k = 0; k < vars; k++ {
 			mems++
 			leveldat[k+k] = -1
 			leveldat[k+k+1] = 0
-//line cdcl.w:2105
+//line cdcl.w:2119
 		}
 
-//line cdcl.w:2084
+//line cdcl.w:2098
 		llevel, warmupCycles, lptr = 0, 0, 0
 
 //line cdcl.w:319
 	}
 
-//line cdcl.w:2001
+//line cdcl.w:2015
 startup:
 	conflictLevel = 0
 	fullRun = warmupCycles < par.Warmups
 proceed:
 	conflictSeen = false
 
-//line cdcl.w:2112
+//line cdcl.w:2126
 	ebptr = eptr
 	for lptr < eptr {
 		mems++
 		lt = trail[lptr]
 		lptr++
-//line cdcl.w:2115
+//line cdcl.w:2129
 		if lptr <= ebptr {
 			mems++
 			lat = lmem[lt].bimpEnd
-//line cdcl.w:2117
+//line cdcl.w:2131
 			if lat != 0 {
 				l = lt
 
@@ -1388,7 +1388,7 @@ proceed:
 					}
 				}
 
-//line cdcl.w:2120
+//line cdcl.w:2134
 			}
 		}
 
@@ -1653,12 +1653,12 @@ proceed:
 //line cdcl.w:838
 		}
 
-//line cdcl.w:2123
+//line cdcl.w:2137
 	}
 
-//line cdcl.w:2007
+//line cdcl.w:2021
 
-//line cdcl.w:2059
+//line cdcl.w:2073
 	if mems >= par.Timeout {
 		err = ErrTimeout
 		goto allDone
@@ -1671,18 +1671,18 @@ proceed:
 		}
 	}
 
-//line cdcl.w:2008
+//line cdcl.w:2022
 	if eptr == vars {
 		if conflictLevel == 0 {
 
-//line cdcl.w:2376
+//line cdcl.w:2390
 			l = 0
 			for ai > 0 && acheck[ai-1] > llevel {
 				ai--
 			}
 			for ; ai < len(asm); ai++ {
 
-//line cdcl.w:2389
+//line cdcl.w:2403
 				t = 0
 				if ai > 0 {
 					t = acheck[ai-1]
@@ -1690,7 +1690,7 @@ proceed:
 				mems++
 				u = int(asm[ai])
 				v = vmem[u>>1].value
-//line cdcl.w:2394
+//line cdcl.w:2408
 				if v == unset {
 					l, acheck[ai] = u, llevel+2
 					ai++
@@ -1705,17 +1705,17 @@ proceed:
 					acheck[ai] = max(t, llevel)
 				}
 
-//line cdcl.w:2382
+//line cdcl.w:2396
 			}
 
-//line cdcl.w:2011
+//line cdcl.w:2025
 			goto satisfied
 		}
 		goto finishFull
 	}
 	if conflictLevel == 0 {
 
-//line cdcl.w:2026
+//line cdcl.w:2040
 		if totalLearned >= doomsday {
 			err = ErrDoomsday
 			goto allDone
@@ -1724,27 +1724,27 @@ proceed:
 			fullRun = true
 		} else if totalLearned >= nextRestart {
 
-//line cdcl.w:2268
+//line cdcl.w:2282
 			if restartU&-restartU == restartV {
 				restartU++
 				restartV = 1
 				restartThresh = restartPsi
-//line cdcl.w:2270
+//line cdcl.w:2284
 			} else {
 				restartV <<= 1
 				restartThresh += restartThresh >> 4
-//line cdcl.w:2272
+//line cdcl.w:2286
 			}
 			nextRestart = min(totalLearned+uint64(restartV), doomsday)
 			if uint64(agility) <= restartThresh {
 
-//line cdcl.w:2285
+//line cdcl.w:2299
 				actualRestarts++
 				if llevel != 0 {
 					for {
 						mems++
 						v = heap[0]
-//line cdcl.w:2289
+//line cdcl.w:2303
 						mems++
 						if vmem[v].value == unset {
 							break
@@ -1796,15 +1796,15 @@ proceed:
 //line cdcl.w:1049
 						}
 
-//line cdcl.w:2294
+//line cdcl.w:2308
 					}
 					mems++
 					av = vmem[v].activity
-//line cdcl.w:2296
+//line cdcl.w:2310
 					for jumplev = 0; jumplev < llevel; jumplev += 2 {
 						mems += 2
 						v = trail[leveldat[jumplev+2]] >> 1
-//line cdcl.w:2298
+//line cdcl.w:2312
 						mems++
 						if vmem[v].activity < av {
 							break
@@ -1812,25 +1812,25 @@ proceed:
 					}
 					if jumplev < llevel {
 
-//line cdcl.w:2130
+//line cdcl.w:2144
 						mems++
 						k = leveldat[jumplev+2]
-//line cdcl.w:2131
+//line cdcl.w:2145
 						for eptr > k {
 							eptr--
 							mems++
 							l = trail[eptr]
 							v = l >> 1
-//line cdcl.w:2133
+//line cdcl.w:2147
 							mems += 2
 							vmem[v].oldval = vmem[v].value
-//line cdcl.w:2134
+//line cdcl.w:2148
 							mems++
 							vmem[v].value = unset
-//line cdcl.w:2135
+//line cdcl.w:2149
 							mems++
 							lmem[l].reason = 0
-//line cdcl.w:2136
+//line cdcl.w:2150
 							if eptr < lptr {
 								mems++
 								if vmem[v].hloc < 0 {
@@ -1890,36 +1890,36 @@ proceed:
 //line cdcl.w:1028
 									}
 
-//line cdcl.w:2140
+//line cdcl.w:2154
 								}
 							}
 						}
 						lptr = eptr
 						llevel = jumplev
 
-//line cdcl.w:2305
+//line cdcl.w:2319
 					}
 				}
 				warmupCycles = 0
 				goto startup
 
-//line cdcl.w:2276
+//line cdcl.w:2290
 			}
 
-//line cdcl.w:2034
+//line cdcl.w:2048
 		}
 
-//line cdcl.w:2017
+//line cdcl.w:2031
 	}
 
-//line cdcl.w:2376
+//line cdcl.w:2390
 	l = 0
 	for ai > 0 && acheck[ai-1] > llevel {
 		ai--
 	}
 	for ; ai < len(asm); ai++ {
 
-//line cdcl.w:2389
+//line cdcl.w:2403
 		t = 0
 		if ai > 0 {
 			t = acheck[ai-1]
@@ -1927,7 +1927,7 @@ proceed:
 		mems++
 		u = int(asm[ai])
 		v = vmem[u>>1].value
-//line cdcl.w:2394
+//line cdcl.w:2408
 		if v == unset {
 			l, acheck[ai] = u, llevel+2
 			ai++
@@ -1942,10 +1942,10 @@ proceed:
 			acheck[ai] = max(t, llevel)
 		}
 
-//line cdcl.w:2382
+//line cdcl.w:2396
 	}
 
-//line cdcl.w:2042
+//line cdcl.w:2056
 	llevel += 2
 	if l == 0 {
 
@@ -2043,29 +2043,29 @@ proceed:
 		mems++
 		l = v + v + vmem[v].oldval&1
 
-//line cdcl.w:2045
+//line cdcl.w:2059
 	}
 	mems++
 	lmem[l].reason = 0
-//line cdcl.w:2047
+//line cdcl.w:2061
 	nodes++
 	mems++
 	leveldat[llevel] = eptr
-//line cdcl.w:2049
+//line cdcl.w:2063
 	mems++
 	trail[eptr] = l
 	eptr++
-//line cdcl.w:2050
+//line cdcl.w:2064
 	mems++
 	vmem[l>>1].tloc = lptr
-//line cdcl.w:2051
+//line cdcl.w:2065
 	vmem[l>>1].value = llevel + l&1
 	agility -= agility >> 13
 
-//line cdcl.w:2019
+//line cdcl.w:2033
 	goto proceed
 
-//line cdcl.w:2182
+//line cdcl.w:2196
 finishFull:
 	if totalLearned >= nextRecycle {
 
@@ -2167,13 +2167,13 @@ finishFull:
 		budget = h / 2
 		prevLearned = 0
 
-//line cdcl.w:2185
+//line cdcl.w:2199
 	} else {
 		warmupCycles++
 	}
 	mems++
 	leveldat[llevel+2] = eptr
-//line cdcl.w:2189
+//line cdcl.w:2203
 	minjumplev = maxLit
 learnFull:
 	if conflictLevel == 0 {
@@ -2182,27 +2182,27 @@ learnFull:
 	mems++
 	jumplev = conflictLevel
 	conflictLevel = conflictdat[conflictLevel]
-//line cdcl.w:2195
+//line cdcl.w:2209
 
-//line cdcl.w:2130
+//line cdcl.w:2144
 	mems++
 	k = leveldat[jumplev+2]
-//line cdcl.w:2131
+//line cdcl.w:2145
 	for eptr > k {
 		eptr--
 		mems++
 		l = trail[eptr]
 		v = l >> 1
-//line cdcl.w:2133
+//line cdcl.w:2147
 		mems += 2
 		vmem[v].oldval = vmem[v].value
-//line cdcl.w:2134
+//line cdcl.w:2148
 		mems++
 		vmem[v].value = unset
-//line cdcl.w:2135
+//line cdcl.w:2149
 		mems++
 		lmem[l].reason = 0
-//line cdcl.w:2136
+//line cdcl.w:2150
 		if eptr < lptr {
 			mems++
 			if vmem[v].hloc < 0 {
@@ -2262,50 +2262,50 @@ learnFull:
 //line cdcl.w:1028
 				}
 
-//line cdcl.w:2140
+//line cdcl.w:2154
 			}
 		}
 	}
 	lptr = eptr
 	llevel = jumplev
 
-//line cdcl.w:2196
+//line cdcl.w:2210
 	mems++
 	c = leveldat[llevel+1]
-//line cdcl.w:2197
+//line cdcl.w:2211
 	if c < 0 {
 		mems++
 		l = -c
 		ll = conflictdat[llevel+1]
-//line cdcl.w:2199
+//line cdcl.w:2213
 	}
 	goto prepClause
 storeClause:
 
-//line cdcl.w:2213
+//line cdcl.w:2227
 	if trivialLearning && conflictLevel != 0 {
 		cellsPrelearned -= float64(prelearnedSize)
 		cellsLearned -= float64(learnedSize)
 		totalLearned--
 		trivials--
-//line cdcl.w:2216
+//line cdcl.w:2230
 	} else {
 		if jumplev <= minjumplev {
 			if jumplev < minjumplev {
 				minjumplev = jumplev
 				nextLearned = 0
-//line cdcl.w:2220
+//line cdcl.w:2234
 			}
 			mems++
 			conflictdat[llevel] = nextLearned
 			conflictdat[llevel+1] = lll
-//line cdcl.w:2222
+//line cdcl.w:2236
 			nextLearned = llevel
 		}
 		if learnedSize == 1 {
 			mems++
 			leveldat[llevel+1] = 0
-//line cdcl.w:2226
+//line cdcl.w:2240
 		} else {
 
 //line cdcl.w:1580
@@ -2502,43 +2502,43 @@ storeClause:
 //line cdcl.w:1570
 			prevLearned = c
 
-//line cdcl.w:2228
+//line cdcl.w:2242
 			mems++
 			leveldat[llevel+1] = c
-//line cdcl.w:2229
+//line cdcl.w:2243
 		}
 	}
 
-//line cdcl.w:2203
+//line cdcl.w:2217
 	goto learnFull
 learnedFull:
 
-//line cdcl.w:2235
+//line cdcl.w:2249
 	if recyclePoint != 0 {
 		jumplev = 0
 	} else {
 		jumplev = minjumplev
 	}
 
-//line cdcl.w:2130
+//line cdcl.w:2144
 	mems++
 	k = leveldat[jumplev+2]
-//line cdcl.w:2131
+//line cdcl.w:2145
 	for eptr > k {
 		eptr--
 		mems++
 		l = trail[eptr]
 		v = l >> 1
-//line cdcl.w:2133
+//line cdcl.w:2147
 		mems += 2
 		vmem[v].oldval = vmem[v].value
-//line cdcl.w:2134
+//line cdcl.w:2148
 		mems++
 		vmem[v].value = unset
-//line cdcl.w:2135
+//line cdcl.w:2149
 		mems++
 		lmem[l].reason = 0
-//line cdcl.w:2136
+//line cdcl.w:2150
 		if eptr < lptr {
 			mems++
 			if vmem[v].hloc < 0 {
@@ -2598,76 +2598,76 @@ learnedFull:
 //line cdcl.w:1028
 				}
 
-//line cdcl.w:2140
+//line cdcl.w:2154
 			}
 		}
 	}
 	lptr = eptr
 	llevel = jumplev
 
-//line cdcl.w:2241
+//line cdcl.w:2255
 	if jumplev == minjumplev {
 
-//line cdcl.w:2252
+//line cdcl.w:2266
 		for nextLearned != 0 {
 			mems++
 			lll = conflictdat[nextLearned+1]
-//line cdcl.w:2254
+//line cdcl.w:2268
 			mems++
 			c = leveldat[nextLearned+1]
-//line cdcl.w:2255
+//line cdcl.w:2269
 			nextLearned = conflictdat[nextLearned]
 			mems++
 			vmem[lll>>1].value = llevel + lll&1
 			vmem[lll>>1].tloc = eptr
-//line cdcl.w:2257
+//line cdcl.w:2271
 			mems++
 			lmem[lll].reason = c
-//line cdcl.w:2258
+//line cdcl.w:2272
 			mems++
 			trail[eptr] = lll
 			eptr++
-//line cdcl.w:2259
+//line cdcl.w:2273
 		}
 
-//line cdcl.w:2243
+//line cdcl.w:2257
 	}
 
 //line cdcl.w:1138
 	varBump *= varBumpFactor
 	clauseBump *= clauseBumpFactor
 
-//line cdcl.w:2245
+//line cdcl.w:2259
 	if recyclePoint != 0 {
 
-//line cdcl.w:1808
+//line cdcl.w:1812
 		mems++
 		j = minrange
 		sz = asserts + rangedist[j]
-//line cdcl.w:1809
+//line cdcl.w:1813
 		for sz < budget && j < maxrange {
 			j++
 			mems++
 			sz += rangedist[j]
-//line cdcl.w:1811
+//line cdcl.w:1815
 		}
 		if sz > budget {
 
-//line cdcl.w:1869
+//line cdcl.w:1883
 			t = sz - budget
 			jj = min(rangedist[j]-t, clauseHeapSize)
 			if jj <= 0 {
 				j--
 			} else {
 
-//line cdcl.w:1884
+//line cdcl.w:1898
 				for h, c = 0, firstLearned; h < jj; c = endc + learnedExtra {
 					if c >= recyclePoint {
 						panic("sat: 이럴 수는 없다 (rangedist1)")
 					}
 					mems++
 					endc = c + int(mem[c-1])
-//line cdcl.w:1889
+//line cdcl.w:1903
 
 //line cdcl.w:1789
 					for {
@@ -2678,28 +2678,28 @@ learnedFull:
 						endc++
 					}
 
-//line cdcl.w:1890
+//line cdcl.w:1904
 					mems++
 					if int(mem[c-4]) == j {
 						clauseHeap[h] = uint64(mem[c-5])<<32 + uint64(c)
 						h++
-//line cdcl.w:1893
+//line cdcl.w:1907
 					}
 				}
 
-//line cdcl.w:1875
+//line cdcl.w:1889
 
-//line cdcl.w:1897
+//line cdcl.w:1911
 				for h = jj >> 1; h != 0; {
 					q = h + h
 					h--
 					p = h
-//line cdcl.w:1899
+//line cdcl.w:1913
 					mems++
 					accum = clauseHeap[p]
-//line cdcl.w:1900
+//line cdcl.w:1914
 
-//line cdcl.w:1906
+//line cdcl.w:1920
 					for q <= jj {
 						if q == jj {
 							q--
@@ -2714,18 +2714,18 @@ learnedFull:
 						}
 						mems++
 						clauseHeap[p] = clauseHeap[q]
-//line cdcl.w:1919
+//line cdcl.w:1933
 						p, q = q, q+q+2
 					}
 					mems++
 					clauseHeap[p] = accum
 
-//line cdcl.w:1901
+//line cdcl.w:1915
 				}
 
-//line cdcl.w:1876
+//line cdcl.w:1890
 
-//line cdcl.w:1927
+//line cdcl.w:1941
 				for ; ; c = endc + learnedExtra {
 					if c >= recyclePoint {
 						panic("sat: 이럴 수는 없다 (rangedist2)")
@@ -2734,25 +2734,25 @@ learnedFull:
 					if int(mem[c-4]) == j {
 						mems++
 						accum = uint64(mem[c-5])<<32 + uint64(c)
-//line cdcl.w:1934
+//line cdcl.w:1948
 						mems++
 						if accum < clauseHeap[0] {
 							mems++
 							mem[c-4] = uint32(j + 1)
-//line cdcl.w:1937
+//line cdcl.w:1951
 							if t--; t == 0 {
 								break
 							}
 						} else {
 							mems++
 							mem[int(clauseHeap[0]&0xffffffff)-4] = uint32(j + 1)
-//line cdcl.w:1942
+//line cdcl.w:1956
 							if t--; t == 0 {
 								break
 							}
 							p, q = 0, 2
 
-//line cdcl.w:1906
+//line cdcl.w:1920
 							for q <= jj {
 								if q == jj {
 									q--
@@ -2767,18 +2767,18 @@ learnedFull:
 								}
 								mems++
 								clauseHeap[p] = clauseHeap[q]
-//line cdcl.w:1919
+//line cdcl.w:1933
 								p, q = q, q+q+2
 							}
 							mems++
 							clauseHeap[p] = accum
 
-//line cdcl.w:1947
+//line cdcl.w:1961
 						}
 					}
 					mems++
 					endc = c + int(mem[c-1])
-//line cdcl.w:1950
+//line cdcl.w:1964
 
 //line cdcl.w:1789
 					for {
@@ -2789,27 +2789,27 @@ learnedFull:
 						endc++
 					}
 
-//line cdcl.w:1951
+//line cdcl.w:1965
 				}
 
-//line cdcl.w:1877
+//line cdcl.w:1891
 			}
 
-//line cdcl.w:1814
+//line cdcl.w:1818
 		}
 		for k = minrange >> 1; k+k <= maxrange; k++ {
 			mems++
 			rangedist[k+k] = 0
 			rangedist[k+k+1] = 0
-//line cdcl.w:1817
+//line cdcl.w:1821
 		}
 		for h, cc, c = 0, firstLearned, firstLearned; c < maxLearned; c = endc + learnedExtra {
 
-//line cdcl.w:1828
+//line cdcl.w:1832
 			mems++
 			endc = c + int(mem[c-1])
 			jj = endc
-//line cdcl.w:1829
+//line cdcl.w:1833
 			for {
 				mems++
 				if mem[endc]&signBit == 0 {
@@ -2818,7 +2818,7 @@ learnedFull:
 				mems++
 				mem[endc] = 0
 				endc++
-//line cdcl.w:1835
+//line cdcl.w:1839
 			}
 			if c < recyclePoint {
 				mems++
@@ -2829,10 +2829,10 @@ learnedFull:
 			for kk, k = cc, c; k < jj; k++ {
 				mems++
 				l = int(mem[k])
-//line cdcl.w:1844
+//line cdcl.w:1848
 				mems++
 				v = vmem[l>>1].value
-//line cdcl.w:1845
+//line cdcl.w:1849
 				if v != unset {
 					if (v^l)&1 != 0 {
 						continue
@@ -2842,69 +2842,69 @@ learnedFull:
 				mems++
 				mem[kk] = uint32(l)
 				kk++
-//line cdcl.w:1852
+//line cdcl.w:1856
 			}
 			if k < jj {
 				continue
 			}
 			h++
 
-//line cdcl.w:1959
+//line cdcl.w:1973
 			if kk >= cc+2 {
 				mems += 3
 				mem[cc-1] = uint32(kk - cc)
 				mem[cc-5] = mem[c-5]
 				cc = kk + learnedExtra
-//line cdcl.w:1961
+//line cdcl.w:1975
 			} else if kk == cc {
 				goto unsat
 			} else {
 				mems++
 				l = int(mem[cc])
-//line cdcl.w:1965
+//line cdcl.w:1979
 				mems++
 				vmem[l>>1].value = l & 1
 				vmem[l>>1].tloc = eptr
-//line cdcl.w:1966
+//line cdcl.w:1980
 				mems++
 				trail[eptr] = l
 				eptr++
-//line cdcl.w:1967
+//line cdcl.w:1981
 			}
 
-//line cdcl.w:1820
+//line cdcl.w:1824
 		}
 		maxLearned = cc
 		prevLearned = 0
-//line cdcl.w:1822
+//line cdcl.w:1826
 		mems++
 		mem[maxLearned-learnedExtra] = 0
 
-//line cdcl.w:1974
+//line cdcl.w:1988
 		for l = 2; l <= maxLit; l++ {
 			mems++
 			lmem[l].watch = 0
-//line cdcl.w:1976
+//line cdcl.w:1990
 		}
 		for c = clauseExtra; c < minLearned; c = endc + clauseExtra {
 			mems++
 			endc = c + int(mem[c-1])
-//line cdcl.w:1979
+//line cdcl.w:1993
 
-//line cdcl.w:1988
+//line cdcl.w:2002
 			mems++
 			l = int(mem[c])
-//line cdcl.w:1989
+//line cdcl.w:2003
 			mems += 3
 			mem[c-2] = uint32(lmem[l].watch)
 			lmem[l].watch = c
-//line cdcl.w:1990
+//line cdcl.w:2004
 			l = int(mem[c+1])
 			mems += 3
 			mem[c-3] = uint32(lmem[l].watch)
 			lmem[l].watch = c
 
-//line cdcl.w:1980
+//line cdcl.w:1994
 
 //line cdcl.w:1789
 			for {
@@ -2915,41 +2915,41 @@ learnedFull:
 				endc++
 			}
 
-//line cdcl.w:1981
+//line cdcl.w:1995
 		}
 		for c = firstLearned; c < maxLearned; c = endc + learnedExtra {
 			mems++
 			endc = c + int(mem[c-1])
-//line cdcl.w:1984
+//line cdcl.w:1998
 
-//line cdcl.w:1988
+//line cdcl.w:2002
 			mems++
 			l = int(mem[c])
-//line cdcl.w:1989
+//line cdcl.w:2003
 			mems += 3
 			mem[c-2] = uint32(lmem[l].watch)
 			lmem[l].watch = c
-//line cdcl.w:1990
+//line cdcl.w:2004
 			l = int(mem[c+1])
 			mems += 3
 			mem[c-3] = uint32(lmem[l].watch)
 			lmem[l].watch = c
 
-//line cdcl.w:1985
+//line cdcl.w:1999
 		}
 
 //line cdcl.w:1800
 		recyclePoint = 0
 
-//line cdcl.w:2247
+//line cdcl.w:2261
 		recycleBump += par.RecycleInc
 		nextRecycle = min(totalLearned+recycleBump, doomsday)
 	}
 
-//line cdcl.w:2206
+//line cdcl.w:2220
 	goto startup
 
-//line cdcl.w:2152
+//line cdcl.w:2166
 confl:
 	if llevel == 0 {
 		goto unsat
@@ -3666,7 +3666,7 @@ prepClause:
 	}
 	lll = l ^ 1
 
-//line cdcl.w:2158
+//line cdcl.w:2172
 
 //line cdcl.w:1411
 	learnedSize = oldptr + 1
@@ -3825,30 +3825,30 @@ prepClause:
 	cellsLearned += float64(learnedSize)
 	totalLearned++
 
-//line cdcl.w:2159
+//line cdcl.w:2173
 	if fullRun {
 		goto storeClause
 	}
 
-//line cdcl.w:2130
+//line cdcl.w:2144
 	mems++
 	k = leveldat[jumplev+2]
-//line cdcl.w:2131
+//line cdcl.w:2145
 	for eptr > k {
 		eptr--
 		mems++
 		l = trail[eptr]
 		v = l >> 1
-//line cdcl.w:2133
+//line cdcl.w:2147
 		mems += 2
 		vmem[v].oldval = vmem[v].value
-//line cdcl.w:2134
+//line cdcl.w:2148
 		mems++
 		vmem[v].value = unset
-//line cdcl.w:2135
+//line cdcl.w:2149
 		mems++
 		lmem[l].reason = 0
-//line cdcl.w:2136
+//line cdcl.w:2150
 		if eptr < lptr {
 			mems++
 			if vmem[v].hloc < 0 {
@@ -3908,14 +3908,14 @@ prepClause:
 //line cdcl.w:1028
 				}
 
-//line cdcl.w:2140
+//line cdcl.w:2154
 			}
 		}
 	}
 	lptr = eptr
 	llevel = jumplev
 
-//line cdcl.w:2163
+//line cdcl.w:2177
 	if learnedSize > 1 {
 
 //line cdcl.w:1580
@@ -4112,19 +4112,19 @@ prepClause:
 //line cdcl.w:1570
 		prevLearned = c
 
-//line cdcl.w:2165
+//line cdcl.w:2179
 		mems++
 		lmem[lll].reason = c
-//line cdcl.w:2166
+//line cdcl.w:2180
 	}
 	mems++
 	vmem[lll>>1].value = llevel + lll&1
 	vmem[lll>>1].tloc = eptr
-//line cdcl.w:2168
+//line cdcl.w:2182
 	mems++
 	trail[eptr] = lll
 	eptr++
-//line cdcl.w:2169
+//line cdcl.w:2183
 	agility -= agility >> 13
 	agility += 1 << 19
 
@@ -4132,7 +4132,7 @@ prepClause:
 	varBump *= varBumpFactor
 	clauseBump *= clauseBumpFactor
 
-//line cdcl.w:2172
+//line cdcl.w:2186
 	goto proceed
 
 //line cdcl.w:321
@@ -4154,80 +4154,80 @@ failed:
 		curstamp += 3
 	}
 
-//line cdcl.w:2415
+//line cdcl.w:2429
 	mems++
 	vmem[l>>1].stamp = curstamp
-//line cdcl.w:2416
+//line cdcl.w:2430
 	if llevel != 0 {
 		mems++
 		t = leveldat[2]
-//line cdcl.w:2418
+//line cdcl.w:2432
 		for j = eptr - 1; j >= t; j-- {
 			mems++
 			ll = trail[j]
-//line cdcl.w:2420
+//line cdcl.w:2434
 			mems++
 			if vmem[ll>>1].stamp != curstamp {
 				continue
 			}
 
-//line cdcl.w:2432
+//line cdcl.w:2446
 			mems++
 			c = lmem[ll].reason
-//line cdcl.w:2433
+//line cdcl.w:2447
 			if c == 0 {
 				mems++
 				vmem[ll>>1].stamp = curstamp + 1
-//line cdcl.w:2435
+//line cdcl.w:2449
 			} else if c < 0 {
 				lll = -c
 
-//line cdcl.w:2447
+//line cdcl.w:2461
 				mems++
 				if vmem[lll>>1].value&^1 != 0 {
 					mems++
 					vmem[lll>>1].stamp = curstamp
-//line cdcl.w:2450
+//line cdcl.w:2464
 				}
 
-//line cdcl.w:2438
+//line cdcl.w:2452
 			} else {
 				mems++
 				sz = int(mem[c-1])
-//line cdcl.w:2440
+//line cdcl.w:2454
 				for k = c + sz - 1; k > c; k-- {
 					mems++
 					lll = int(mem[k])
-//line cdcl.w:2442
+//line cdcl.w:2456
 
-//line cdcl.w:2447
+//line cdcl.w:2461
 					mems++
 					if vmem[lll>>1].value&^1 != 0 {
 						mems++
 						vmem[lll>>1].stamp = curstamp
-//line cdcl.w:2450
+//line cdcl.w:2464
 					}
 
-//line cdcl.w:2443
+//line cdcl.w:2457
 				}
 			}
 
-//line cdcl.w:2425
+//line cdcl.w:2439
 		}
 	}
 
-//line cdcl.w:2456
+//line cdcl.w:2470
 	for i = 0; i < len(asm); i++ {
 		u = int(asm[i])
 		v = u >> 1
-//line cdcl.w:2458
+//line cdcl.w:2472
 		mems++
 		if u == l {
 			l = 0
 		} else if vmem[v].stamp == curstamp+1 && (vmem[v].value^u)&1 == 0 {
 			mems++
 			vmem[v].stamp = curstamp + 2
-//line cdcl.w:2463
+//line cdcl.w:2477
 		} else {
 			continue
 		}
@@ -4264,14 +4264,14 @@ allDone:
 
 //line cdcl.w:333
 
-//line cdcl.w:2525
+//line cdcl.w:2539
 	if err == ErrMemory {
 		s.state = nil
 	} else {
 		s.state = &cdclState{key: key, unsat: unsatisfiable, rng: rng,
 			vars: vars, clauses: clauses, cells: cells, bytes: bytes,
 
-//line cdcl.w:2535
+//line cdcl.w:2549
 			mem: mem, bmem: bmem, memsize: memsize, minLearned: minLearned,
 			firstLearned: firstLearned, maxLearned: maxLearned,
 			maxCellsUsed: maxCellsUsed, maxLit: maxLit, lmem: lmem, vmem: vmem,
@@ -4285,7 +4285,7 @@ allDone:
 			warmupCycles: warmupCycles, restartU: restartU, restartV: restartV,
 			restartThresh: restartThresh, nextRestart: nextRestart,
 
-//line cdcl.w:2531
+//line cdcl.w:2545
 		}
 	}
 
@@ -4293,5 +4293,5 @@ allDone:
 	return status, err
 }
 
-//line cdcl.w:2341
+//line cdcl.w:2355
 func (s *Solver) Failed() []Lit { return slices.Clone(s.failed) }
