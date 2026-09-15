@@ -48,16 +48,15 @@ nothing and requires no trust in whatever produced it, which is the point.
 
 ## 2. The clauses
 
-Exercise 176 of this same section defines the flower snark *J*<sub>*q*</sub> and names the
-vertices of its line graph *a*<sub>*j*</sub>, …, *f*<sub>*j*</sub>;
-*fsnark*(*q*) asks for a 3-coloring of *L*(*J*<sub>*q*</sub>), with three unit
-clauses to break the symmetry. The program builds *L*(*J*<sub>*q*</sub>) twice
-— once from *J*<sub>*q*</sub>'s own edges, once from the list in answer 176(a)
-— and compares:
+Exercise 176 of this same section defines the flower snark `J_q` and names the
+vertices of its line graph `a_j`, …, `f_j`; *fsnark*(*q*) asks for a 3-coloring
+of `L(J_q)`, with three unit clauses to break the symmetry. The program builds
+`L(J_q)` twice — once from `J_q`'s own edges, once from the list in answer
+176(a) — and compares:
 
 | | *q* = 9 |
 | --- | --- |
-| edges of *L*(*J*<sub>*q*</sub>) from *J*<sub>*q*</sub> | 108 |
+| edges of `L(J_q)` from `J_q` | 108 |
 | edges from answer 176(a) | 108, the same ones |
 | every vertex of degree 4 | yes |
 | the 4*q* triangles cover every edge exactly once | yes |
@@ -113,8 +112,8 @@ claim:
 
 The restriction to odd *q* is essential rather than decorative: at *q* = 10 the
 clauses are satisfiable, and the certificate breaks in exactly nine places, all
-of them in the stage that asserts that *a*<sub>*j*</sub>, *e*<sub>*j*</sub>,
-*f*<sub>*j*</sub> have three different colors.
+of them in the stage that asserts that `a_j`, `e_j`, `f_j` have three
+different colors.
 
 ## 5. Theorem G, tested rather than believed
 
