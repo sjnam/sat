@@ -28,7 +28,7 @@ The news page lists these exercises for §7.2.2.2.
 | [57](057) | Find a 6-gate way to match a certain 20-variable Boolean function at 32 given points | confirmed, and six is the minimum |
 | 165 | Devise an algorithm to compute the largest positive autarky of given clauses | |
 | 212 | Prove that partial latin square construction is NP-complete | |
-| 282 | Find a linear certificate of unsatisfiability for the flower snark clauses | |
+| [282](282) | Find a linear certificate of unsatisfiability for the flower snark clauses | confirmed to the last clause; four numbers in the surrounding text do not reproduce |
 | 306–308 | Study the reluctant doubling strategy of Luby, Sinclair, and Zuckerman | |
 | 318 | Find the best possible Local Lemma for d-regular dependency graphs with equal weights | |
 | 322 | Show that random-walk methods cannot always find solutions of locally feasible problems using independent random variables | |
@@ -50,6 +50,25 @@ The news page lists these exercises for §7.2.2.2.
   both by exhaustive search and with the solver, and the two agree. Of the
   twelve five-variable tables, exactly five admit six operations; the answer's
   tenth is one of them.
+- **[282](282).** The hand-built certificate verifies clause by clause —
+  147*q* − 102 of them, none longer than four — and so do the three remarks
+  the answer makes in passing. Checking Algorithm C's own certificate (Theorem
+  G) needed a new feature in the package, a port of SAT13's `l` option, now
+  `SetProof`; the two certificates for *fsnark*(99) are 14,451 clauses against
+  126,344.
+
+### Numbers that do not reproduce
+
+| Exercise | Where | Printed | What came out |
+| --- | --- | --- | --- |
+| [282](282) | p. 255, clauses learned refuting *waerden*(3,10;97) | about 53,000 | **59,629** |
+| [282](282) | p. 255, how many of those are used | fewer than 50,000 | **58,546** |
+| [282](282) | p. 255, mems to find that certificate | 272 megamems | **573 megamems** |
+| [282](282) | p. 255, clauses learned refuting *fsnark*(99) | about 135,000 | **123,407** |
+
+Those four are in the running text, not in an exercise, and they are not a
+quirk of this package: Knuth's own `sat13.w`, compiled and run on his own
+benchmark files, prints exactly what the package prints.
 
 ## How a reading is put together
 

@@ -38,8 +38,12 @@
 
 두 가지는 옮기지 않았다. 하나는 |verbose|로 켜는 진단 출력과 온전성 검사다. 이것들은
 mem을 세지 않으므로 빼도 수가 달라지지 않는다. 다른 하나는 파일로 해를 막는 절이나
-배운 절, 극성을 적고 읽는 선택들(\.x, \.l, \.L, \.z, \.Z)이다. 꾸러미에서는
-다른 모양으로 내놓는 편이 낫겠다고 생각해서 나중으로 미뤘다.
+극성을 적고 읽는 선택들(\.x, \.L, \.z, \.Z)이다. 꾸러미에서는 다른 모양으로 내놓는
+편이 낫겠다고 생각해서 나중으로 미뤘다.
+
+배운 절을 적는 \.l과 그 문턱 \.K만은 옮겼다. 배운 절을 차례로 적어 두면 그것이
+곧 만족 불가능의 증서이기 때문이다(7.2.2.2절의 정리 G). 연습문제 7.2.2.2--282를
+검증하다가 보탰다.
 
 거꾸로 원본에 없는 것도 둘 보탰다. 하나는 MiniSat식 가정 리터럴이고, 다른 하나는
 풀이 사이에 배운 절과 활동도를 간직하는 점진적 풀이다. 둘 다 끝의 두 별표 절에 모았다.
@@ -52,6 +56,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"math"
 	"slices"
 	"strconv"
@@ -120,6 +125,7 @@ type Params struct {
 	TrueProb           float32 // \.P: 처음 값을 참으로 둘 확률 (0.5)
 	Timeout            uint64  // \.T: mem 한도
 	Doomsday           uint64  // \.D: 배운 절 수의 한도
+	LearnSave          int     // \.K: 증서에 적을 절 길이의 문턱 (10000)
 }
 
 @ \.{sat.w}의 |New|는 풀이기를 이 기본값으로 채운다.
@@ -138,6 +144,7 @@ var defaultParams = Params{
 	TrueProb:           0.5,
 	Timeout:            0x1fffffffffffffff,
 	Doomsday:           0x8000000000000000,
+	LearnSave:          10000,
 }
 
 @ 크누스식 선택 하나, 가령 \.{s3}이나 \.{a0.1}을 매개변수에 반영하는 문. 명령 줄
@@ -183,6 +190,8 @@ case 'T':
 	p.Timeout, err = strconv.ParseUint(arg, 10, 64)
 case 'D':
 	p.Doomsday, err = strconv.ParseUint(arg, 10, 64)
+case 'K':
+	p.LearnSave, err = strconv.Atoi(arg)
 
 @ 원본은 |sscanf|의 \.{\%f}로 |float| 변수에 곧바로 읽는다. |strconv.ParseFloat|에
 32를 주면 똑같이 가장 가까운 |float32|로 반올림한다.
@@ -280,6 +289,35 @@ func (s *Solver) Value(l Lit) bool {
 		panic("sat: 찾은 해가 없다")
 	}
 	return s.truth[l.Var()] != l.IsNeg()
+}
+
+@ 배운 절을 적어 둘 곳을 정하는 문. 원본이 선택 \.l로 파일을 열던 자리다. 만족할 수
+없는 문제를 풀고 나면 적힌 절들이 차례대로 증서가 된다: 절마다, 그 앞의 절들과 원래
+절들에 그 절의 리터럴을 모두 거짓으로 두면 단위 전파만으로 충돌이 난다. |nil|을 주면
+다시 끈다.
+
+적는 꼴은 원본과 같다. 한 줄에 절 하나, 리터럴 앞마다 빈칸이 하나. 즉석 포섭으로
+짧아진 절은 줄머리에 빈칸을 하나 더 두어 알아볼 수 있게 한다. 길이가 |LearnSave|를
+넘는 절은 적지 않는다.
+
+@<함수들@>=
+func (s *Solver) SetProof(w io.Writer) { s.proof = w }
+
+@ 증서에 절 하나를 적는 문. |mem| 안에 놓인 대로의 리터럴들을 받는다. 원본의
+|fprintf|가 그렇듯 이 문은 mem을 세지 않는다.
+
+@<함수들@>=
+func (s *Solver) writeProof(lits []uint32, subsumer bool) {
+	var b strings.Builder
+	if subsumer {
+		b.WriteByte(' ')
+	}
+	for _, l := range lits {
+		b.WriteByte(' ')
+		b.WriteString(s.LitName(Lit(l)))
+	}
+	b.WriteByte('\n')
+	io.WriteString(s.proof, b.String())
 }
 
 @* 풀이의 뼈대.
@@ -1347,6 +1385,9 @@ Hamadi, Jabbour, Sa\"\i s가 따로 찾아낸 기법이다.
 @<첫 리터럴을 떼어...@>=
 l = int(mem[c])
 mems++; sz--; mem[c-1] = uint32(sz); subsumptions++
+if s.proof != nil && sz <= par.LearnSave {
+	s.writeProof(mem[c+1:c+sz+1], true)
+}
 mems++; r = int(mem[c-2])
 @<절 |c|를 |l|의 감시 목록에서 뺀다@>
 mems++; ll = int(mem[c+sz])
@@ -1568,6 +1609,9 @@ var (
 @<배운 절의 자리 |c|를 정한다@>
 @<배운 절 |c|를 적는다@>
 prevLearned = c
+if s.proof != nil && learnedSize <= par.LearnSave {
+	s.writeProof(mem[c:c+learnedSize], false)
+}
 
 @ 크누스는 초기 실험에서 방금 배운 절이 곧바로 다음 절에 포섭되는 일을 여러 번
 보았다. 앞서 배운 절이 사라지는 수준의 리터럴의 까닭이었을 때 일어나는 일이었다.
@@ -2177,6 +2221,8 @@ prepClause:
 	if learnedSize > 1 {
 		@<줄인 절을 배운다@>
 		mems++; lmem[lll].reason = c
+	} else if s.proof != nil {
+		s.writeProof([]uint32{uint32(lll)}, false)
 	}
 	mems++; vmem[lll>>1].value = llevel + lll&1; vmem[lll>>1].tloc = eptr
 	mems++; trail[eptr] = lll; eptr++
@@ -2237,6 +2283,9 @@ if trivialLearning && conflictLevel != 0 {
 	}
 	if learnedSize == 1 {
 		mems++; leveldat[llevel+1] = 0
+		if s.proof != nil {
+			s.writeProof([]uint32{uint32(lll)}, false)
+		}
 	} else {
 		@<줄인 절을 배운다@>
 		mems++; leveldat[llevel+1] = c
@@ -3199,6 +3248,145 @@ func freshSat(t *testing.T, n int, cls [][]Lit, units []Lit) bool {
 		t.Fatal(err)
 	}
 	return st == Sat
+}
+
+@ 마지막 시험은 증서다. 만족할 수 없는 Rivest의 여덟 절을 풀면서 배운 절을 받아
+적고, 그것이 정말 증서인지 단위 전파만으로 되짚는다. 곧 정리 G를 우리 풀이기에서
+확인하는 시험이다. 문턱 \.K를 1로 두면 단위 절만 적히는지도 함께 본다.
+
+@<시험들@>=
+func TestProof(t *testing.T) {
+	const rivest = "x2 x3 ~x4\nx1 x3 x4\n~x1 x2 x4\n~x1 ~x2 x3\n" +
+		"~x2 ~x3 x4\n~x1 ~x3 ~x4\nx1 ~x2 ~x4\nx1 x2 ~x3\n"
+	var proof strings.Builder
+	s := New()
+	if err := s.ReadKnuth(strings.NewReader(rivest)); err != nil {
+		t.Fatal(err)
+	}
+	s.SetProof(&proof)
+	if st, err := s.Solve(context.Background()); st != Unsat || err != nil {
+		t.Fatalf("%v, %v가 나왔다", st, err)
+	}
+	if n := rupCheck(t, s, proof.String()); n == 0 {
+		t.Error("증서가 비었다")
+	}
+	@<문턱을 1로 두고 다시 풀어 본다@>
+}
+
+@ @<문턱을 1로 두고 다시 풀어 본다@>=
+var short strings.Builder
+s2 := New()
+if err := s2.ReadKnuth(strings.NewReader(rivest)); err != nil {
+	t.Fatal(err)
+}
+s2.Params.LearnSave = 1
+s2.SetProof(&short)
+if st, err := s2.Solve(context.Background()); st != Unsat || err != nil {
+	t.Fatalf("%v, %v가 나왔다", st, err)
+}
+for _, line := range strings.Split(short.String(), "\n") {
+	if f := strings.Fields(line); len(f) > 1 {
+		t.Errorf("문턱이 1인데 길이 %d짜리 절이 적혔다", len(f))
+	}
+}
+
+@ 증서를 되짚는 문. 절마다, 그 앞의 절들과 원래 절들에 그 절의 리터럴을 모두 거짓으로
+두면 단위 전파만으로 충돌이 나야 한다. 마지막에는 증서 전체가 빈 절을 강제해야 한다.
+풀이기의 전파는 전혀 쓰지 않는다. 그것이 증서를 따로 검사하는 까닭이다.
+
+@<시험에 쓰는 함수들@>=
+func rupCheck(t *testing.T, s *Solver, proof string) int {
+	var cls [][]Lit
+	for c := range s.Clauses() {
+		cls = append(cls, slices.Clone(c))
+	}
+	n := 0
+	for _, line := range strings.Split(proof, "\n") {
+		names := strings.Fields(line)
+		if len(names) == 0 {
+			continue
+		}
+		var c []Lit
+		for _, name := range names {
+			c = append(c, litByName(s, name))
+		}
+		if !forcesConflict(cls, c) {
+			t.Fatalf("증서의 %d번째 절 %q을 되짚지 못한다", n+1, line)
+		}
+		cls = append(cls, c)
+		n++
+	}
+	if !forcesConflict(cls, nil) {
+		t.Fatal("증서를 다 받아들여도 빈 절이 나오지 않는다")
+	}
+	return n
+}
+
+@ 이름 하나를 리터럴로 바꾸는 문. 앞에 붙은 \.\~는 부정이다.
+
+@<시험에 쓰는 함수들@>=
+func litByName(s *Solver, name string) Lit {
+	if name[0] == '~' {
+		return s.Lookup(name[1:]).Not()
+	}
+	return s.Lookup(name)
+}
+
+@ 절들 |cls|에 |c|의 리터럴을 모두 거짓으로 둔 채 단위 전파를 돌려 충돌이 나는지
+보는 문. |val|은 변수마다 1(참)이나 $-1$(거짓)을 적어 둔다.
+
+@<시험에 쓰는 함수들@>=
+func forcesConflict(cls [][]Lit, c []Lit) bool {
+	val := map[int]int{}
+	bad := false
+	set := func(l Lit) {
+		want := 1
+		if l.IsNeg() {
+			want = -1
+		}
+		if old, seen := val[l.Var()]; seen {
+			if old != want {
+				bad = true
+			}
+			return
+		}
+		val[l.Var()] = want
+	}
+	for _, l := range c {
+		set(l.Not())
+	}
+	@<단위 절이 나오지 않을 때까지 전파한다@>
+	return bad
+}
+
+@ @<단위 절이 나오지 않을 때까지 전파한다@>=
+for changed := true; changed && !bad; {
+	changed = false
+	for _, cl := range cls {
+		free, cnt, sat := Lit(0), 0, false
+		for _, l := range cl {
+			want := 1
+			if l.IsNeg() {
+				want = -1
+			}
+			switch old, seen := val[l.Var()]; {
+			case !seen:
+				cnt++
+				free = l
+			case old == want:
+				sat = true
+			}
+		}
+		if sat {
+			continue
+		}
+		if cnt == 0 {
+			bad = true
+		} else if cnt == 1 {
+			set(free)
+			changed = true
+		}
+	}
 }
 
 @* 색인.

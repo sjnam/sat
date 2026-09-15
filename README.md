@@ -74,6 +74,17 @@ s.WriteSimplified(w)       // 원본 sat12가 찍는 꼴의 줄인 절
 s.WriteERP(w)              // 원본 sat12가 쓰는 erp 파일의 꼴
 ```
 
+만족할 수 없다는 답에는 증서를 딸려 받을 수 있다. 크누스의 `l` 선택처럼 배운 절을 차례로
+적어 두면, 그것이 곧 만족 불가능의 증서다(7.2.2.2절의 정리 G). 절마다, 그 앞의 절들과
+원래 절들에 그 절의 리터럴을 모두 거짓으로 두면 단위 전파만으로 충돌이 난다.
+
+```go
+var proof bytes.Buffer
+s.SetProof(&proof)         // 배운 절을 여기에 적는다 (nil을 주면 끈다)
+s.Params.LearnSave = 100   // 원본의 K 선택: 이보다 긴 절은 적지 않는다
+st, _ := s.Solve(ctx)      // Unsat이면 proof가 증서다
+```
+
 파일에서 읽을 수도 있다.
 
 ```go

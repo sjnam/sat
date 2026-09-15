@@ -3,75 +3,77 @@ package sat
 
 import (
 	"fmt"
+	"io"
 	"iter"
 	"strconv"
 )
 
-//line sat.w:80
+//line sat.w:81
 type Lit uint32
 
-//line sat.w:112
+//line sat.w:113
 type Solver struct {
 
-//line sat.w:122
+//line sat.w:123
 	names []string       // |names[v]|는 변수 |v|의 이름
 	index map[string]int // 이름에서 변수 번호로
 
-//line sat.w:141
+//line sat.w:142
 	cells []Lit // 받아들인 모든 절의 리터럴
 	start int   // 지금 쌓는 절이 |cells|에서 시작하는 자리
 
-//line sat.w:150
+//line sat.w:151
 	stamp  []int // 변수가 절 |serial|에 나왔으면 $\pm$|serial|
 	serial int   // 지금까지 시작한 절의 수
 
-//line sat.w:162
+//line sat.w:163
 	clauses  int  // 받아들인 절의 수
 	unaries  int  // 그 가운데 리터럴이 하나인 절의 수
 	binaries int  // 리터럴이 둘인 절의 수
 	empty    bool // 빈 절을 받았는가
 
-//line sat.w:171
+//line sat.w:173
 	Params Params     // 푸는 방식을 정하는 매개변수
 	stats  Stats      // 마지막 풀이의 통계
 	model  []Lit      // 마지막 풀이에서 찾은 해, 트레일 차례대로
 	truth  []bool     // |truth[v]|는 그 해에서 변수 |v|의 값
 	failed []Lit      // 마지막 풀이를 만족할 수 없게 한 가정들
 	state  *cdclState // 풀이 사이에 간직하는 상태, 없으면 nil
+	proof  io.Writer  // 배운 절을 증서로 적을 곳, 없으면 nil
 
-//line sat.w:183
+//line sat.w:186
 	SimplifyParams SimplifyParams // 전처리의 매개변수
 	simpStats      SimplifyStats  // 마지막 전처리의 통계
 	pre            *preprocessed  // 전처리 결과, 없으면 nil
 
-//line sat.w:114
+//line sat.w:115
 }
 
-//line sat.w:133
+//line sat.w:134
 const (
 	firstLit Lit = 1 << 31   // 절의 첫 리터럴에 붙이는 표
 	maxVar       = 1<<30 - 1 // 변수 번호의 상한
 )
 
-//line sat.w:85
+//line sat.w:86
 func Pos(v int) Lit { return Lit(v) << 1 }
 
 func Neg(v int) Lit { return Lit(v)<<1 | 1 }
 
-//line sat.w:92
+//line sat.w:93
 func (l Lit) Var() int { return int(l >> 1) }
 
 func (l Lit) Not() Lit { return l ^ 1 }
 
 func (l Lit) IsNeg() bool { return l&1 != 0 }
 
-//line sat.w:191
+//line sat.w:194
 func New() *Solver {
 	return &Solver{names: []string{""}, stamp: []int{0}, index: map[string]int{},
 		Params: defaultParams, SimplifyParams: defaultSimplifyParams}
 }
 
-//line sat.w:200
+//line sat.w:203
 func (s *Solver) NewVar() Lit {
 	v := len(s.names)
 	if v > maxVar {
@@ -82,13 +84,13 @@ func (s *Solver) NewVar() Lit {
 	return Pos(v)
 }
 
-//line sat.w:214
+//line sat.w:217
 func (s *Solver) Lookup(name string) Lit {
 	if v, ok := s.index[name]; ok {
 		return Pos(v)
 	}
 
-//line sat.w:231
+//line sat.w:234
 	if name == "" || name[0] == '~' {
 		panic(fmt.Sprintf("sat: 쓸 수 없는 이름 %q", name))
 	}
@@ -98,21 +100,21 @@ func (s *Solver) Lookup(name string) Lit {
 		}
 	}
 
-//line sat.w:219
+//line sat.w:222
 	l := s.NewVar()
 	s.names[l.Var()] = name
 	s.index[name] = l.Var()
 	return l
 }
 
-//line sat.w:243
+//line sat.w:246
 func (s *Solver) NumVars() int { return len(s.names) - 1 }
 
 func (s *Solver) NumClauses() int { return s.clauses }
 
 func (s *Solver) NumLiterals() int { return len(s.cells) }
 
-//line sat.w:253
+//line sat.w:256
 func (s *Solver) Name(v int) string {
 	if s.names[v] == "" {
 		return "#" + strconv.Itoa(v)
@@ -127,14 +129,14 @@ func (s *Solver) LitName(l Lit) string {
 	return s.Name(l.Var())
 }
 
-//line sat.w:283
+//line sat.w:286
 func (s *Solver) beginClause() {
 	s.pre = nil
 	s.serial++
 	s.start = len(s.cells)
 }
 
-//line sat.w:298
+//line sat.w:301
 func (s *Solver) addLit(l Lit) bool {
 	v := l.Var()
 	if st := s.stamp[v]; st == s.serial || st == -s.serial {
@@ -145,7 +147,7 @@ func (s *Solver) addLit(l Lit) bool {
 		return true
 	}
 
-//line sat.w:312
+//line sat.w:315
 	if l.IsNeg() {
 		s.stamp[v] = -s.serial
 	} else {
@@ -156,11 +158,11 @@ func (s *Solver) addLit(l Lit) bool {
 	}
 	s.cells = append(s.cells, l)
 
-//line sat.w:308
+//line sat.w:311
 	return true
 }
 
-//line sat.w:325
+//line sat.w:328
 func (s *Solver) endClause() {
 	switch len(s.cells) - s.start {
 	case 0:
@@ -174,17 +176,17 @@ func (s *Solver) endClause() {
 	s.clauses++
 }
 
-//line sat.w:342
+//line sat.w:345
 func (s *Solver) AddClause(lits ...Lit) {
 	s.beginClause()
 	for _, l := range lits {
 
-//line sat.w:357
+//line sat.w:360
 		if v := l.Var(); v == 0 || v >= len(s.names) {
 			panic(fmt.Sprintf("sat: 없는 변수의 리터럴 %d", uint32(l)))
 		}
 
-//line sat.w:346
+//line sat.w:349
 		if !s.addLit(l) {
 			return
 		}
@@ -192,7 +194,7 @@ func (s *Solver) AddClause(lits ...Lit) {
 	s.endClause()
 }
 
-//line sat.w:365
+//line sat.w:368
 func (s *Solver) Clauses() iter.Seq[[]Lit] {
 	return func(yield func([]Lit) bool) {
 		for i := 0; i < len(s.cells); {
