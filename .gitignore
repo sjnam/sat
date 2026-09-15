@@ -45,3 +45,14 @@
 /examples/*/*.scn
 /examples/*/*.log
 /examples/*/*.toc
+
+# 연습문제 검증 프로그램도 문학적 프로그램이다: verify.w만 원본이다.
+# 다만 verify.pdf는 예외로 저장소에 넣는다 --- 이 검증은 저자에게 보낼 것이고,
+# 읽는 이에게 GWEB을 깔라고 할 수는 없다. verify 디렉터리에는 .w와 .pdf뿐이다.
+/taocp-7.2.2.2-exercises/*/verify/verify.go
+/taocp-7.2.2.2-exercises/*/verify/*.tex
+/taocp-7.2.2.2-exercises/*/verify/*.idx
+/taocp-7.2.2.2-exercises/*/verify/*.scn
+/taocp-7.2.2.2-exercises/*/verify/*.log
+/taocp-7.2.2.2-exercises/*/verify/*.toc
+/taocp-7.2.2.2-exercises/*/verify/verify

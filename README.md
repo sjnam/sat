@@ -142,3 +142,6 @@ make check    # 조판 로그에 경고가 하나도 없는지 확인한다
 - `knuth/`: 크누스의 원본 CWEB 프로그램 (sat0w, sat8, sat11, sat11k, sat12,
   sat12-erp, sat13, dimacs-to-sat, sat-to-dimacs)
 - `testdata/`: SATexamples에서 고른 작은 문제 여섯, 두 형식으로 하나씩
+- `taocp-7.2.2.2-exercises/`: 크누스의 뉴스 페이지가 독자에게 검증을 청한 7.2.2.2절
+  연습문제들을 이 꾸러미로 검증한 글. 영어 보고서와 문학적 프로그램이 문제마다 하나씩
+  있고, SAT의 답은 되도록 SAT를 쓰지 않는 길과 견주므로 꾸러미의 시험도 겸한다.
