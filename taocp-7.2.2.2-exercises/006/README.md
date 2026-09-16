@@ -1,10 +1,5 @@
 # TAOCP 7.2.2.2, Exercise 6: A Careful Reading
 
-Written 16 September 2026, against Volume 4B, Addison-Wesley, first printing,
-2022, and the errata file as of that date. That file replaces exercise 5, the
-question just before this one, and gives it a new answer about W(3, *k*); it
-has nothing on exercise 6 or its answer.
-
 This is one reader's response to the request on Knuth's [news
 page](https://www-cs-faculty.stanford.edu/~knuth/news.html): read an exercise
 and its answer very carefully, then report back. The news page describes this

@@ -1,10 +1,5 @@
 # TAOCP 7.2.2.2, Exercise 363: A Careful Reading
 
-Written 16 September 2026, against Volume 4B, Addison-Wesley, first printing,
-2022, and the errata file as of that date. That file amends one line of this
-exercise — part (g)'s "strict Horn clauses" became "definite Horn clauses" on
-10 February 2024 — and has nothing on the answer.
-
 This is one reader's response to the request on Knuth's [news
 page](https://www-cs-faculty.stanford.edu/~knuth/news.html): read an exercise
 and its answer very carefully, then report back.
