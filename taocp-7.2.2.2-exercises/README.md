@@ -26,7 +26,7 @@ The news page lists these exercises for §7.2.2.2.
 | --- | --- | --- |
 | 6 | Verify a certain (previously unpublished) lower bound on van der Waerden numbers W(3,k) | |
 | [57](057) | Find a 6-gate way to match a certain 20-variable Boolean function at 32 given points | confirmed, and six is the minimum |
-| 165 | Devise an algorithm to compute the largest positive autarky of given clauses | |
+| [165](165) | Devise an algorithm to compute the largest positive autarky of given clauses | confirmed in every sentence |
 | 212 | Prove that partial latin square construction is NP-complete | |
 | [282](282) | Find a linear certificate of unsatisfiability for the flower snark clauses | confirmed to the last clause; four numbers in the surrounding text do not reproduce |
 | 306–308 | Study the reluctant doubling strategy of Luby, Sinclair, and Zuckerman | |
@@ -50,13 +50,19 @@ The news page lists these exercises for §7.2.2.2.
   both by exhaustive search and with the solver, and the two agree. Of the
   twelve five-variable tables, exactly five admit six operations; the answer's
   tenth is one of them.
+- **[165](165).** The warm-up's deductions, the union argument for a
+  maximum, the Horn clauses, the linear-time variant of Algorithm 7.1.1C, and
+  the remark about autarkies inside a given set of literals all check out,
+  against brute force for small families and, for problems of a hundred
+  variables, against the `sat` package: 5,166 calls with assumptions confirm
+  that the autarkies found are the largest, and the autarky principle holds on
+  every one of 50 planted problems.
 - **[282](282).** The hand-built certificate verifies clause by clause —
   147*q* − 102 of them, none longer than four — and so do the three remarks
   the answer makes in passing. Checking Algorithm C's own certificate (Theorem
   G) needed a new feature in the package, a port of SAT13's `l` option, now
   `SetProof`; the two certificates for *fsnark*(99) are 14,451 clauses against
   126,344.
-
 - **[363](363).** All ten parts check out, computed from the definitions over
   every one of the 3ⁿ partial assignments — including the 27 weights of the
   table on page 619, the seven sets that form *L*₇, and the identity of
