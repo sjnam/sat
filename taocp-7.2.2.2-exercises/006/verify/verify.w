@@ -2,7 +2,6 @@
 \def\title{A Local Lemma bound for W(3,k)}
 
 @s sat.Solver int
-@s event int
 
 @* Introduction.
 The van der Waerden number $W(3,k)$ is the smallest $n$ such that every

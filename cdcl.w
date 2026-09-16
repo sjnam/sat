@@ -7,7 +7,6 @@
 @s testing.T int
 @s Lit int
 @s Solver int
-@s cdclState int
 
 @* 들어가며.
 이 글은 크누스의 \.{SAT13}, 곧 {\sl TAOCP\/} 알고리즘~7.2.2.2C를 \GO/로 옮긴

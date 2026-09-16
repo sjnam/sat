@@ -4,7 +4,6 @@
 @s sat.Lit int
 @s sat.Status int
 @s sat.Solver int
-@s fam int
 
 @* Introduction.
 An {\it autarky\/} for a family of clauses $F$ is a set $A$ of strictly

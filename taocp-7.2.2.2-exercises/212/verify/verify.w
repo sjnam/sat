@@ -4,10 +4,6 @@
 
 @s sat.Lit int
 @s sat.Solver int
-@s cnf int
-@s lists int
-@s square int
-@s xcover int
 
 @* Introduction.
 Exercise 7.2.2.2--212 is the last link of a chain of reductions that begins in

@@ -4,10 +4,6 @@
 @s sat.Lit int
 @s sat.Status int
 @s sat.Stats int
-@s point int
-@s step int
-@s chain int
-@s instance int
 
 @* Introduction.
 Section 7.2.2.2 has a little parable about learning a Boolean function. Table~2

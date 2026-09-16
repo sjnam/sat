@@ -4,9 +4,6 @@
 @s sat.Lit int
 @s sat.Status int
 @s sat.Solver int
-@s fam int
-@s ctx int
-@s term int
 
 @* Introduction.
 A partial assignment is {\it stable\/} (or ``valid'') if it is consistent and

@@ -4,9 +4,6 @@
 @s sat.Lit int
 @s sat.Status int
 @s sat.Solver int
-@s fam int
-@s ctx int
-@s lvl int
 
 @* Introduction.
 Unit propagation is the workhorse of every {\tt SAT} solver, and it is cheap.

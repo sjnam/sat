@@ -3,8 +3,6 @@
 
 @s sat.Lit int
 @s sat.Status int
-@s clause int
-@s checker int
 
 @* Introduction.
 The flower snark clauses are one of Knuth's favorite benchmarks. Exercise~176
