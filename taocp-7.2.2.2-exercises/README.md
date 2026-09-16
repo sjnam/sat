@@ -20,7 +20,8 @@ readings follow its layout.
 
 ## The readings
 
-The news page lists these exercises for §7.2.2.2.
+These are the §7.2.2.2 exercises from the news page that have been read so
+far.
 
 | Exercise | What the news page asks | What came out |
 | --- | --- | --- |
@@ -29,16 +30,8 @@ The news page lists these exercises for §7.2.2.2.
 | [165](165) | Devise an algorithm to compute the largest positive autarky of given clauses | confirmed in every sentence |
 | [212](212) | Prove that partial latin square construction is NP-complete | one symbol wrong in answer 212(d); part (a) needs a stronger statement |
 | [282](282) | Find a linear certificate of unsatisfiability for the flower snark clauses | confirmed to the last clause; four numbers in the surrounding text do not reproduce |
-| 306–308 | Study the reluctant doubling strategy of Luby, Sinclair, and Zuckerman | |
-| 318 | Find the best possible Local Lemma for d-regular dependency graphs with equal weights | |
-| 322 | Show that random-walk methods cannot always find solutions of locally feasible problems using independent random variables | |
-| 335 | Express the Möbius series of a cocomparability graph as a determinant | |
-| 339 | Relate generating functions for traces to generating functions for pyramids | |
-| 347 | Find the best possible Local Lemma for a given chordal graph with arbitrary weights | |
-| 356 | Prove the Clique Local Lemma | |
 | [363](363) | Study the stable partial assignments of a satisfiability problem | confirmed, except for one clause in answer 363(g) |
 | [442–444](442-444) | Study the UC and PC hierarchy of progressively harder sets of clauses | confirmed; two places decide what a phrase means |
-| 518 | Reduce 3SAT to testing the permanent of a {−1,0,1,2} matrix for zero | |
 
 ## What came out
 
