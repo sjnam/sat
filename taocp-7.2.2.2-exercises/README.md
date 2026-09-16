@@ -24,7 +24,7 @@ The news page lists these exercises for §7.2.2.2.
 
 | Exercise | What the news page asks | What came out |
 | --- | --- | --- |
-| 6 | Verify a certain (previously unpublished) lower bound on van der Waerden numbers W(3,k) | |
+| [6](006) | Verify a certain (previously unpublished) lower bound on van der Waerden numbers W(3,k) | confirmed; the last step needs a lower bound, and holds only once ln k > 4858 |
 | [57](057) | Find a 6-gate way to match a certain 20-variable Boolean function at 32 given points | confirmed, and six is the minimum |
 | [165](165) | Devise an algorithm to compute the largest positive autarky of given clauses | confirmed in every sentence |
 | [212](212) | Prove that partial latin square construction is NP-complete | one symbol wrong in answer 212(d); part (a) needs a stronger statement |
@@ -44,6 +44,14 @@ The news page lists these exercises for §7.2.2.2.
 
 ### Beyond the book
 
+- **[6](006).** The Local Lemma argument is sound, and the lopsided graph it
+  uses checks out exactly on short strings. Its constants, though, make
+  *yd* = 24, so (1 − *y*)ᵈ tends to e⁻²⁴, and the second inequality of
+  Theorem L holds only once ln *k* > 4857.97; the answer's "= *O*(1)" is also
+  the wrong direction for that step, which needs a lower bound. With
+  *p* = (3 ln *k*)/*k* instead of (2 ln *k*)/*k*, the same argument proves
+  W(3, *k*) = Ω((*k*/log *k*)²), the bound Li and Shu published in 2010. The
+  `sat` package recomputes W(3, *k*) for *k* ≤ 10.
 - **[57](057).** Every statement in the answer checks out, including the
   twelve truth tables with their don't-cares. The exercise asks only for six
   operations; no chain of five or fewer matches Table 2 at all, which is shown
