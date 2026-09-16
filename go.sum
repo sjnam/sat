@@ -1,3 +1,5 @@
+github.com/sjnam/bdd v0.0.0-20260907100623-3d39573a11bd h1:RMMNwA+j2t36pguq56u8B8YPBuCZoONNO1yrY06SFWY=
+github.com/sjnam/bdd v0.0.0-20260907100623-3d39573a11bd/go.mod h1:yxsIgiX7aUfjWaEb9jGQjvPHZ0NiVGOuETaR44KBrJM=
 github.com/sjnam/dancing-cells v0.0.0-20260916000333-8921730f5c94 h1:iawjcrCn1lB5ggtztyvfzZFGKYnNfrU3Do1u2FSJYxc=
 github.com/sjnam/dancing-cells v0.0.0-20260916000333-8921730f5c94/go.mod h1:qgoikZGivQb5pOb9qgNo5W2nWGKc2Xxdh6W85VcVQL0=
 github.com/sjnam/go-sgb v0.1.0 h1:4cEdbt9sH8utLNfTyxT3DnuAAza+ArFqowwanZNzXUg=

@@ -91,6 +91,7 @@ import (
 	"strings"
 
 	cells "github.com/sjnam/dancing-cells"
+	zdd "github.com/sjnam/dancing-cells/zdd"
 	"github.com/sjnam/sat"
 )
 
@@ -261,10 +262,15 @@ func solveCNF(f cnf, assumptions ...int) bool {
 Small instances of every problem in this chain are exact cover problems:
 a list coloring chooses one color per cell, and a partial latin square one
 triple $(i,j,k)$ per nonblank cell, with each row--color and column--color pair
-used at most once, or exactly once. They are solved by the XCC solver of
+used at most once, or exactly once. They are solved with
 \.{github.com/sjnam/dancing-cells}, Knuth's dancing cells, the package behind
 the companion readings of Section 7.2.2.1; so these checks test that package
-too.
+too. Two of its engines serve. The XCC engine finds covers one at a time,
+which is what a search for one cover, or a look at every cover, wants. The ZDD
+engine gathers all covers into a decision diagram, remembering every subproblem
+it has solved, and counts them from the diagram; on the grids of answer 211,
+with hundreds of thousands of colorings, it counts about a hundred times faster
+than ranging over the covers would.
 
 An |xcover| collects items numbered from 0, the first |primary| of them
 primary, and options given as lists of item numbers.
@@ -281,25 +287,31 @@ func newCover(primary, items int) *xcover {
 
 func (x *xcover) add(items ...int) { x.opts = append(x.opts, items) }
 
-@ |search| writes the problem in the DLX format that the solver reads, item
-$t$ named \.{i}$t$, and calls |visit| with the options of every solution, as
-indices, until |visit| returns |false|; cancelling the context then stops the
-solver. The solver reports an option by its item names in input order, which
-identifies it. A line that begins with a vertical bar is a comment in that
-format, so a
-problem with no primary items cannot be written down; but every option here
-has a primary item, so such a problem has no options, and its only solution is
-the empty one.
+@ Both engines read the DLX format. |dlx| writes the problem in it, item $t$
+named \.{i}$t$, and indexes the options by their text, because the XCC engine
+reports an option by its item names in input order. A line that begins with a
+vertical bar is a comment in that format, so a problem with no primary items
+cannot be written down; but every option here has a primary item, so such a
+problem has no options, and its only solution is the empty one. The two
+callers below deal with that case before asking for the text.
+@<Functions@>=
+func (x *xcover) dlx() (string, map[string]int) {
+	@<Write |x| in DLX format, and index its options by their text@>
+	return b.String(), index
+}
+
+@ |search| calls |visit| with the options of every solution, as indices, until
+|visit| returns |false|; cancelling the context then stops the solver.
 @<Functions@>=
 func (x *xcover) search(visit func(sol []int) bool) {
 	if x.primary == 0 {
 		visit(nil)
 		return
 	}
-	@<Write |x| in DLX format, and index its options by their text@>
+	text, index := x.dlx()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	res := cells.NewXCC().WithContext(ctx).Dance(strings.NewReader(b.String()))
+	res := cells.NewXCC().WithContext(ctx).Dance(strings.NewReader(text))
 	for opts := range res.Solutions {
 		sol := make([]int, len(opts))
 		for i, o := range opts {
@@ -331,14 +343,24 @@ for o, items := range x.opts {
 	b.WriteString(line + "\n")
 }
 
-@ @<Functions@>=
-func (x *xcover) count(limit int) int {
-	n := 0
+@ Whether a cover exists is a question for the XCC engine, which stops at the
+first one; how many there are is a question for the ZDD engine.
+@<Functions@>=
+func (x *xcover) exists() bool {
+	found := false
 	x.search(func([]int) bool {
-		n++
-		return n < limit
+		found = true
+		return false
 	})
-	return n
+	return found
+}
+
+func (x *xcover) total() int {
+	if x.primary == 0 {
+		return 1
+	}
+	text, _ := x.dlx()
+	return int(zdd.New().Dance(strings.NewReader(text)).Count().Int64())
 }
 
 @* The ladder: answers 204(a), 207, and 208.
@@ -899,18 +921,16 @@ of clause $k$ can be completed in $2t_k$ ways, where $t_k$ is the number of
 true literals of the clause: $a_k$ picks one of the $t_k$ and $b_k$, $c_k$
 share the other two. Everything else is forced. So the number of colorings
 should be $\sum_x\prod_k 2t_k(x)$ over the solutions $x$, and the program
-compares that with a count by exact cover, for |reps| problems, one in twenty of
-them on six variables and the rest on three. A grid for six variables can have
-half a million colorings, and the solver hands every one of them over as a
-list of option names, which takes its time; so a six-variable grid is counted
-only when the formula promises at most 150,000. The program also colors the
-grid by hand from every solution.
+compares that with a count by exact cover, for |reps| problems, one in five of
+them on six variables and the rest on three; a grid for six variables can have
+close to a million colorings, which the ZDD engine counts in a fraction of a
+second. The program also colors the grid by hand from every solution.
 @<Count the colorings of small grids@>=
 r := rng(211)
 var nSmall, nSix, badCount, badHand int
 for trial := 0; trial < reps; trial++ {
 	n := 3
-	if trial%20 == 19 {
+	if trial%5 == 4 {
 		n = 6
 	}
 	f := fourTimes(r, n, true)
@@ -930,15 +950,12 @@ for trial := 0; trial < reps; trial++ {
 			badHand++
 		}
 	}
-	if n == 6 && want > 150000 {
-		continue
-	}
 	x, _ := colorCover(L, N)
 	nSmall++
 	if n == 6 {
 		nSix++
 	}
-	if x.count(1<<40) != want {
+	if x.total() != want {
 		badCount++
 	}
 }
@@ -1120,7 +1137,7 @@ for inSigma[0] != 1 {
 }
 x, _ := colorCover(grid211(bad, inSigma), 96)
 _, okIn := colorSAT(grid211(bad, inSigma), 96)
-claim(x.count(1) == 0 && !okIn, "with sigma taking x1 to x1' in the first "+
+claim(!x.exists() && !okIn, "with sigma taking x1 to x1' in the first "+
 	"clause, the grid cannot be colored")
 _, okOut := colorSAT(grid211(bad, cycles(bad, r, false)), 96)
 claim(okOut, "with cycles that leave every clause, it can")
@@ -1139,7 +1156,7 @@ for trial := 0; trial < reps; trial++ {
 	}
 	x, _ := colorCover(grid211(f, sigma), 6*len(f.cl))
 	nOut++
-	if (x.count(1) > 0) != (len(models(f)) > 0) {
+	if x.exists() != (len(models(f)) > 0) {
 		badOut++
 	}
 }
@@ -1265,7 +1282,7 @@ fmt.Println("212(a). the array and the tensor")
 one := fromBits(1, 0, 1, 1)
 x1, _ := squareCover(one, false)
 x2, _ := squareCover(one, true)
-claim(x1.count(9) == 1 && x2.count(9) == 0 && !balanced(one),
+claim(x1.total() == 1 && x2.total() == 0 && !balanced(one),
 	"n = 1, r = c = 1, p = 0: the blank array solves it, the tensor has no "+
 		"solution, and r_1* = p_1* fails")
 for n := 1; n <= 2; n++ {
@@ -1286,8 +1303,8 @@ for n := 1; n <= 2; n++ {
 }
 
 @ @<Compare the readings, the symmetry, and the necessary condition@>=
-tensor := xt.count(1 << 30)
-if (xa.count(1) > 0) != (tensor > 0) {
+tensor := xt.total()
+if xa.exists() != (tensor > 0) {
 	differ++
 }
 var ct uint64
@@ -1296,7 +1313,7 @@ for i := 0; i < n; i++ {
 		ct |= c >> (i*n + j) & 1 << (j*n + i)
 	}
 }
-if xs, _ := squareCover(fromBits(n, rr, p, ct), true); xs.count(1<<30) != tensor {
+if xs, _ := squareCover(fromBits(n, rr, p, ct), true); xs.total() != tensor {
 	badSym++
 }
 if tensor > 0 && !balanced(q) {
@@ -1320,7 +1337,7 @@ _, c31 := slices.BinarySearch(ex.c[2], 0)
 _, c32 := slices.BinarySearch(ex.c[2], 1)
 entries := !c31 && !c32 && !slices.Contains(ex.r[0], 2) &&
 	!slices.Contains(ex.r[0], 3) && slices.Contains(ex.p, [2]int{0, 2})
-claim(balanced(ex) && entries && xb.count(1) == 0,
+claim(balanced(ex) && entries && !xb.exists(),
 	"the answer's example meets the condition, p13 = 1 has no symbol, and "+
 		"there is no solution")
 @<Find the smallest examples@>
@@ -1347,7 +1364,7 @@ for n := 1; n <= 3; n++ {
 					continue
 				}
 				meet++
-				if xs, _ := squareCover(q, true); xs.count(1) == 0 {
+				if xs, _ := squareCover(q, true); !xs.exists() {
 					if unsolvable[n] == 0 {
 						first = q
 					}
@@ -1497,10 +1514,10 @@ for trial := 0; trial < 10*reps; trial++ {
 	x, _ := colorCover(L, N)
 	xe, _ := colorCover(extendLists(L, N), N)
 	nc++
-	if x.count(1) > 0 {
+	if x.exists() {
 		yes++
 	}
-	if x.count(1) != xe.count(1) {
+	if x.exists() != xe.exists() {
 		badC++
 	}
 	@<Extend a random latin rectangle to a square@>
@@ -1710,7 +1727,7 @@ if lit.n != N+sum {
 	badSize++
 }
 xl, _ := squareCover(lit, true)
-if xl.count(1) > 0 {
+if xl.exists() {
 	litSolved++
 }
 if nonempty {
@@ -1726,16 +1743,16 @@ if nonempty {
 @ @<Try the square with $k=K'$@>=
 fix, elem := square212(L, N, false)
 xc, _ := colorCover(L, N)
-colors := xc.count(1 << 30)
+colors := xc.total()
 if colors > 0 {
 	colorable++
 }
 xt, triples := squareCover(fix, true)
-if xt.count(1<<30) != colors {
+if xt.total() != colors {
 	badCount++
 }
 xa, _ := squareCover(fix, false)
-if xa.count(1<<30) != colors {
+if xa.total() != colors {
 	if nonempty {
 		arrayNonempty++
 	} else {
@@ -1901,7 +1918,7 @@ for trial := 0; trial < reps/4; trial++ {
 	N := 4 + trial%3
 	L := randomLists(r, 3, N, 0.45)
 	x, _ := colorCover(L, N)
-	want := x.count(1) > 0
+	want := x.exists()
 	if want {
 		yesSm++
 	}
