@@ -15,7 +15,7 @@ GTANGLE ?= gtangle
 GWEAVE  ?= gweave
 LUATEX  ?= luatex -interaction=nonstopmode
 
-EXERCISES := 057 165 282 363 442-444
+EXERCISES := 057 165 212 282 363 442-444
 VERIFY := $(foreach e,$(EXERCISES),$(e)/verify)
 
 .PHONY: all build test vet tangle pdf check clean

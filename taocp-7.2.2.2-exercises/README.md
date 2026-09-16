@@ -27,7 +27,7 @@ The news page lists these exercises for §7.2.2.2.
 | 6 | Verify a certain (previously unpublished) lower bound on van der Waerden numbers W(3,k) | |
 | [57](057) | Find a 6-gate way to match a certain 20-variable Boolean function at 32 given points | confirmed, and six is the minimum |
 | [165](165) | Devise an algorithm to compute the largest positive autarky of given clauses | confirmed in every sentence |
-| 212 | Prove that partial latin square construction is NP-complete | |
+| [212](212) | Prove that partial latin square construction is NP-complete | one symbol wrong in answer 212(d); part (a) needs a stronger statement |
 | [282](282) | Find a linear certificate of unsatisfiability for the flower snark clauses | confirmed to the last clause; four numbers in the surrounding text do not reproduce |
 | 306–308 | Study the reluctant doubling strategy of Luby, Sinclair, and Zuckerman | |
 | 318 | Find the best possible Local Lemma for d-regular dependency graphs with equal weights | |
@@ -57,6 +57,17 @@ The news page lists these exercises for §7.2.2.2.
   variables, against the `sat` package: 5,166 calls with assumptions confirm
   that the autarkies found are the largest, and the autarky principle holds on
   every one of 50 planted problems.
+- **[212](212).** The chain from 3SAT to a partial latin square works, and
+  the `sat` package runs it end to end: a problem on three variables becomes a
+  square with 12,288 rows, and the package's solution decodes back to a
+  solution of the clauses. Two places needed repair. In answer 212(d) the rule
+  for *rᵢₖ* = *cᵢₖ* = 1 must read *k* = *K*′, not *k* = (*I*, *J*, *K*′); as
+  printed, the cell (*h*, *J*) of every header has no possible symbol, so no
+  instance has a solution. And part (a) holds only if *r* and *c* say which
+  symbols must occur, not merely which may. Answer 211 is right, but its names
+  *jk* assume that each variable lies in four different clauses, and on inputs
+  where it does not, a cycle *σ* that steps inside a clause can break the
+  reduction; a sixteen-clause example shows it.
 - **[282](282).** The hand-built certificate verifies clause by clause —
   147*q* − 102 of them, none longer than four — and so do the three remarks
   the answer makes in passing. Checking Algorithm C's own certificate (Theorem
