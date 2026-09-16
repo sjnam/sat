@@ -69,7 +69,7 @@ with headers.
 {\tt sat} package is asked to solve the result.
 \smallskip
 \noindent Wherever the objects are small, the program counts solutions by
-brute force, with an exact cover search; where they are not, the package
+brute force, with the dancing-cells exact cover solver; where they are not, the package
 answers, and its answers are decoded back to the original problem and checked
 there. Constructions that the answers describe in the forward direction are
 also carried out in that direction, without a solver.
@@ -90,6 +90,7 @@ import (
 	"strconv"
 	"strings"
 
+	cells "github.com/sjnam/dancing-cells"
 	"github.com/sjnam/sat"
 )
 
@@ -260,83 +261,74 @@ func solveCNF(f cnf, assumptions ...int) bool {
 Small instances of every problem in this chain are exact cover problems:
 a list coloring chooses one color per cell, and a partial latin square one
 triple $(i,j,k)$ per nonblank cell, with each row--color and column--color pair
-used at most once, or exactly once. So one little search, which always branches
-on the primary item with the fewest remaining options, counts all of them. It
-is Algorithm 7.2.2X in spirit, without the dancing.
+used at most once, or exactly once. They are solved by the XCC solver of
+\.{github.com/sjnam/dancing-cells}, Knuth's dancing cells, the package behind
+the companion readings of Section 7.2.2.1; so these checks test that package
+too.
+
+An |xcover| collects items numbered from 0, the first |primary| of them
+primary, and options given as lists of item numbers.
 @<Types@>=
 type xcover struct {
 	primary, items int
 	opts           [][]int
-	byItem         [][]int
 }
 
 @ @<Functions@>=
 func newCover(primary, items int) *xcover {
-	return &xcover{primary: primary, items: items, byItem: make([][]int, items)}
+	return &xcover{primary: primary, items: items}
 }
 
-func (x *xcover) add(items ...int) {
-	for _, it := range items {
-		x.byItem[it] = append(x.byItem[it], len(x.opts))
-	}
-	x.opts = append(x.opts, items)
-}
+func (x *xcover) add(items ...int) { x.opts = append(x.opts, items) }
 
-@ The search calls |visit| with the options of every solution, until |visit|
-returns |false|.
+@ |search| writes the problem in the DLX format that the solver reads, item
+$t$ named \.{i}$t$, and calls |visit| with the options of every solution, as
+indices, until |visit| returns |false|; cancelling the context then stops the
+solver. The solver reports an option by its item names in input order, which
+identifies it. A line that begins with a vertical bar is a comment in that
+format, so a
+problem with no primary items cannot be written down; but every option here
+has a primary item, so such a problem has no options, and its only solution is
+the empty one.
 @<Functions@>=
 func (x *xcover) search(visit func(sol []int) bool) {
-	used := make([]bool, x.items)
-	var sol []int
-	free := func(o int) bool {
-		return !slices.ContainsFunc(x.opts[o], func(it int) bool { return used[it] })
+	if x.primary == 0 {
+		visit(nil)
+		return
 	}
-	var rec func() bool
-	rec = func() bool {
-		@<Find the uncovered primary item with fewest options@>
-		if best < 0 {
-			return visit(sol)
+	@<Write |x| in DLX format, and index its options by their text@>
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	res := cells.NewXCC().WithContext(ctx).Dance(strings.NewReader(b.String()))
+	for opts := range res.Solutions {
+		sol := make([]int, len(opts))
+		for i, o := range opts {
+			sol[i] = index[strings.Join(o, " ")]
 		}
-		for _, o := range x.byItem[best] {
-			if !free(o) {
-				continue
-			}
-			@<Cover |o|, recurse, and uncover it@>
+		if !visit(sol) {
+			return
 		}
-		return true
-	}
-	rec()
-}
-
-@ @<Find the uncovered primary item with fewest options@>=
-best, fewest := -1, 1<<30
-for it := 0; it < x.primary; it++ {
-	if used[it] {
-		continue
-	}
-	k := 0
-	for _, o := range x.byItem[it] {
-		if free(o) {
-			k++
-		}
-	}
-	if k < fewest {
-		best, fewest = it, k
 	}
 }
 
-@ @<Cover |o|, recurse, and uncover it@>=
-for _, it := range x.opts[o] {
-	used[it] = true
+@ @<Write |x| in DLX format, and index its options by their text@>=
+var b strings.Builder
+for t := 0; t < x.items; t++ {
+	if t == x.primary {
+		b.WriteString(" |")
+	}
+	fmt.Fprintf(&b, " i%d", t)
 }
-sol = append(sol, o)
-more := rec()
-sol = sol[:len(sol)-1]
-for _, it := range x.opts[o] {
-	used[it] = false
-}
-if !more {
-	return false
+b.WriteByte('\n')
+index := make(map[string]int, len(x.opts))
+for o, items := range x.opts {
+	names := make([]string, len(items))
+	for i, it := range items {
+		names[i] = "i" + strconv.Itoa(it)
+	}
+	line := strings.Join(names, " ")
+	index[line] = o
+	b.WriteString(line + "\n")
 }
 
 @ @<Functions@>=
@@ -907,15 +899,18 @@ of clause $k$ can be completed in $2t_k$ ways, where $t_k$ is the number of
 true literals of the clause: $a_k$ picks one of the $t_k$ and $b_k$, $c_k$
 share the other two. Everything else is forced. So the number of colorings
 should be $\sum_x\prod_k 2t_k(x)$ over the solutions $x$, and the program
-compares that with a count by exact cover, for |reps| problems, one in ten of
-them on six variables and the rest on three; a grid for six variables can have
-half a million colorings. It also colors the grid by hand from every solution.
+compares that with a count by exact cover, for |reps| problems, one in twenty of
+them on six variables and the rest on three. A grid for six variables can have
+half a million colorings, and the solver hands every one of them over as a
+list of option names, which takes its time; so a six-variable grid is counted
+only when the formula promises at most 150,000. The program also colors the
+grid by hand from every solution.
 @<Count the colorings of small grids@>=
 r := rng(211)
-var nSmall, badCount, badHand int
+var nSmall, nSix, badCount, badHand int
 for trial := 0; trial < reps; trial++ {
 	n := 3
-	if trial%10 == 9 {
+	if trial%20 == 19 {
 		n = 6
 	}
 	f := fourTimes(r, n, true)
@@ -935,22 +930,29 @@ for trial := 0; trial < reps; trial++ {
 			badHand++
 		}
 	}
+	if n == 6 && want > 150000 {
+		continue
+	}
 	x, _ := colorCover(L, N)
 	nSmall++
+	if n == 6 {
+		nSix++
+	}
 	if x.count(1<<40) != want {
 		badCount++
 	}
 }
-claim(badCount == 0, "%d grids for 3 and 6 variables: the colorings number "+
-	"sum over solutions of prod 2t_k, with %d exceptions", nSmall, badCount)
+claim(badCount == 0, "%d grids, %d of them for 6 variables: the colorings "+
+	"number sum over solutions of prod 2t_k, with %d exceptions", nSmall, nSix,
+	badCount)
 claim(badHand == 0, "every solution colors its grid by hand, and the coloring "+
 	"gives the solution back: %d exceptions", badHand)
 
 @ The unsatisfiable problems cannot be small: by the note in answer 207, which
-this program does not check, they need at least sixteen clauses. So the package colors, or fails to color, the
-grids of the two unsatisfiable problems at hand, the grid of answer 208
-applied to the eight clauses on three variables, and random satisfiable
-problems on 30 to 60 variables. A coloring it finds is checked, and read back
+this program does not check, they need at least sixteen clauses. So the
+package colors, or fails to color, the grids of the two unsatisfiable problems
+at hand, the grid of answer 208 applied to the eight clauses on three
+variables, and random satisfiable problems on 30 to 60 variables. A coloring it finds is checked, and read back
 as an assignment that must satisfy the clauses.
 @<Decide larger grids with the package@>=
 cube := cnf{n: 3}

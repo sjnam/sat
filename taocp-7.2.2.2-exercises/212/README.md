@@ -47,11 +47,14 @@ list coloring to `K_N □ K_N`. Part (d) reduces `K_N □ K_N` list coloring to 
 
 Every problem in the chain is an exact cover problem when it is small, so the
 program counts solutions by exact cover wherever the sizes allow, and compares
-counts, not just yes or no. Where the sizes do not allow it, the `sat` package
-decides, and every solution it returns is decoded back one step, or all the
-way to the clauses, and checked against the definitions. Each construction the
-answers describe in the forward direction is also carried out by hand, from a
-solution to a solution, without a solver.
+counts, not just yes or no. The exact cover solver is the XCC engine of
+[`dancing-cells`](https://github.com/sjnam/dancing-cells), the package behind
+the companion readings of §7.2.2.1, so these counts check it as well. Where
+the sizes do not allow it, the `sat` package decides, and every solution it
+returns is decoded back one step, or all the way to the clauses, and checked
+against the definitions. Each construction the answers describe in the forward
+direction is also carried out by hand, from a solution to a solution, without
+a solver.
 
 ## 3. The ladder: answers 204(a), 207, 208
 
@@ -89,7 +92,7 @@ number of colorings should be Σ over solutions of ∏ₖ 2*tₖ*.
 
 | Check | Result |
 | --- | --- |
-| number of colorings, by exact cover, against Σ ∏ 2*tₖ* | 200 grids for 3 and 6 variables, 0 exceptions |
+| number of colorings, by exact cover, against Σ ∏ 2*tₖ* | 191 grids, one for 6 variables and the rest for 3, 0 exceptions |
 | a solution colors the grid by hand, and the coloring gives it back | 0 exceptions |
 | answer 207, the note's 16 clauses, and 208 of all eight 3-clauses: grids for *N* = 120, 96, 1,344 | uncolorable, by the package |
 | random problems on 30 to 60 variables | 20, colorings found, checked, decoded to solutions |
@@ -99,8 +102,8 @@ colored (*jk*)*σ* ⟺ (*aₖ*, 1) is not colored *jk*." The first equivalence
 holds, and so does the implication from the first statement to the last,
 since a used color is not free. The converse fails: when *xⱼ* is true the
 color *jk* is free in column 1, but a clause with more than one true literal
-may give it to *bₖ* or *cₖ*. Over 31,552 colorings of small grids that happens
-58,336 times with *xⱼ* positive in clause *k*, so that *jk* is on the list of
+may give it to *bₖ* or *cₖ*. Over 33,952 colorings of small grids that happens
+59,776 times with *xⱼ* positive in clause *k*, so that *jk* is on the list of
 *aₖ*. "Cannot be colored *jk*" would make it an equivalence.
 
 **Four clauses.** The names *jk* presuppose that the four occurrences of *xⱼ*
@@ -131,7 +134,7 @@ cannot be colored. With cycles that never step inside a clause, it can.
 | Check | Result |
 | --- | --- |
 | answer 208 of problems in which a variable occurs once contains (*X* ∨ *X̄* ∨ *l*) | 20 of 20 |
-| their grids, with random cycles (65 of 80 stepping inside a clause) | colorable exactly when satisfiable |
+| their grids, with random cycles (70 of 80 stepping inside a clause) | colorable exactly when satisfiable |
 | the sixteen clauses above | as described |
 | random problems allowing (*x* ∨ *x̄* ∨ *l*), cycles that leave every clause | 200, 0 exceptions |
 
