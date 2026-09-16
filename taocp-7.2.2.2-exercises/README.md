@@ -37,7 +37,7 @@ The news page lists these exercises for §7.2.2.2.
 | 347 | Find the best possible Local Lemma for a given chordal graph with arbitrary weights | |
 | 356 | Prove the Clique Local Lemma | |
 | 363 | Study the stable partial assignments of a satisfiability problem | |
-| 442–444 | Study the UC and PC hierarchy of progressively harder sets of clauses | |
+| [442–444](442-444) | Study the UC and PC hierarchy of progressively harder sets of clauses | confirmed; two places decide what a phrase means |
 | 518 | Reduce 3SAT to testing the permanent of a {−1,0,1,2} matrix for zero | |
 
 ## What came out
@@ -57,6 +57,14 @@ The news page lists these exercises for §7.2.2.2.
   `SetProof`; the two certificates for *fsnark*(99) are 14,451 clauses against
   126,344.
 
+- **[442–444](442-444).** The relation ⊢ₖ is computed exactly as
+  defined, over every partial assignment, and every claim in the three answers
+  comes out. Two spots repay a second reading. The procedure of answer 442(f)
+  has to begin by applying *P*ₖ₋₁ to *F* itself, or it can miss a
+  refutation it already had; and the "if and only if" of exercise 444(c) holds
+  when step E2 may pick either literal of a variable of *F*, but fails when the
+  choice is confined to literals that occur in *F*.
+
 ### Numbers that do not reproduce
 
 | Exercise | Where | Printed | What came out |
@@ -69,6 +77,13 @@ The news page lists these exercises for §7.2.2.2.
 Those four are in the running text, not in an exercise, and they are not a
 quirk of this package: Knuth's own `sat13.w`, compiled and run on his own
 benchmark files, prints exactly what the package prints.
+
+### Two lines outside the exercises
+
+| Where | Printed | What a reader notices |
+| --- | --- | --- |
+| p. 289 | "All of the examples in exercises 439–444 meet this test of honesty" | Exercises 442–444 contain no representations to be honest about; the representations are in exercises 431–441. |
+| p. 702, the index | "Propagation completeness (UC₁), 360." | Propagation completeness is PC₁; UC₁ is unit-refutation completeness. Both are defined on p. 360. |
 
 ## How a reading is put together
 
