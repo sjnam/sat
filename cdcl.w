@@ -303,6 +303,20 @@ func (s *Solver) Value(l Lit) bool {
 @<함수들@>=
 func (s *Solver) SetProof(w io.Writer) { s.proof = w }
 
+@ 결정을 내리기 직전마다, 곧 크누스의 단계 C5마다 지금까지의 트레일을 넘겨받는 문.
+원본에서 선택 \.v의 |show_choices|가 수준과 결정 리터럴을 찍던 자리인데, 여기서는
+트레일 전체를 넘긴다. 그 자리의 트레일은 전파가 끝난 부분 배정이고, 연습문제
+7.2.2.2--363(a)는 그것이 늘 ``안정''하다고---곧 단위 전파로 더 늘릴 수 없다고---말한다.
+원본의 온전성 검사 |sanity|도 그것까지는 보지 않으므로, 확인하려면 바깥에서 들여다볼
+수밖에 없다. 연습문제 363을 검증하다가 보탰다.
+
+넘기는 |level|은 트레일에 담긴 배정의 수준이지, 곧 열릴 새 수준이 아니다. |nil|을
+주면 다시 끈다. 이 문도 |SetProof|처럼 mem을 세지 않으므로 원본과의 셈에 끼어들지
+않는다.
+
+@<함수들@>=
+func (s *Solver) SetTrace(f func(level int, trail []Lit)) { s.trace = f }
+
 @ 증서에 절 하나를 적는 문. |mem| 안에 놓인 대로의 리터럴들을 받는다. 원본의
 |fprintf|가 그렇듯 이 문은 mem을 세지 않는다.
 
@@ -2096,6 +2110,9 @@ if totalLearned >= nextRecycle {
 결정된다.
 
 @<새 수준을 열고...@>=
+if s.trace != nil {
+	@<지금의 트레일을 |trace|에 넘긴다@>
+}
 @<아직 참이 아닌 가정 리터럴 |l|을 찾는다...@>
 llevel += 2
 if l == 0 {
@@ -2108,6 +2125,16 @@ mems++; trail[eptr] = l; eptr++
 mems++; vmem[l>>1].tloc = lptr
 vmem[l>>1].value = llevel + l&1
 agility -= agility >> 13
+
+@ 트레일은 안에서 |int|로 두므로 옮겨 담아 넘긴다. 받는 쪽이 간직해도 탈이 없고,
+고리를 걸지 않았으면 이 일은 아예 일어나지 않는다.
+
+@<지금의 트레일을 |trace|에 넘긴다@>=
+t := make([]Lit, eptr)
+for i := 0; i < eptr; i++ {
+	t[i] = Lit(trail[i])
+}
+s.trace(llevel>>1, t)
 
 @ 원본은 mem이 한도에 이르렀는지 여기서만 살핀다. 부른 쪽이 |context|를 거두었는지도
 여기서 살피되, 매번 묻지 않고 mem이 $2^{22}$쯤 늘 때마다 묻는다. 이것은 mem을 세지

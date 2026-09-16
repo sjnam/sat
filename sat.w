@@ -166,8 +166,8 @@ binaries int  // 리터럴이 둘인 절의 수
 empty    bool // 빈 절을 받았는가
 
 @ 푸는 데 쓰는 것들. 매개변수 |Params|는 크누스의 명령 줄 선택들이고, 푼 뒤에는
-통계와 해가 남는다. |proof|는 배운 절을 적어 둘 곳이다. 이것들의 뜻은
-\.{cdcl.w}에서 설명한다.
+통계와 해가 남는다. |proof|는 배운 절을 적어 둘 곳이고, |trace|는 결정마다 트레일을
+넘겨줄 곳이다. 이것들의 뜻은 \.{cdcl.w}에서 설명한다.
 
 @<|Solver|의 필드@>=
 Params Params     // 푸는 방식을 정하는 매개변수
@@ -177,6 +177,8 @@ truth  []bool     // |truth[v]|는 그 해에서 변수 |v|의 값
 failed []Lit      // 마지막 풀이를 만족할 수 없게 한 가정들
 state  *cdclState // 풀이 사이에 간직하는 상태, 없으면 nil
 proof  io.Writer  // 배운 절을 증서로 적을 곳, 없으면 nil
+
+trace func(level int, trail []Lit) // 결정 직전마다 부를 곳, 없으면 nil
 
 @ 전처리에 쓰는 것들. 매개변수 |SimplifyParams|, 마지막 전처리의 통계, 그리고 줄인 절과
 erp 자료를 담은 결과다. 결과가 있으면 |Solve|는 줄인 절을 푼다. 이것들의 뜻은

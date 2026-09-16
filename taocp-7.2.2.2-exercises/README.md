@@ -36,7 +36,7 @@ The news page lists these exercises for §7.2.2.2.
 | 339 | Relate generating functions for traces to generating functions for pyramids | |
 | 347 | Find the best possible Local Lemma for a given chordal graph with arbitrary weights | |
 | 356 | Prove the Clique Local Lemma | |
-| 363 | Study the stable partial assignments of a satisfiability problem | |
+| [363](363) | Study the stable partial assignments of a satisfiability problem | confirmed, except for one clause in answer 363(g) |
 | [442–444](442-444) | Study the UC and PC hierarchy of progressively harder sets of clauses | confirmed; two places decide what a phrase means |
 | 518 | Reduce 3SAT to testing the permanent of a {−1,0,1,2} matrix for zero | |
 
@@ -57,6 +57,15 @@ The news page lists these exercises for §7.2.2.2.
   `SetProof`; the two certificates for *fsnark*(99) are 14,451 clauses against
   126,344.
 
+- **[363](363).** All ten parts check out, computed from the definitions over
+  every one of the 3ⁿ partial assignments — including the 27 weights of the
+  table on page 619, the seven sets that form *L*₇, and the identity of
+  part (j). The clause in answer 363(g) is the exception: as printed its
+  disjunction runs over *k* ∈ *L*′, and since *l* ∈ *L*′ that clause contains
+  both *x*ₗ and *x̄*ₗ, so it is a tautology and forces nothing. Over *k* ∈ *L*
+  the construction works. Part (a), which asks about Algorithm C's trail, is
+  the first claim in these readings that needed a new eye inside the solver;
+  the package grew `SetTrace` for it.
 - **[442–444](442-444).** The relation ⊢ₖ is computed exactly as
   defined, over every partial assignment, and every claim in the three answers
   comes out. Two spots repay a second reading. The procedure of answer 442(f)

@@ -85,6 +85,15 @@ s.Params.LearnSave = 100   // 원본의 K 선택: 이보다 긴 절은 적지 �
 st, _ := s.Solve(ctx)      // Unsat이면 proof가 증서다
 ```
 
+풀이기가 결정을 내리기 직전마다, 곧 크누스의 단계 C5마다 트레일을 들여다볼 수도 있다.
+원본이 선택 `v`로 찍던 자리다. 그 자리의 트레일은 전파가 끝난 부분 배정이다.
+
+```go
+s.SetTrace(func(level int, trail []sat.Lit) { // nil을 주면 끈다
+    fmt.Println(level, len(trail))
+})
+```
+
 파일에서 읽을 수도 있다.
 
 ```go
