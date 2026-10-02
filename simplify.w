@@ -7,6 +7,7 @@
 @s io.Writer int
 @s testing.T int
 @s Lit int
+@s Params int
 @s Solver int
 @s Status int
 @s Stats int
@@ -1378,7 +1379,7 @@ if cmem[c-litHeadTop].size&3 != 0 {
 @ 새 절이면 제한 없이 강화에 쓴다. 옛 절이면, 리터럴 하나만 빼고 모두 새 절에 나왔을
 때만 쓰고 그 하나를 |u|로 삼는다. 원본은 |size(c)-1|을 부호 없는 수로 셈한다. |c|가
 그새 사라져 크기가 0이면 이것이 매우 큰 수가 되어 |specialcase|가 $-1$이 된다.
-|uint32| 산술이 그 동작을 그대로 옮긴다.
+부호 없는 |uint32| 산술이 그 동작을 그대로 옮긴다.
 
 @<어쩌면 |c|로 강화해...@>=
 switch {
