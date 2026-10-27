@@ -5,7 +5,7 @@
 # `go get`으로 이 꾸러미를 가져다 쓰는 쪽에 GWEB을 깔라고 할 수는 없다.
 #
 #   sat.w   리터럴, 풀이기의 겉모습, 절 쌓기
-#   io.w    크누스 형식과 DIMACS 형식 읽기
+#   io.w    커누스 형식과 DIMACS 형식 읽기
 #   cdcl.w  SAT13의 알맹이 (알고리즘 7.2.2.2C)
 #   simplify.w  SAT12 전처리와 SAT12-ERP 되살림
 #
@@ -18,8 +18,8 @@
 #   factor.w   곱셈기 회로를 거꾸로 돌려 인수분해하기
 #   hamsat.w   컷셋 절을 보태 가며 해밀턴 순환 찾기
 #
-# knuth/ 아래는 크누스의 원본 CWEB 프로그램이다. 옮길 때 곁에 두고 읽는다.
-# testdata/ 아래는 크누스의 SATexamples.tgz에서 고른 작은 문제들이다.
+# knuth/ 아래는 커누스의 원본 CWEB 프로그램이다. 옮길 때 곁에 두고 읽는다.
+# testdata/ 아래는 커누스의 SATexamples.tgz에서 고른 작은 문제들이다.
 #
 # 한글 .w는 kotexgweb을 쓰므로 luatex으로만 조판된다.
 #
