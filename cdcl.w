@@ -780,7 +780,9 @@ for c = vars; c != 0; c-- {
 
 @ 보조 배열들. 원본은 수준마다 두 칸씩 쓰는 배열들을 $2n$칸으로 잡는데, 모든 변수가
 결정이 되는 드문 경우에는 수준 $n$의 다음 칸까지 닿는다. \CEE/에서는 할당의 여유
-덕에 넘어가지만 \GO/는 첨자를 검사하므로 네 칸을 더 잡는다. 바이트 수는 원본대로 센다.
+덕에 넘어가지만 \GO/는 첨자를 검사하므로 네 칸을 더 잡는다. 크누스도 2026년 10월
+29일 판에서 |leveldat|을 $2n+3$칸으로 늘리고 그 세 칸의 바이트까지 셌으니, 바이트
+수는 그대로 원본을 따른다.
 
 @<보조 배열들을 마련한다@>=
 leveldat = make([]int, 2*vars+4)
@@ -788,7 +790,7 @@ learn = make([]int, vars)
 stack = make([]int, 2*vars+4)
 conflictdat = make([]int, 2*vars+4)
 levstamp = make([]int, 2*vars+4)
-bytes += uint64(vars)*(8+4+8+8+8) + buckets*4
+bytes += uint64(vars)*(8+4+8+8+8) + 12 + buckets*4
 for k = 0; k < vars; k++ {
 	mems++; levstamp[k+k] = 0
 }
@@ -1859,11 +1861,12 @@ recyclePoint = 0
 @ 눈금 |j| 이하의 절이 |budget|개를 넘도록 |j|를 정한다. 문턱 눈금에서 남는 몫은
 활동도로 가린다.
 
-원본의 이 자리에는 버그가 있다. 배운 절이 모두 까닭 절이거나 수준 0에서 만족되면
-눈금을 받은 절이 없어 |minrange|가 |buckets| 그대로 남는다. 그러면 원본은 |buckets|칸짜리
-|rangedist|의 끝 너머 |rangedist[buckets]|를 읽는다(\.{knuth/sat13.w}의 2722행).
-주소 검사기(AddressSanitizer)를 붙여 빌드한 원본에 문제 \.{queen-5x5-5}와 선택 \.{j1}을
-주면 곧바로 잡힌다. 그래서 |rangedist|에 늘 0인 칸 하나를 붙여 잡았다.
+원본의 이 자리에는 버그가 있었다. 배운 절이 모두 까닭 절이거나 수준 0에서 만족되면
+눈금을 받은 절이 없어 |minrange|가 |buckets| 그대로 남는다. 그러면 |buckets|칸짜리
+|rangedist|의 끝 너머 |rangedist[buckets]|를 읽는다. 주소 검사기(AddressSanitizer)를
+붙여 빌드한 원본에 문제 \.{queen-5x5-5}와 선택 \.{j1}을 주면 곧바로 잡혔다. 그래서
+|rangedist|에 늘 0인 칸 하나를 붙여 두었다. 크누스에게 알렸더니 2026년 10월 29일 판에서
+원본도 같은 방법으로 고쳐졌다.
 
 @<데이터베이스를 압축한다@>=
 mems++; j = minrange; sz = asserts + rangedist[j]
@@ -1921,20 +1924,21 @@ h++
 값어치가 있느냐고 물을 만하다. 커누스는 중앙 눈금에 절이 꽤 몰리는 문제가 적지만
 분명히 있다는 Biere의 말을 따랐다.
 
-원본은 여기서 |jj|가 양수라고 믿는다. 재활용 간격이 아주 짧으면 그 믿음이 깨진다. 눈금
+원본은 여기서 |jj|가 양수라고 믿었다. 재활용 간격이 아주 짧으면 그 믿음이 깨진다. 눈금
 |j=minrange|에서 남겨야 하는 까닭 절의 수 |asserts|가 |budget| 이상이면
 |t>=rangedist[j]|여서 |jj|가 0 이하가 된다. 선택 \.{j1}을 주면 |clauseHeapSize|가 0이라
-늘 그렇다. 음수인 |jj|로는 원본의 힙 세우기 반복이 음수 첨자로 절 힙의 배열 밖을
-읽는다(\.{knuth/sat13.w}의 2793행, 문제 \.{mutex-fourbits-lemmas-1}에 \.{j2 J1}). 0인
-|jj|로는 빈 힙의 초기화되지 않은 |clause_heap[0]|과 견주고, 그 값에서 나온 주소에 눈금을
-쓴다(2816행과 2820행). 이것은 배열 안쪽이라 주소 검사기도 잡지 못한다. 문제
-\.{poset-nomax-b-12-minus-one}에 \.{j2 J1}을 주면 |asserts=budget=3|,
-|t=rangedist[j]=1|에서 여기에 들고, 최적화해 빌드한 원본은 세그폴트로 죽는다.
+늘 그렇다. 음수인 |jj|로는 옛 판의 힙 세우기 반복이 음수 첨자로 절 힙의 배열 밖을
+읽었다(문제 \.{mutex-fourbits-lemmas-1}에 \.{j2 J1}). 0인 |jj|로는 빈 힙의 초기화되지
+않은 |clause_heap[0]|과 견주고, 그 값에서 나온 주소에 눈금을 썼다. 이것은 배열 안쪽이라
+주소 검사기도 잡지 못한다. 문제 \.{poset-nomax-b-12-minus-one}에 \.{j2 J1}을 주면
+|asserts=budget=3|, |t=rangedist[j]=1|에서 여기에 들고, 최적화해 빌드한 옛 판은
+세그폴트로 죽었다.
 
 그런 때는 힙을 쓰지 않고 |j|를 하나 줄여 문턱 눈금의 절을 모두 떨어뜨린다. 대개는 그것이
 곧 |t|개이고, 힙 크기가 0일 때만 필요보다 많이 버린다. 원본이 제대로 도는 경우에는 이
 갈래로 들어오지 않으므로 mem 수는 그대로다. 간격이 짧아도 원본이 이 조건에 들지 않은
-실행, 가령 벤치마크 셋에 \.{j10 J5}를 준 실행은 원본과 mem이 같았다.
+실행, 가령 벤치마크 셋에 \.{j10 J5}를 준 실행은 원본과 mem이 같았다. 이것도 크누스에게
+알렸고, 2026년 10월 29일 판이 같은 갈래를 넣었다.
 
 @<문턱에서 |t=sz-budget|개의...@>=
 t = sz - budget
@@ -2183,10 +2187,14 @@ nextCheck = checkEvery
 learnedBase = totalLearned
 doomsday = totalLearned + min(par.Doomsday, math.MaxUint64-totalLearned)
 
-@ @<|leveldat|을 비워 둔다@>=
-for k = 0; k < vars; k++ {
+@ 원본은 수준 $n$까지 비우고, 그 다음 칸 하나를 더 $-1$로 둔다. 2026년 10월 29일
+판에서 그렇게 바뀌었다. mem은 반복마다 하나, 마지막 대입에 하나다.
+
+@<|leveldat|을 비워 둔다@>=
+for k = 0; k <= vars; k++ {
 	mems++; leveldat[k+k] = -1; leveldat[k+k+1] = 0
 }
+mems++; leveldat[k+k] = -1
 
 @ 트레일에서 아직 보지 않은 리터럴마다 이진 함의와 긴 절 함의를 따라간다. 이진
 함의는 새로 올라온 리터럴에 대해 이미 곧바로 따라갔으므로, |ebptr| 뒤의 것은 다시
@@ -2813,7 +2821,7 @@ import (
 
 @<시험에 쓰는 함수들@>
 
-@ 첫째 시험은 Rivest의 여덟 절이다. 만족할 수 없고, mem은 301+668이어야 한다.
+@ 첫째 시험은 Rivest의 여덟 절이다. 만족할 수 없고, mem은 301+670이어야 한다.
 마지막 절을 빼면 만족할 수 있고, 원본은 \.{\ x4\ \~x2\ x3\ \~x1}을 찍는다.
 
 @<시험들@>=
@@ -2821,11 +2829,11 @@ func TestSolveRivest(t *testing.T) {
 	const rivest = "x2 x3 ~x4\nx1 x3 x4\n~x1 x2 x4\n~x1 ~x2 x3\n" +
 		"~x2 ~x3 x4\n~x1 ~x3 ~x4\nx1 ~x2 ~x4\nx1 x2 ~x3\n"
 	s := solveText(t, rivest, "", Unsat, nil)
-	wantLine(t, "rivest", s, "Altogether 301+668 mems, 5804 bytes, 3 nodes,"+
+	wantLine(t, "rivest", s, "Altogether 301+670 mems, 5816 bytes, 3 nodes,"+
 		" 3 clauses learned (ave 1.3->1.3), 60 memcells.")
 	seven := rivest[:strings.LastIndex(rivest[:len(rivest)-1], "\n")+1]
 	s = solveText(t, seven, "", Sat, nil)
-	wantLine(t, "rivest7", s, "Altogether 291+142 mems, 5752 bytes, 2 nodes,"+
+	wantLine(t, "rivest7", s, "Altogether 291+144 mems, 5764 bytes, 2 nodes,"+
 		" 0 clauses learned, 47 memcells.")
 	var names []string
 	for _, l := range s.Model() {
@@ -3077,7 +3085,7 @@ func TestSolveResume(t *testing.T) {
 	}
 	solveSolver(t, s, "s1", Sat, nil)
 	solveSolver(t, s, "s0", Sat, nil)
-	wantLine(t, "rivest7", s, "Altogether 291+142 mems, 5752 bytes, 2 nodes,"+
+	wantLine(t, "rivest7", s, "Altogether 291+144 mems, 5764 bytes, 2 nodes,"+
 		" 0 clauses learned, 47 memcells.")
 	@<책임이 있는 가정들을 본다@>
 	@<전처리한 풀이기에 가정을 주어 본다@>
