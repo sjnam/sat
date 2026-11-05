@@ -813,7 +813,7 @@ func reportFixedPoint(nv int, cls, cert []clause, reach []bool) {
 				len(next), pass)
 			return
 		}
-		bad, _, m, _ := check(nv, cls, next)
+		bad, _, _, m, _ := check(nv, cls, next)
 		if bad != 0 {
 			fmt.Printf("  the reduced certificate failed %d times!\n", bad)
 			return
@@ -853,7 +853,7 @@ that the final contradiction really depends on are collected backwards, which
 is how exercise 284 saves work; here it only reports how much of the
 certificate was redundant.
 @<Functions@>=
-func check(nv int, cls, cert []clause) (bad, used int, need []bool,
+func check(nv int, cls, cert []clause) (bad, used, later int, need []bool,
 	dur time.Duration) {
 	start := time.Now()
 	c := newChecker(nv, cls)
@@ -868,7 +868,8 @@ func check(nv int, cls, cert []clause) (bad, used int, need []bool,
 		c.add(cl)
 	}
 	@<Make sure the empty clause follows, and count what it reaches@>
-	return bad, used, need[base:], time.Since(start)
+	@<Count the clauses that a later step uses@>
+	return bad, used, later, need[base:], time.Since(start)
 }
 
 @ @<Make sure the empty clause follows, and count what it reaches@>=
@@ -890,6 +891,31 @@ for i := len(cert) - 1; i >= 0; i-- {
 	}
 }
 
+@ Page 255 says that of the clauses Algorithm C learns, ``fewer than 50,000''
+and ``fewer than 47,000'' respectively ``were actually used in subsequent
+steps.'' That sentence has two readings. The backward one, counted just above,
+asks which clauses the final contradiction rests on; it is what exercise 284
+computes, and the next sentence on page 255 points at exercise 284. The
+forward one is more literal: a clause is used in a subsequent step if any
+later step's propagation draws on it, whether or not that step turns out to
+matter. The second is counted here, from the same dependency lists, so that
+the write-up can quote both and need not guess.
+@<Count the clauses that a later step uses@>=
+drawn := make([]bool, len(c.cls))
+for _, d := range deps {
+	for _, k := range d {
+		drawn[k] = true
+	}
+}
+for _, k := range last {
+	drawn[k] = true
+}
+for i := range cert {
+	if drawn[base+i] {
+		later++
+	}
+}
+
 @* What the answer claims.
 The certificate mode builds the clauses and checks them. The exercise asks for
 $O(q)$ clauses of length at most four, so both are reported; the count comes
@@ -903,7 +929,7 @@ for _, c := range cert {
 		long = len(c)
 	}
 }
-bad, used, reach, dur := check(18*q, cls, cert)
+bad, used, _, reach, dur := check(18*q, cls, cert)
 fmt.Printf("certificate for q=%d: %d clauses, longest %d, failures %d, "+
 	"reached %d, checked in %v\n", q, len(cert), long, bad, used,
 	dur.Round(time.Millisecond))
@@ -925,10 +951,10 @@ does not lean on the three symmetry-breaking unit clauses of $fsnark(q)$; and,
 implicitly, that $q$ must be odd.
 @<Check what the answer says in passing@>=
 cls := fsnarkClauses()
-bad, used, _, _ := check(18*q, cls, certificate(false))
+bad, used, _, _, _ := check(18*q, cls, certificate(false))
 fmt.Printf("without the exclusion clauses for b, c, d: %d clauses, "+
 	"failures %d, reached %d\n", len(certificate(false)), bad, used)
-bad, _, _, _ = check(18*q, cls[3:], certificate(true))
+bad, _, _, _, _ = check(18*q, cls[3:], certificate(true))
 fmt.Printf("against fsnark(%d) without its three unit clauses: failures %d\n",
 	q, bad)
 @<Try an even order@>
@@ -936,7 +962,7 @@ fmt.Printf("against fsnark(%d) without its three unit clauses: failures %d\n",
 @ @<Try an even order@>=
 save := q
 q++
-bad, _, _, _ = check(18*q, fsnarkClauses(), certificate(true))
+bad, _, _, _, _ = check(18*q, fsnarkClauses(), certificate(true))
 st, _, _ := solve(fsnarkClauses(), false)
 fmt.Printf("at q=%d, which is even: %v, and the certificate has %d failures\n",
 	q, st, bad)
@@ -964,13 +990,15 @@ for _, c := range cert {
 		long = len(c)
 	}
 }
-bad, used, reach, dur := check(18*q, cls, cert)
+bad, used, later, reach, dur := check(18*q, cls, cert)
 fmt.Printf("Algorithm C on fsnark(%d): %d+%d mems, %d clauses learned\n",
 	q, stats.IMems, stats.Mems, stats.Learned)
 fmt.Printf("  certificate: %d clauses, average length %.1f, longest %d\n",
 	len(cert), float64(sum)/float64(len(cert)), long)
 fmt.Printf("  failures %d, reached %d (%.1f%%), checked in %v\n", bad, used,
 	100*float64(used)/float64(len(cert)), dur.Round(time.Millisecond))
+fmt.Printf("  a later step draws on %d of them (%.1f%%)\n", later,
+	100*float64(later)/float64(len(cert)))
 reportFixedPoint(18*q, cls, cert, reach)
 fmt.Printf("  the answer's certificate has %d clauses, none longer than 4\n",
 	len(certificate(true)))
@@ -1021,13 +1049,15 @@ if st != sat.Unsat {
 }
 
 @ @<Report and check the waerden certificate@>=
-bad, used, reach, dur := check(97, cls, cert)
+bad, used, later, reach, dur := check(97, cls, cert)
 stats := s.Stats()
 fmt.Printf("waerden(3,10;97): %d clauses, %d+%d mems, %d clauses learned\n",
 	len(cls), stats.IMems, stats.Mems, stats.Learned)
 fmt.Printf("  certificate of %d clauses\n", len(cert))
 fmt.Printf("  failures %d, reached %d (%.1f%%), checked in %v\n", bad, used,
 	100*float64(used)/float64(len(cert)), dur.Round(time.Millisecond))
+fmt.Printf("  a later step draws on %d of them (%.1f%%)\n", later,
+	100*float64(later)/float64(len(cert)))
 reportFixedPoint(97, cls, cert, reach)
 
 @* Testing the checker.
@@ -1135,7 +1165,7 @@ for trial := 0; trial < 200; trial++ {
 		continue
 	}
 	good++
-	bad, _, need, _ := check(nv, cls, cert)
+	bad, _, _, need, _ := check(nv, cls, cert)
 	if bad != 0 {
 		wrong++
 	}
@@ -1166,7 +1196,7 @@ for i, cl := range cert {
 }
 for _, mess := range [][]clause{dropped, changed, reversed} {
 	spoiled++
-	if bad, _, _, _ := check(nv, cls, mess); bad != 0 {
+	if bad, _, _, _, _ := check(nv, cls, mess); bad != 0 {
 		noticed++
 	}
 }

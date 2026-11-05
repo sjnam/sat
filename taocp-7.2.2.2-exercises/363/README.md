@@ -192,8 +192,9 @@ random subsets are closed under intersection, then whatever cannot climb to
 Families for which the construction produces no clauses at all — the whole
 power set — are skipped, since they cannot tell the two readings apart.
 
-Line 3 of this part is the line the errata already amends, from "strict Horn
-clauses" to "definite Horn clauses". The clause itself is on line 4.
+The errata already amends line 3 of the *exercise*, from "strict Horn clauses"
+to "definite Horn clauses". The clause criticized here is a different thing: it
+is in the *answer*, on page 620, which the errata does not touch.
 
 ## 9. Part (j): the sum of the weights
 

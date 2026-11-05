@@ -199,6 +199,28 @@ program, or different parameters — rather than to SAT13 as published. Two of
 the five still come out: the flower snark's "fewer than 47,000" is a good
 bound on 46,019, and its learned count is within 10%. The other three do not.
 
+### Which "used" is meant
+
+"Were actually used in subsequent steps" can be read two ways, and the two
+give very different numbers, so it is worth settling which one the text means
+before saying a figure does not reproduce.
+
+- **Backward.** Which clauses does the final contradiction rest on? That is
+  the marking of exercise 284, which the next sentence on page 255 points to.
+- **Forward.** Which clauses does some later step draw on, whether or not
+  that step turns out to matter? This is the more literal reading of the
+  words. It is counted from the same dependency lists.
+
+| | certificate | backward | forward | page 255 |
+| --- | --- | --- | --- | --- |
+| *fsnark*(99) | 126,344 | 46,019 (36.4%) | 109,632 (86.8%) | fewer than 47,000 |
+| *waerden*(3,10;97) | 60,047 | 58,546 (97.5%) | 58,708 (97.8%) | fewer than 50,000 |
+
+The flower snark settles it. Under the forward reading its count is 109,632,
+nearly nine tenths of the certificate and nowhere near 47,000; under the
+backward reading it is 46,019, just under. So the text means the backward
+count, and the comparisons above are like for like.
+
 Knuth also writes that checking the *waerden*(3,10;97) certificate "with
 straightforward unit-propagations was actually 2.2 gigamems," against 272
 megamems to find it — the point being that checking can cost more than
