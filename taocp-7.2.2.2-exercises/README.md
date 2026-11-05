@@ -20,19 +20,26 @@ readings follow its layout.
 
 ## The readings
 
-These are the §7.2.2.2 exercises from the news page that have been read so
-far.
+The news page lists fourteen exercises from §7.2.2.2, and listed a fifteenth
+until 15 October 2026. Eight of the fifteen are read here — every one that a
+satisfiability solver can be put to work on. The other seven ask for proofs
+about probabilities, dependency graphs, restart strategies, and trace
+monoids, where a solver has nothing to decide.
 
-| Exercise | What the news page asks | What came out |
+| Exercise | What it asks | What came out |
 | --- | --- | --- |
 | [6](006) | Verify a certain (previously unpublished) lower bound on van der Waerden numbers W(3,k) | confirmed; the last step needs a lower bound, and holds only once ln k > 4858 |
 | [57](057) | Find a 6-gate way to match a certain 20-variable Boolean function at 32 given points | confirmed, and six is the minimum |
 | [165](165) | Devise an algorithm to compute the largest positive autarky of given clauses | confirmed in every sentence |
 | [212](212) | Prove that partial latin square construction is NP-complete | one symbol wrong in answer 212(d); part (a) needs a stronger statement |
-| [282](282) | Find a linear certificate of unsatisfiability for the flower snark clauses | confirmed to the last clause; four numbers in the surrounding text do not reproduce |
+| [282](282)† | Find a linear certificate of unsatisfiability for the flower snark clauses | confirmed to the last clause; four numbers in the surrounding text do not reproduce |
 | [363](363) | Study the stable partial assignments of a satisfiability problem | confirmed, except for one clause in answer 363(g) |
 | [442–444](442-444) | Study the UC and PC hierarchy of progressively harder sets of clauses | confirmed; two places decide what a phrase means |
 | [518](518) | Reduce 3SAT to testing the permanent of a {−1,0,1,2} matrix for zero | confirmed, and it counts solutions; two hypotheses go unsaid |
+
+† Exercise 282 was on the news page until 15 October 2026, when it came
+off the list. This reading was written in September; since it turned up four
+figures on page 255 that do not reproduce, it stays.
 
 ## What came out
 
