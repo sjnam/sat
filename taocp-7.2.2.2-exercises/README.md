@@ -32,6 +32,7 @@ far.
 | [282](282) | Find a linear certificate of unsatisfiability for the flower snark clauses | confirmed to the last clause; four numbers in the surrounding text do not reproduce |
 | [363](363) | Study the stable partial assignments of a satisfiability problem | confirmed, except for one clause in answer 363(g) |
 | [442–444](442-444) | Study the UC and PC hierarchy of progressively harder sets of clauses | confirmed; two places decide what a phrase means |
+| [518](518) | Reduce 3SAT to testing the permanent of a {−1,0,1,2} matrix for zero | confirmed, and it counts solutions; two hypotheses go unsaid |
 
 ## What came out
 
@@ -84,6 +85,20 @@ far.
   the construction works. Part (a), which asks about Algorithm C's trail, is
   the first claim in these readings that needed a new eye inside the solver;
   the package grew `SetTrace` for it.
+- **[518](518).** The reduction works, and the answer proves more than the
+  exercise asks: per *M* is not merely nonzero when the clauses are solvable,
+  it equals 2^(4*m*+*n*) times the number of solutions. That exact form is
+  what this reading checks, on 291 random problems, with the permanent
+  evaluated by Ryser's formula and the solutions counted both by brute force
+  and by the `sat` package one at a time. The 6 × 6 gadget of answer 518(a)
+  is verified rather than sampled: both sides of its identity are multilinear
+  in nine letters, so the 512 points of {0,1}⁹ decide it, and exactly four of
+  the 6,561 symmetric shapes work. Two hypotheses are needed but not stated —
+  every variable must occur in some clause, and no literal may occur twice in
+  one clause — and the permanent is off by a factor of two per idle variable
+  without the first. The headline claim has a half that brute force cannot
+  reach: an unsatisfiable 3SAT needs eight clauses, so its matrix is at least
+  51 × 51.
 - **[442–444](442-444).** The relation ⊢ₖ is computed exactly as
   defined, over every partial assignment, and every claim in the three answers
   comes out. Two spots repay a second reading. The procedure of answer 442(f)
