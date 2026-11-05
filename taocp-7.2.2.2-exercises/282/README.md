@@ -14,12 +14,12 @@ and its answer very carefully, then report back.
 | "*O*(*q*) clauses, all of length ≤ 4" | Confirmed: exactly 147*q* − 102 clauses, longest 4. |
 | "the exclusion clauses for *b*'s, *c*'s, *d*'s aren't used" | Confirmed; dropping them leaves a valid certificate. |
 | "doesn't assume the symmetry-breaking unit clauses" | Confirmed; it verifies against *fsnark*(*q*) without them. |
-| "Not all of these clauses are actually necessary" | Confirmed, and quantified: 8,019 of the 14,451 suffice at *q* = 99. |
+| "Not all of these clauses are actually necessary" | Confirmed, and quantified: 7,261 of the 14,451 suffice at *q* = 99. |
 | Theorem G on our solver (§7.2.2.2, p. 254) | Confirmed: Algorithm C's learned clauses check out as a certificate. |
 | p. 255: "about 135,000" learned for *fsnark*(99) | **123,407** with SAT13 as published. |
-| p. 255: "fewer than 47,000" of them used | Confirmed: **46,019**. |
+| p. 255: "fewer than 47,000" of them used | Confirmed: **46,019** by one backward pass, 42,490 at the fixed point. |
 | p. 255: "about 53,000" learned for *waerden*(3,10;97) | **59,629**. |
-| p. 255: "fewer than 50,000" of them used | **58,546**, which is more. |
+| p. 255: "fewer than 50,000" of them used | **58,546** by one backward pass, **57,484** at the fixed point --- more either way. |
 | p. 255: that certificate "found in 272 megamems" | **573 megamems**. |
 
 The exercise and its answer are right, down to the last of the 14,451 clauses
@@ -104,7 +104,7 @@ claim:
 | --- | --- |
 | "the exclusion clauses for *b*'s, *c*'s, and *d*'s aren't used" | Leaving them out gives 1,140 clauses at *q* = 9 instead of 1,221, and every one still verifies. |
 | "This certificate doesn't assume that the symmetry-breaking unit clauses *b*₁,₁ ∧ *c*₁,₂ ∧ *d*₁,₃ … are present" | Checked against *fsnark*(9) with those three clauses removed: no failures. |
-| "Not all of these clauses are actually necessary." | True beyond the exclusion clauses: walking backwards from the final contradiction, 579 of the 1,221 clauses at *q* = 9 are reached, and 8,019 of the 14,451 at *q* = 99. |
+| "Not all of these clauses are actually necessary." | True beyond the exclusion clauses: one backward pass from the final contradiction reaches 579 of the 1,221 clauses at *q* = 9 and 8,019 of the 14,451 at *q* = 99; iterating to a fixed point (§6) brings those to 510 and 7,261. |
 
 The restriction to odd *q* is essential rather than decorative: at *q* = 10 the
 clauses are satisfiable, and the certificate breaks in exactly nine places, all
@@ -125,13 +125,14 @@ With the learned clauses in hand, the same checker verifies them:
 
 | | *q* = 9 | *q* = 99 |
 | --- | --- | --- |
-| mems to refute | 9,563 + 1,635,529 | 104,051 + 764,142,186 |
+| mems to refute | 9,563 + 1,635,531 | 104,051 + 764,142,188 |
 | clauses learned | 530 | 123,407 |
 | clauses in the certificate | 546 | 126,344 |
 | average length | 8.3 | 14.6 |
 | longest clause | 21 | 57 |
 | clauses that fail (119) | **0** | **0** |
-| clauses actually needed | 517 (94.7%) | 46,019 (36.4%) |
+| clauses one backward pass reaches | 517 (94.7%) | 46,019 (36.4%) |
+| at the fixed point of §6 | 516 | 42,490 |
 | time to check | 5 ms | 2.7 s |
 
 (The certificate has a few more clauses than the solver "learned" because
@@ -146,7 +147,30 @@ actual clauses learned by Algorithm C are considerably longer and somewhat
 chaotic (indeed mysterious); it's hard to see just where an 'aha' occurs!" —
 are visible in those two columns.
 
-## 6. The numbers on page 255
+## 6. One backward pass is not a fixed point
+
+Exercise 284's marking — walk back from the final contradiction, taking the
+reason of every literal the walk touches — says which clauses of a certificate
+*that pass* used. It does not say which are necessary. Drop the ones it did
+not reach and the propagations change, so another pass reaches fewer still.
+Iterating until nothing more drops is the honest measure, and every
+intermediate certificate still verifies with no failures; `-passes N` turns it
+on.
+
+| certificate | clauses | one pass | fixed point | passes |
+| --- | --- | --- | --- | --- |
+| answer 282, *q* = 9 | 1,221 | 579 | **510** | 6 |
+| answer 282, *q* = 99 | 14,451 | 8,019 | **7,261** | 5 |
+| Algorithm C, *q* = 9 | 546 | 517 | **516** | 3 |
+| Algorithm C, *q* = 99 | 126,344 | 46,019 | **42,490** | 55 |
+| Algorithm C, *waerden*(3,10;97) | 60,047 | 58,546 | **57,484** | 55 |
+
+So a single pass overstates by up to 13%. The fixed point is still only an
+upper bound on the smallest certificate — nothing here claims minimality — but
+it is a much better one, and the figures quoted elsewhere in this reading say
+which of the two they are.
+
+## 7. The numbers on page 255
 
 The text that introduces certificates gives figures for two runs. They are
 worth checking because the `sat` package is a faithful port and can be
@@ -158,15 +182,15 @@ compared against the original directly.
 | of those, "fewer than 47,000" used later | 46,019 ✔ |
 | *waerden*(3,10;97): "about 53,000" clauses learned | 59,629 |
 | of those, "fewer than 50,000" used later | 58,546 ✘ |
-| that certificate "was found in 272 megamems" | 33,738 + 572,888,427 mems |
+| that certificate "was found in 272 megamems" | 33,738 + 572,888,429 mems |
 
 This is **not** a port artifact. Knuth's `sat13.w` was compiled from the copy
 in [`knuth/`](../../knuth) with `ctangle` and run on his own
 `fsnark-99.sat` and `waerden-3-10-97.sat`; it prints
 
 ```text
-Altogether 104051+764142186 mems, 1395002 bytes, 202054 nodes, 123407 clauses learned ...
-Altogether 33738+572888427 mems, 817597 bytes, 67807 nodes, 59629 clauses learned ...
+Altogether 104051+764142188 mems, 1395014 bytes, 202054 nodes, 123407 clauses learned ...
+Altogether 33738+572888429 mems, 817609 bytes, 67807 nodes, 59629 clauses learned ...
 ```
 
 which is what the package reports, mem for mem and clause for clause. So the
@@ -179,10 +203,10 @@ Knuth also writes that checking the *waerden*(3,10;97) certificate "with
 straightforward unit-propagations was actually 2.2 gigamems," against 272
 megamems to find it — the point being that checking can cost more than
 solving. The shape of that holds here too: the solver takes 0.9 seconds and
-the checker 2.8 seconds on that certificate, with 58,546 of its 60,047 clauses
-really needed.
+the checker 2.8 seconds on that certificate, of whose 60,047 clauses one
+backward pass reaches 58,546 and the fixed point of §6 reaches 57,484.
 
-## 7. What I checked before reporting this
+## 8. What I checked before reporting this
 
 - **The graph**, from two independent constructions (§2).
 - **The clause file**, against Knuth's own, byte for byte (§2).
@@ -197,10 +221,15 @@ really needed.
   reversing the order — is noticed 129 times out of 195; the rest are cases
   where the damage is real but the certificate survives it, since a certificate
   carries slack and the same conclusion can often be reached another way.
+  A tautology follows from anything, so the checker must accept one and report
+  no dependencies for it: 100 of 100.
+- **Every reduced certificate** of §6, which has to keep verifying as clauses
+  are dropped; every intermediate certificate in those runs came back with no
+  failures.
 - **The package's mem counts**, which the full test suite still reproduces
   after the `SetProof` change.
 
-## 8. Running it
+## 9. Running it
 
 ```sh
 cd taocp-7.2.2.2-exercises && make
@@ -213,6 +242,7 @@ cd 282/verify
 ./verify -mode algc -q 99     # Theorem G on fsnark(99); about four seconds
 ./verify -mode waerden        # the other example on page 255
 ./verify -mode selftest       # the checker, made to say no
+./verify -passes 60           # iterate the marking of §6 to its fixed point
 ./verify -q 99 -mode dump     # Knuth's fsnark-99.sat, byte for byte
 ```
 

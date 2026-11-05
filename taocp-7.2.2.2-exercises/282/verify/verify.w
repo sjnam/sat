@@ -94,6 +94,8 @@ seconds.
 flag.StringVar(&mode, "mode", "all",
 	"graph, fsnark, cert, remarks, algc, waerden, selftest, all, or dump")
 flag.IntVar(&q, "q", 9, "the order of the flower snark")
+flag.IntVar(&passes, "passes", 0,
+	"iterate the backward marking this many passes (0 to skip)")
 flag.Parse()
 if q < 3 {
 	fmt.Println("q must be at least 3")
@@ -102,8 +104,9 @@ if q < 3 {
 
 @ @<Global variables@>=
 var (
-	mode string
-	q    int
+	mode   string
+	q      int
+	passes int
 )
 
 @ @<Functions@>=
@@ -725,17 +728,32 @@ func (c *checker) undo(to int) {
 @ Here is the test of (119) for one clause. Its literals are negated, the
 consequences are drawn, and a conflict must appear. What is left behind is the
 list of clauses that took part, which exercise 284 uses to tell which clauses
-of a certificate are really needed.
+of a certificate one backward pass reaches.
+
+A literal of the clause may already be true, in which case negating it
+contradicts what we know at once and nothing need be propagated. The clause
+that forced that literal is then the obvious dependency---but it is not the
+only one, since that clause in turn stands on whatever forced its other
+literals. So the walk starts from the literal itself and follows the whole
+chain, exactly as the conflict case does.
+
+The literal we stopped at, not the clause that forced it, is what says whether
+that happened. A reason of $-1$ means ``forced by nothing,'' and the loop
+itself hands out reason $-1$ to the complements it assigns; so a tautological
+clause, one holding both $x$ and $\bar x$, stops the loop with no reason to
+report. Such a clause follows from anything at all and depends on nothing,
+which is what |hit| $\ge0$ together with an empty |used| says. Testing
+|forced| instead would call it a failure.
 @<Functions@>=
 func (c *checker) rup(cl clause) (bool, []int) {
 	if c.dead {
 		return true, nil
 	}
 	base := len(c.trail)
-	conflict, forced := -1, -1
+	conflict, forced, hit := -1, -1, -1
 	for _, l := range cl {
 		if c.val[l] == 1 { // its negation contradicts what we know
-			forced = c.reason[l]
+			forced, hit = c.reason[l], l
 			break
 		}
 		if c.val[l^1] != 1 {
@@ -743,28 +761,77 @@ func (c *checker) rup(cl clause) (bool, []int) {
 		}
 	}
 	var used []int
-	if forced == -1 {
+	if hit < 0 {
 		conflict = c.propagate()
 		if conflict >= 0 {
-			used = c.participants(conflict)
+			@<Collect what the falsified clause depends on@>
 		}
 	} else if forced >= 0 {
-		used = []int{forced}
+		used = c.cone([]int{hit})
 	}
 	c.undo(base)
-	return forced != -1 || conflict >= 0, used
+	return hit >= 0 || conflict >= 0, used
 }
 
-@ To see which clauses really mattered, start from the falsified clause and
-walk back down the trail, taking the reason of every literal that the walk has
-touched. This is the marking of exercise 284, done with reasons so that
-clauses which propagated something irrelevant are not marked.
+@ The falsified clause itself is not the reason for anything, so it has to be
+named outright; the literals it contains are all false, so their complements
+seed the walk.
+@<Collect what the falsified clause depends on@>=
+seed := make([]int, 0, len(c.cls[conflict]))
+for _, m := range c.cls[conflict] {
+	seed = append(seed, m^1)
+}
+used = append([]int{conflict}, c.cone(seed)...)
+
+@ One backward pass is not a fixed point. Once the clauses it did not reach
+are gone the propagations change, and another pass reaches fewer still. So the
+count above is an upper bound on how much of a certificate is load-bearing,
+not the minimum. Iterating until nothing more drops gives a much better idea,
+at the price of one full check per pass; the \.{-passes} option turns it on,
+and the write-up quotes what it finds. Every pass must still verify, which is
+checked here rather than assumed.
 @<Functions@>=
-func (c *checker) participants(conflict int) []int {
+func reportFixedPoint(nv int, cls, cert []clause, reach []bool) {
+	if passes == 0 {
+		return
+	}
+	cur, mask := cert, reach
+	for pass := 1; ; pass++ {
+		var next []clause
+		for i, keep := range mask {
+			if keep {
+				next = append(next, cur[i])
+			}
+		}
+		if len(next) == len(cur) {
+			fmt.Printf("  a fixed point of %d after %d passes\n",
+				len(next), pass)
+			return
+		}
+		if pass == passes {
+			fmt.Printf("  down to %d after %d passes, still falling\n",
+				len(next), pass)
+			return
+		}
+		bad, _, m, _ := check(nv, cls, next)
+		if bad != 0 {
+			fmt.Printf("  the reduced certificate failed %d times!\n", bad)
+			return
+		}
+		cur, mask = next, m
+	}
+}
+
+@ To see which clauses really mattered, start from a set of literals known to
+be true and walk back down the trail, taking the reason of every literal that
+the walk has touched. This is the marking of exercise 284, done with reasons
+so that clauses which propagated something irrelevant are not marked.
+@<Functions@>=
+func (c *checker) cone(seed []int) []int {
 	seen := map[int]bool{}
-	used := []int{conflict}
-	for _, m := range c.cls[conflict] {
-		seen[m^1] = true
+	var used []int
+	for _, l := range seed {
+		seen[l] = true
 	}
 	for i := len(c.trail) - 1; i >= 0; i-- {
 		l := c.trail[i]
@@ -800,11 +867,11 @@ func check(nv int, cls, cert []clause) (bad, used int, need []bool,
 		deps[i] = d
 		c.add(cl)
 	}
-	@<Make sure the empty clause follows, and count what was needed@>
+	@<Make sure the empty clause follows, and count what it reaches@>
 	return bad, used, need[base:], time.Since(start)
 }
 
-@ @<Make sure the empty clause follows, and count what was needed@>=
+@ @<Make sure the empty clause follows, and count what it reaches@>=
 ok, last := c.rup(nil)
 if !ok {
 	bad++
@@ -836,10 +903,11 @@ for _, c := range cert {
 		long = len(c)
 	}
 }
-bad, used, _, dur := check(18*q, cls, cert)
+bad, used, reach, dur := check(18*q, cls, cert)
 fmt.Printf("certificate for q=%d: %d clauses, longest %d, failures %d, "+
-	"needed %d, checked in %v\n", q, len(cert), long, bad, used,
+	"reached %d, checked in %v\n", q, len(cert), long, bad, used,
 	dur.Round(time.Millisecond))
+reportFixedPoint(18*q, cls, cert, reach)
 @<Report how the count grows with $q$@>
 
 @ @<Report how the count grows with $q$@>=
@@ -859,7 +927,7 @@ implicitly, that $q$ must be odd.
 cls := fsnarkClauses()
 bad, used, _, _ := check(18*q, cls, certificate(false))
 fmt.Printf("without the exclusion clauses for b, c, d: %d clauses, "+
-	"failures %d, needed %d\n", len(certificate(false)), bad, used)
+	"failures %d, reached %d\n", len(certificate(false)), bad, used)
 bad, _, _, _ = check(18*q, cls[3:], certificate(true))
 fmt.Printf("against fsnark(%d) without its three unit clauses: failures %d\n",
 	q, bad)
@@ -896,13 +964,14 @@ for _, c := range cert {
 		long = len(c)
 	}
 }
-bad, used, _, dur := check(18*q, cls, cert)
+bad, used, reach, dur := check(18*q, cls, cert)
 fmt.Printf("Algorithm C on fsnark(%d): %d+%d mems, %d clauses learned\n",
 	q, stats.IMems, stats.Mems, stats.Learned)
 fmt.Printf("  certificate: %d clauses, average length %.1f, longest %d\n",
 	len(cert), float64(sum)/float64(len(cert)), long)
-fmt.Printf("  failures %d, needed %d (%.1f%%), checked in %v\n", bad, used,
+fmt.Printf("  failures %d, reached %d (%.1f%%), checked in %v\n", bad, used,
 	100*float64(used)/float64(len(cert)), dur.Round(time.Millisecond))
+reportFixedPoint(18*q, cls, cert, reach)
 fmt.Printf("  the answer's certificate has %d clauses, none longer than 4\n",
 	len(certificate(true)))
 
@@ -952,13 +1021,14 @@ if st != sat.Unsat {
 }
 
 @ @<Report and check the waerden certificate@>=
-bad, used, _, dur := check(97, cls, cert)
+bad, used, reach, dur := check(97, cls, cert)
 stats := s.Stats()
 fmt.Printf("waerden(3,10;97): %d clauses, %d+%d mems, %d clauses learned\n",
 	len(cls), stats.IMems, stats.Mems, stats.Learned)
 fmt.Printf("  certificate of %d clauses\n", len(cert))
-fmt.Printf("  failures %d, needed %d (%.1f%%), checked in %v\n", bad, used,
+fmt.Printf("  failures %d, reached %d (%.1f%%), checked in %v\n", bad, used,
 	100*float64(used)/float64(len(cert)), dur.Round(time.Millisecond))
+reportFixedPoint(97, cls, cert, reach)
 
 @* Testing the checker.
 A checker that never says no is worth nothing. The decisive test is this: if a
@@ -977,6 +1047,22 @@ shows, and that is reported rather than insisted upon.
 rng := rand.New(rand.NewPCG(282, 2026))
 @<Reject clauses that a satisfying assignment falsifies@>
 @<Accept genuine certificates, and see how easily they break@>
+@<Accept tautologies, which follow from anything@>
+
+@ A clause holding both $x$ and $\bar x$ satisfies (119) for every $F$, and a
+checker that reports it as a failure would be rejecting a theorem. The case
+never arises in the certificates of this reading, so it is made to arise here.
+@<Accept tautologies, which follow from anything@>=
+taut := 0
+for trial := 0; trial < 100; trial++ {
+	cls := randomProblem(rng, 10, 45)
+	c := newChecker(10, cls)
+	v := rng.IntN(10)
+	if ok, used := c.rup(clause{2 * v, 2*v + 1}); ok && len(used) == 0 {
+		taut++
+	}
+}
+fmt.Printf("tautologies: %d of 100 accepted with no dependencies\n", taut)
 
 @ Ten variables and thirty random clauses of three literals are usually
 satisfiable; forty-five are usually not.
