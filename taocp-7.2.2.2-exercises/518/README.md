@@ -10,13 +10,13 @@ one as "reduce 3SAT to testing the permanent of a {−1,0,1,2} matrix for zero".
 | Item | Finding |
 | --- | --- |
 | Exercise 518 (statement) | **Two hypotheses are left unsaid.** Every variable must occur in some clause, and no literal may occur twice in one clause. |
-| Answer 518(a), the 6 × 6 matrix | Confirmed, and not by sampling: both sides are multilinear, so the 512 points of {0,1}⁹ settle it. |
+| Answer 518(a), the 6 × 6 matrix | Confirmed exactly: both sides are multilinear, so the 512 points of {0,1}⁹ settle it. |
 | Answer 518(b), where the 2s fall | Confirmed on 307 random problems, in all six classes of row and column. |
 | Answer 518(c), per *M* = 2^(4*m*+*n*)·*s* | Confirmed on 291 random problems, against two independent counts of *s*. |
 | The headline, "zero if and only if unsatisfiable" | **Not testable head-on.** The smallest unsatisfiable instance makes *M* 51 × 51, and Ryser's formula needs 2⁵¹ terms. |
 
 The construction works, and part (c) is stronger than the headline: the
-permanent does not merely detect satisfiability, it counts solutions.
+permanent gives the number of solutions.
 
 ## 1. What the exercise asks
 
@@ -63,7 +63,7 @@ positions. The identity to verify is between two polynomials in
 entry of its matrix, and a permanent is a sum of products that take one entry
 per row, so each side is multilinear. **A multilinear polynomial in nine
 variables is determined by its values on {0,1}⁹**, so evaluating both sides at
-those 512 points is a proof and not a sample. The answer's *A* passes.
+those 512 points proves the identity. The answer's *A* passes.
 
 Within the symmetric shape the two blocks are free, which is 3⁴ · 3⁴ = 6561
 possibilities; exactly **four** of them satisfy the identity, and the answer's
@@ -86,9 +86,9 @@ Checked on 307 random problems, every row and every column.
 | per *M* = 2^(4*m*+*n*)·*s*, random problems up to 22 × 22 | 291 problems, **0** disagreements |
 | the package's enumeration against brute force | 0 disagreements, 2,600 solutions in all |
 
-Both halves matter. That the permanent is nonzero when the problem is
-solvable is the easy half; that it equals 2^(4*m*+*n*)·*s* on the nose pins
-every digit, and a slip anywhere in the construction would show up at once.
+That the permanent is nonzero when the problem is solvable is the easy half.
+The exact value is the stronger check: a slip anywhere in the construction
+would change it.
 
 ## 6. Two hypotheses the construction needs
 
@@ -112,8 +112,8 @@ promises, and the permanent loses a factor of 2:
 | *n* = 5 | a quarter |
 
 Both are mild — a repeated literal makes a clause shorter than ternary, and an
-idle variable is usually dropped before counting — but the formula is exact,
-so its hypotheses have to be exact too.
+idle variable is usually dropped before counting — but part (c) is an exact
+identity, and it needs them.
 
 ## 7. The example of page 188, and a limit
 
@@ -130,9 +130,9 @@ always leave one standing; and over two variables every clause of three
 distinct literals contains a complementary pair, hence is a tautology. An
 unsatisfiable instance therefore needs *m* ≥ 8 and *n* ≥ 3, which makes *M*
 at least 51 × 51. **The "zero" half of "zero if and only if unsatisfiable"
-cannot be exercised by brute force at all.** What can be done is what is done
-here: test the exact formula wherever the permanent is computable, which pins
-the value rather than merely its sign.
+cannot be exercised by brute force at all.** So this reading tests the exact
+formula wherever the permanent is computable, which checks the value itself and
+not only whether it is zero.
 
 ## 8. Running it
 

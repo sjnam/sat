@@ -18,8 +18,8 @@ and its answer very carefully, then report back.
 | Answer 363(g), the clause to introduce | **Wrong as printed:** the disjunction must run over *k* ∈ *L*, not *k* ∈ *L*′. |
 | Answer 363(h), (i), (j) | Confirmed. |
 
-Nine parts out of ten are right. The tenth is a slip of one symbol, but it is
-the kind that stops the construction from working at all.
+Nine parts out of ten are right. The tenth is a slip of one symbol, and it
+stops the construction from working at all.
 
 ## 1. What the exercise asks
 
@@ -58,8 +58,8 @@ answered in section 3.
 > currently on the trail in step C5 of Algorithm C is stable.
 
 The answer is "True; indeed, this is an important invariant property of
-Algorithm C." It is worth noticing that Knuth's own program does not check it.
-`sat13.w` carries a `sanity` routine, switched on by setting
+Algorithm C." Knuth's own program does not check it, though: `sat13.w` carries
+a `sanity` routine, switched on by setting
 `sanity_checking` to 1, which goes through the clauses, the watch lists, the
 heap, the trail and the variables; of the trail it verifies `tloc`, `reason`,
 `value` and the binary reasons, but never asks whether the assignment is
@@ -70,8 +70,7 @@ The `sat` package is a Go rendering of `SAT13`, and it had left out both the
 option, on the ground that neither costs any mems. To answer part (a) the
 package therefore grew one small hook, `SetTrace`, which hands the caller the
 trail just before each decision — the moment step C5 describes — and costs
-nothing when it is not used. It is the same bargain as `SetProof`, which
-exercise 282 needed.
+nothing when it is not used. Exercise 282 needed `SetProof` on the same terms.
 
 With the hook in place, this reading builds its own clauses, hands them to the
 solver, and checks each trail against those same clauses from the definition:
@@ -89,8 +88,7 @@ Part (b) asks for the weights of the four clauses *F* of 7.2.2.2–(1), namely
 {12̄, 23, 1̄3̄, 1̄2̄3}. The answer says *W*(001) = 1, *W*(∗∗∗) = *p*₁*p*₂*p*₃,
 and *W*(*x*) = 0 otherwise. All 27 assignments were checked: it is so. The
 first of those says that all three variables are constrained in the one
-solution, which is easy to miss and easy to verify — three of the four clauses
-have exactly one true literal there.
+solution: three of the four clauses have exactly one true literal there.
 
 Part (e) asks for the weights when the only clause is 123. The answer prints a
 table of 27 entries, and the program prints its own:
@@ -162,13 +160,12 @@ answer is one sentence:
 > **(g)** If *L* = *L*′ \ *l* and *L*′ ∈ 𝓛 but *L* ∉ 𝓛, introduce the clause
 > `(x_l ∨ ⋁_{k∈L′} x̄_k)`.
 
-The idea is right and it is the only thing that could work: where the family
-stops, a clause has to make *L* unstable by forcing *l*. But the disjunction
-is one element too wide. Since *L* = *L*′ \ *l*, the literal *l* belongs to
-*L*′, so the clause contains *x̄*ₗ as well as *x*ₗ: it is a tautology. A
-tautology is satisfied by everything, so it never makes any assignment
-unstable, and in Knuth's own notation (page 187) such clauses are written ℘ and
-thrown away.
+The idea is right: where the family stops, a clause has to make *L* unstable
+by forcing *l*. But the disjunction is one element too wide. Since
+*L* = *L*′ \ *l*, the literal *l* belongs to *L*′, so the clause contains
+*x̄*ₗ as well as *x*ₗ: it is a tautology. A tautology is satisfied by
+everything, so it never makes any assignment unstable, and in Knuth's own
+notation (page 187) such clauses are written ℘ and thrown away.
 
 Running the disjunction over *k* ∈ *L* instead gives
 
@@ -182,9 +179,9 @@ every member of 𝓛 alone. The program builds both versions and compares:
 | the twelve sets of part (f) | 13 clauses, family rebuilt exactly | fails |
 | 499 random families that need clauses | 0 failures | **all 499 fail** |
 
-The failures are not subtle. With tautologies for clauses nothing is ever
-forced, so every subset of {1,…,*n*} is stable and every one of them ends up
-below {1,…,*n*} — the construction returns the whole power set instead of 𝓛.
+With tautologies for clauses nothing is ever forced, so every subset of
+{1,…,*n*} is stable and every one of them ends up below {1,…,*n*} — the
+construction returns the whole power set instead of 𝓛.
 
 The families used for the random test are built to satisfy the hypotheses:
 random subsets are closed under intersection, then whatever cannot climb to
@@ -216,8 +213,7 @@ probabilities: 0 failures.
   strings with 27 printed products rather than of floating-point numbers.
 - **The solver**, for part (a), through a new hook that shows the trail. The
   package's own test suite still reproduces Knuth's mem counts exactly
-  afterwards, which is the point of the port: the hook costs nothing when it
-  is not used.
+  afterwards; the hook costs nothing when it is not used.
 - **Both readings of part (g)**, on the answer's own family and on 499 random
   ones.
 

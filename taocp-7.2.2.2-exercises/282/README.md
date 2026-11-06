@@ -39,8 +39,8 @@ A *certificate of unsatisfiability* for a family *F* is a sequence of clauses
 
 > *F* ∧ *C*₁ ∧ ⋯ ∧ *C*ᵢ₋₁ ∧ *C̄*ᵢ ⊢₁ ε,  1 ≤ *i* ≤ *t*,  (119)
 
-where ⊢₁ means "unit propagation reaches a contradiction." Checking one costs
-nothing and requires no trust in whatever produced it, which is the point.
+where ⊢₁ means "unit propagation reaches a contradiction." Checking one is
+cheap, and needs no trust in whatever produced it.
 
 ## 2. The clauses
 
@@ -64,9 +64,8 @@ The clauses themselves are generated in the order of Knuth's own
 ./verify -q 99 -mode dump | diff - SATexamples/benchmarks-UNSAT/fsnark-99.sat
 ```
 
-reports no difference. That matters: it means the solver here sees exactly the
-instance the book is talking about, numbers its variables the same way, and
-spends the same mems.
+reports no difference. So the solver here sees exactly the instance the book is
+talking about, numbers its variables the same way, and spends the same mems.
 
 Solved, they behave as exercise 176(b) and (c) say: unsatisfiable for odd *q*,
 satisfiable for even *q* (checked for 3 ≤ *q* ≤ 8, and at *q* = 10).
@@ -106,12 +105,11 @@ claim:
 | "This certificate doesn't assume that the symmetry-breaking unit clauses *b*₁,₁ ∧ *c*₁,₂ ∧ *d*₁,₃ … are present" | Checked against *fsnark*(9) with those three clauses removed: no failures. |
 | "Not all of these clauses are actually necessary." | True beyond the exclusion clauses: one backward pass from the final contradiction reaches 579 of the 1,221 clauses at *q* = 9 and 8,019 of the 14,451 at *q* = 99; iterating to a fixed point (§6) brings those to 510 and 7,261. |
 
-The restriction to odd *q* is essential rather than decorative: at *q* = 10 the
-clauses are satisfiable, and the certificate breaks in exactly nine places, all
-of them in the stage that asserts that `a_j`, `e_j`, `f_j` have three
-different colors.
+The restriction to odd *q* cannot be dropped: at *q* = 10 the clauses are
+satisfiable, and the certificate breaks in exactly nine places, all of them in
+the stage that asserts that `a_j`, `e_j`, `f_j` have three different colors.
 
-## 5. Theorem G, tested rather than believed
+## 5. Theorem G on Algorithm C's own clauses
 
 Theorem G (page 254) says that the clauses Algorithm C learns are themselves a
 certificate. To test that, the solver has to hand them over, and the `sat`
@@ -139,13 +137,13 @@ With the learned clauses in hand, the same checker verifies them:
 on-the-fly subsumption shortens clauses in place, and each shortened clause is
 written out as well; Knuth marks those lines with an extra blank.)
 
-The comparison with §3 is the interesting part. Knuth's hand-built certificate
-for *q* = 99 has 14,451 clauses, none longer than 4, and is checked in 27
-milliseconds. Algorithm C's has 126,344 clauses averaging 14.6 literals, and
-takes a hundred times longer to check. The answer's closing words — "the
-actual clauses learned by Algorithm C are considerably longer and somewhat
-chaotic (indeed mysterious); it's hard to see just where an 'aha' occurs!" —
-are visible in those two columns.
+Set that beside §3. Knuth's hand-built certificate for *q* = 99 has 14,451
+clauses, none longer than 4, and is checked in 27 milliseconds. Algorithm C's
+has 126,344 clauses averaging 14.6 literals, and takes a hundred times longer
+to check. The answer's closing words — "the actual clauses learned by
+Algorithm C are considerably longer and somewhat chaotic (indeed mysterious);
+it's hard to see just where an 'aha' occurs!" — are visible in those two
+columns.
 
 ## 6. One backward pass is not a fixed point
 
@@ -153,7 +151,7 @@ Exercise 284's marking — walk back from the final contradiction, taking the
 reason of every literal the walk touches — says which clauses of a certificate
 *that pass* used. It does not say which are necessary. Drop the ones it did
 not reach and the propagations change, so another pass reaches fewer still.
-Iterating until nothing more drops is the honest measure, and every
+Iterating until nothing more drops gives a better measure, and every
 intermediate certificate still verifies with no failures; `-passes N` turns it
 on.
 
@@ -172,9 +170,9 @@ which of the two they are.
 
 ## 7. The numbers on page 255
 
-The text that introduces certificates gives figures for two runs. They are
-worth checking because the `sat` package is a faithful port and can be
-compared against the original directly.
+The text that introduces certificates gives figures for two runs. Since the
+`sat` package is a faithful port, each of them can be compared against the
+original directly.
 
 | Claim on page 255 | Here |
 | --- | --- |
@@ -202,7 +200,7 @@ bound on 46,019, and its learned count is within 10%. The other three do not.
 ### Which "used" is meant
 
 "Were actually used in subsequent steps" can be read two ways, and the two
-give very different numbers, so it is worth settling which one the text means
+give very different numbers, so which one the text means has to be settled
 before saying a figure does not reproduce.
 
 - **Backward.** Which clauses does the final contradiction rest on? That is

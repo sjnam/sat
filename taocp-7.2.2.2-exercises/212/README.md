@@ -82,7 +82,7 @@ Colors *jk* and j̅k̅, a permutation *σ* made of 4-cycles, and lists for the
 4*n* vertices *jk* and the 3*m* vertices *aₖ*, *bₖ*, *cₖ*. The program names
 everything by occurrence rather than by clause, for a reason given below.
 
-**The reduction.** The argument behind the answer does more than decide: in
+**The reduction.** The argument behind the answer counts as well as decides: in
 column 2 the vertices *aₖ*, *bₖ*, *cₖ* use up every barred color, which forces
 each variable's four vertices to agree, and column 1 of clause *k* can then be
 completed in 2*tₖ* ways, where *tₖ* is the number of true literals. So the
@@ -219,7 +219,7 @@ gadget in exactly one way.
 | every coloring fills the square by hand; every solution decodes to a coloring | 0 exceptions |
 | with *k* = *K*′, under the array reading of section 5 | equal when no list is empty; differ in 437 of 557 grids with an empty list |
 
-The last row repeats the point of section 5 from the other side: under the
+The last row shows the difference of section 5 from the other side: under the
 array reading the construction fails only when some list is empty, which a
 reduction can test for first.
 

@@ -971,8 +971,8 @@ q = save
 @* Algorithm C's own certificate.
 Theorem G says that the clauses Algorithm C learns are themselves a
 certificate of unsatisfiability. The package now hands them over through
-|SetProof|, so the claim can be tested rather than believed; and once they are
-in hand, the two certificates can be compared.
+|SetProof|, so the claim can be put to the test; and once they are in hand,
+the two certificates can be compared.
 @<Check the certificate that Algorithm C produces@>=
 cls := fsnarkClauses()
 st, stats, cert := solve(cls, true)

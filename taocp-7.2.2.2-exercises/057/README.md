@@ -18,11 +18,11 @@ and its answer very carefully, then report back.
 | Which tables allow six | Five of the twelve: the 5th, 6th, 9th, 10th, and 11th. |
 
 Everything in the answer is right. The exercise asks for six operations, and
-its exclamation mark suggests that this is a surprise; what this reading adds
-is that it cannot be beaten. No Boolean chain of five or fewer steps, on any of
-the twenty variables, matches Table 2. That is shown twice, by an exhaustive
-search and by a SAT solver, and the two share nothing but a short argument
-that tells them where to look.
+its exclamation mark suggests that this is a surprise; six is also the fewest
+possible. No Boolean chain of five or fewer steps, on any of the twenty
+variables, matches Table 2. That is shown twice, by an exhaustive search and
+by a SAT solver, and the two share nothing but a short argument that tells
+them where to look.
 
 ## 1. What the exercise asks
 
@@ -115,9 +115,9 @@ which agrees with the tenth table in every position that is not a star.
 
 ## 6. Five operations are not enough
 
-The count of six is what the exercise asks for. It is natural to ask whether it
-is the best possible, and it is. Nothing in the answer claims this, so this
-section is an addition, not a correction.
+The exercise asks for six operations, and the answer claims nothing about
+five. Five turn out to be impossible, so this section is an addition, not a
+correction.
 
 The two searches rest on one observation. Take a shortest chain that matches
 Table 2, say with *r* ≤ 5 steps, written as a normal chain with the output
@@ -200,7 +200,7 @@ With every optional clause in place:
 | 4 | UNSAT | 58,535 megamems, 87 s |
 | 5 | — | not attempted; the cost grows more than a hundredfold a step |
 
-The observation of §6 turns one hopeless instance into a thousand small ones.
+The observation of §6 replaces that one instance with a thousand small ones.
 
 ## 9. What I checked before reporting this
 

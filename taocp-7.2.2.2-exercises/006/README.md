@@ -18,9 +18,8 @@ Waerden numbers W(3, *k*)".
 | "(1 − *y*)ᵈ = exp(−*yd* + *O*(*y*²*d*)) = *O*(1)" | **The step needs a lower bound, and the constant is tiny.** Here *yd* = 24 exactly, so (1 − *y*)ᵈ → e⁻²⁴, and "sufficiently large" means ln *k* ≥ 4857.97. |
 | W(3, *k*) = Ω(*k*²/(log *k*)³) | Confirmed. The same argument with *p* = (3 ln *k*)/*k* gives Ω((*k*/log *k*)²). |
 
-The bound is right, and the sketch proves it. What the sketch does not show is
-how late it starts to work with the constants it chooses: from *k* ≈ 10²¹¹⁰
-on.
+The bound is right, and the sketch proves it; but with the constants it
+chooses, the argument begins to work only from *k* ≈ 10²¹¹⁰ on.
 
 ## 1. What the exercise asks
 

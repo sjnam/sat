@@ -90,17 +90,17 @@ figures on page 255 that do not reproduce, it stays.
   disjunction runs over *k* ∈ *L*′, and since *l* ∈ *L*′ that clause contains
   both *x*ₗ and *x̄*ₗ, so it is a tautology and forces nothing. Over *k* ∈ *L*
   the construction works. Part (a), which asks about Algorithm C's trail, is
-  the first claim in these readings that needed a new eye inside the solver;
-  the package grew `SetTrace` for it.
+  the first claim in these readings that needed a look inside the solver as it
+  runs; the package grew `SetTrace` for it.
 - **[518](518).** The reduction works, and the answer proves more than the
-  exercise asks: per *M* is not merely nonzero when the clauses are solvable,
-  it equals 2^(4*m*+*n*) times the number of solutions. That exact form is
-  what this reading checks, on 291 random problems, with the permanent
+  exercise asks: per *M* is zero exactly when the clauses are unsatisfiable,
+  and otherwise equals 2^(4*m*+*n*) times the number of solutions. That exact
+  form is what this reading checks, on 291 random problems, with the permanent
   evaluated by Ryser's formula and the solutions counted both by brute force
   and by the `sat` package one at a time. The 6 × 6 gadget of answer 518(a)
-  is verified rather than sampled: both sides of its identity are multilinear
-  in nine letters, so the 512 points of {0,1}⁹ decide it, and exactly four of
-  the 6,561 symmetric shapes work. Two hypotheses are needed but not stated —
+  is settled exactly: both sides of its identity are multilinear in nine
+  letters, so the 512 points of {0,1}⁹ decide it, and exactly four of the
+  6,561 symmetric shapes work. Two hypotheses are needed but not stated —
   every variable must occur in some clause, and no literal may occur twice in
   one clause — and the permanent is off by a factor of two per idle variable
   without the first. The headline claim has a half that brute force cannot

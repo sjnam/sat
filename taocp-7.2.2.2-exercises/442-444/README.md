@@ -20,8 +20,8 @@ and its answer very carefully, then report back.
 | p. 702, "Propagation completeness (UC₁)" | Propagation completeness is PC₁. |
 
 Nothing in the three answers is wrong. Two sentences, though, say a little less
-than they need to, and both are about the same thing: what happens at the edge
-of a definition, where a quantifier runs out of room.
+than they need to, and both concern the same corner of the definition of ⊢ₖ:
+what happens when no fresh variable is left to spend.
 
 ## 1. What the exercises ask
 
@@ -47,20 +47,18 @@ Two phrases in the definition of ⊢ₖ do the work. **Strictly distinct** means
 that no two of *l*₁, …, *l*ₚ share a variable. And the literals **need not
 occur in *F***: nothing says they do.
 
-## 2. Computing the relation instead of trusting it
+## 2. Computing the relation from its definition
 
-These are small objects — four clauses on three variables is already an
-interesting family — so the program computes ⊢ₖ exactly as defined. A set *L*
-of strictly distinct literals is the same thing as a partial assignment, and
-there are 3ⁿ of those; for each one and each level *k* the program stores
+These are small objects, so the program computes ⊢ₖ exactly as defined. A set
+*L* of strictly distinct literals is the same thing as a partial assignment,
+and there are 3ⁿ of those; for each one and each level *k* the program stores
 {*l* | *F* | *L* ⊢ₖ *l*} and the truth of *F* | *L* ⊢ₖ ε. A prefix
 (*l*₁, …, *l*ᵨ₋₁) is itself a partial assignment, so the sequences the
 definition calls for are found by a breadth-first search, and the strictly
 distinct rule holds itself: a prefix cannot reuse a variable it has spent.
 
-Nothing in that is a heuristic or a shortcut. The claims are then checked
-against the tables, exhaustively where the universe is small enough and on
-random samples otherwise.
+The claims are then checked against the tables, exhaustively where the
+universe is small enough and on random samples otherwise.
 
 ## 3. Exercise 442
 
@@ -83,15 +81,15 @@ empty and *L*₃ is everything.
 
 Answer 442(f) says that when the procedure ends in the empty clause, "every
 literal is in *Lₖ*". At *k* ≥ 2 that is what the tables show. At *k* = 1 it is
-not, and the reason is worth seeing. Let *F* = {2, 12̄, 1̄2̄}. Unit propagation
-forces 2, then 1, then 1̄, so *F* ⊢₁ 1, *F* ⊢₁ 1̄, *F* ⊢₁ 2, and *F* ⊢₁ ε. But
-no sequence of strictly distinct literals ends in 2̄: every prefix that gets
-anywhere spends the variable 2 at its first step, and it cannot be spent twice.
-So *L*₁(*F*) = {1, 1̄, 2}, one literal short of everything. In 36,000 runs this
+not. Let *F* = {2, 12̄, 1̄2̄}. Unit propagation forces 2, then 1, then 1̄, so
+*F* ⊢₁ 1, *F* ⊢₁ 1̄, *F* ⊢₁ 2, and *F* ⊢₁ ε. But no sequence of strictly
+distinct literals ends in 2̄: every prefix that gets anywhere spends the
+variable 2 at its first step, and it cannot be spent twice. So
+*L*₁(*F*) = {1, 1̄, 2}, one literal short of everything. In 36,000 runs this
 happened 320 times, always at *k* = 1.
 
 It costs the answer nothing, because part (f) handles *k* = 1 separately, by
-unit propagation. It is the sentence, not the procedure, that overreaches.
+unit propagation. The procedure is right; only the sentence overreaches.
 
 ### The line that answer 442(f) leaves out
 
@@ -233,8 +231,7 @@ let *F* = {1̄ ∨ *C* | *C* ∈ *H*}. Both values of *x*₁ leave *F* satisfiab
 2̄ and is lost. The clause 1̄23̄4̄ has two negated auxiliary variables — just
 what the page rules out.
 
-Two smaller things on the same subject, offered as observations rather than
-corrections:
+Two smaller things on the same subject, neither of them an error:
 
 - Page 289 says "All of the examples in exercises 439–444 meet this test of
   honesty." Exercises 442, 443, and 444 contain no representations of

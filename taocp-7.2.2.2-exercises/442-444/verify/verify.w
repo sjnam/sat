@@ -711,12 +711,12 @@ if _, _, d := c.pk(0, k, false); d != c.lev[k].contra[0] {
 	unprimed[k]++
 }
 
-@ Without the extra call the procedure is not merely slower, it is wrong; and
-the smallest witness is as small as a witness can be. Let $F=\{\epsilon\}$ on
-one variable and let $k=3$. Then $P_3$ calls $P_2(F\mid x_1)$ and
-$P_2(F\mid\bar x_1)$; each of those has no variable left to try, so each
-returns its argument rather than $\{\epsilon\}$, and $P_3$ concludes that all
-is well. Unit propagation, at the bottom of the recursion, is never reached.
+@ Without the extra call the procedure can miss a refutation, and the smallest
+witness is as small as a witness can be. Let $F=\{\epsilon\}$ on one variable
+and let $k=3$. Then $P_3$ calls $P_2(F\mid x_1)$ and $P_2(F\mid\bar x_1)$;
+each of those has no variable left to try, so each returns its argument rather
+than $\{\epsilon\}$, and $P_3$ concludes that all is well. Unit propagation,
+at the bottom of the recursion, is never reached.
 @<Show what the extra call is for@>=
 gap := leveled(fam{n: 1, cl: []uint32{0}}, 3)
 _, _, raw := gap.pk(0, 3, false)

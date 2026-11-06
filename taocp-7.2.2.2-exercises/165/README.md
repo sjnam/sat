@@ -15,10 +15,10 @@ and its answer very carefully, then report back.
 | "A simple variant of Algorithm 7.1.1C … in linear time" | Confirmed: at most 2*N* steps, where writing the clauses out costs quadratic time. |
 | The bracketed remark about autarkies inside a given set of literals | Confirmed on 3,600 families. |
 
-The answer is right in every sentence. This reading adds evidence rather than
-corrections: brute force for small families, an implementation of the variant
+The answer is right in every sentence, so there is nothing here to correct,
+only evidence: brute force for small families, an implementation of the variant
 of Algorithm 7.1.1C with Knuth's own data structures, and the `sat` package as
-an independent judge for problems of a hundred variables.
+an independent check for problems of a hundred variables.
 
 ## 1. What the exercise asks
 
@@ -62,7 +62,7 @@ union of positive autarkies is a positive autarky." Brute force confirmed it
 on every family of at most five clauses on three variables, and on random
 families of up to ten variables: 103,583 families, no exception.
 
-The word *positive* is doing real work there. For general autarkies the union
+The word *positive* cannot be dropped. For general autarkies the union
 need not even be a set of strictly distinct literals, and a maximum need not
 exist: {12, 1̄2̄} has the two autarkies {1, 2̄} and {1̄, 2}, each maximal.
 
@@ -92,10 +92,11 @@ once in C1, every proposition enters the stack at most once so every hypothesis
 is seen at most once in C4, and a clause's count reaches zero at most once so
 every conclusion is seen at most once in C5.
 
-The change to C1 and C5 is not a nicety. Writing the *t* Horn clauses out
-costs *s*·*t* cells for a clause with *s* positive and *t* negative literals.
-Take one clause (*x*ₖ₊₁ ∨ ⋯ ∨ *x*₂ₖ ∨ *x̄*₁ ∨ ⋯ ∨ *x̄*ₖ) together with the
-*k* unit clauses (*x̄*ₖ₊₁), …, (*x̄*₂ₖ):
+The change to C1 and C5 is what keeps the time linear. Writing the *t* Horn
+clauses out costs *s*·*t* cells for a clause with *s* positive and *t*
+negative literals. Take one clause
+(*x*ₖ₊₁ ∨ ⋯ ∨ *x*₂ₖ ∨ *x̄*₁ ∨ ⋯ ∨ *x̄*ₖ) together with the *k* unit
+clauses (*x̄*ₖ₊₁), …, (*x̄*₂ₖ):
 
 | *k* | *N* | steps, modified | steps, written out |
 | --- | --- | --- | --- |
