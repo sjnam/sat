@@ -252,8 +252,12 @@ cd 057/verify
 ## References
 
 Donald E. Knuth, *The Art of Computer Programming*, Volume 4B (Addison-Wesley,
-2022), §7.2.2.2: Table 2 and Eq. (27) on pp. 198–199, exercises 53, 56, and 57
-on p. 321, their answers on pp. 557–558; exercises 477 and 478 on pp. 362–363,
-their answers on p. 642. The construction of clauses for learning a DNF
-is due to A. P. Kamath, N. K. Karmarkar, K. G. Ramakrishnan, and M. G. C.
-Resende, *Mathematical Programming* **57** (1992), 215–238.
+2022), §7.2.2.2: Table 2 and Eq. (27) on pp. 198–199; exercises 53, 56, and 57
+on p. 321, with their answers on pp. 557–558.
+
+The same section for Boolean chains: exercises 477 and 478 on pp. 362–363,
+with their answers on p. 642.
+
+A. P. Kamath, N. K. Karmarkar, K. G. Ramakrishnan, and M. G. C. Resende,
+*Mathematical Programming* **57** (1992), 215–238, for the construction of
+clauses that learn a DNF.

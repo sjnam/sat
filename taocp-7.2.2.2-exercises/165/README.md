@@ -165,7 +165,11 @@ cd 165/verify
 
 Donald E. Knuth, *The Art of Computer Programming*, Volume 4B (Addison-Wesley,
 2022), §7.2.2.2: autarkies and Algorithm X on pp. 228–229; exercises 156–165
-on p. 330; answers 157 and 165 on pp. 578 and 580. Volume 4A (2011), §7.1.1:
-Algorithm C, "Core computation for definite Horn clauses," on pp. 59–60. The
-answer credits the exercise to unpublished work of O. Kullmann, V. W. Marek,
-and M. Truszczyński.
+on p. 330; answers 157 and 165 on pp. 578 and 580.
+
+Volume 4A (2011), §7.1.1: Algorithm C, "Core computation for definite Horn
+clauses," on pp. 59–60, whose arrays and stack answer 165 keeps, changing only
+steps C1 and C5.
+
+O. Kullmann, V. W. Marek, and M. Truszczyński, unpublished work, to which the
+answer credits the exercise.

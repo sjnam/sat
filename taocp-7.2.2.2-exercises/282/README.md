@@ -269,11 +269,20 @@ cd 282/verify
 ## References
 
 Donald E. Knuth, *The Art of Computer Programming*, Volume 4B (Addison-Wesley,
-2022), §7.2.2.2: certificates of unsatisfiability and Theorem G on pp. 253–255,
-exercises 277–284 on p. 341, exercise 282's answer on p. 602; exercise 176
-(p. 331) and its answer (p. 582) for the flower snark. The
-certificate format and the reverse-unit-propagation idea are due to E. Goldberg
-and Y. Novikov, *Proceedings of DATE* **6**,1 (2003), 886–891, and A. Van
-Gelder, *Proc. Int. Symp. on Artificial Intelligence and Math.* **10** (2008).
-Knuth's benchmark files and generators are in
+2022), §7.2.2.2: certificates of unsatisfiability, (119), and Theorem G on
+pp. 253–255; exercises 277–284 on p. 341 and answer 282 on p. 602.
+
+The same section for the flower snark: exercise 176 on p. 331, with its figure
+of *J*₅ and *L*(*J*₅), and answer 176 on p. 582.
+
+E. Goldberg and Y. Novikov, *Proceedings of DATE* **6**,1 (2003), 886–891, who
+pointed out that a CDCL solver produces a certificate as a byproduct of its
+run — the observation behind Theorem G.
+
+A. Van Gelder, *Proc. Int. Symp. on Artificial Intelligence and Math.* **10**
+(2008), 9 pages, from whom the checking procedure of (119) has its name,
+reverse unit propagation.
+
+Knuth's benchmark files and generators, `fsnark-99.sat` and
+`waerden-3-10-97.sat` among them, are in
 [SATexamples.tgz](https://www-cs-faculty.stanford.edu/~knuth/programs/SATexamples.tgz).

@@ -158,9 +158,14 @@ The package needed no change for this reading.
 
 Donald E. Knuth, *The Art of Computer Programming*, Volume 4B (Addison-Wesley,
 2022), §7.2.2.2: clauses as sets of strictly distinct literals on p. 187; the
-clauses (7) on p. 188; exercise 518 on p. 367 and its answer on p. 653. The
-construction is due to A. Ben-Dor and S. Halevi, *Israel Symposium on the
-Theory of Computing Systems* **2** (IEEE, 1993),
-108–117. That the permanent is hard to compute even for 0–1 matrices is
-L. G. Valiant, *Theoretical Computer Science* **8** (1979), 189–201; Ryser's
-formula is in H. J. Ryser, *Combinatorial Mathematics* (MAA, 1963), §4.2.
+clauses (7) on p. 188; exercise 518 on p. 367, with the picture of its
+46 × 46 matrix, and its answer on p. 653.
+
+A. Ben-Dor and S. Halevi, *Israel Symposium on the Theory of Computing
+Systems* **2** (IEEE, 1993), 108–117, for the construction.
+
+L. G. Valiant, *Theoretical Computer Science* **8** (1979), 189–201, for the
+hardness of the permanent even on 0–1 matrices.
+
+H. J. Ryser, *Combinatorial Mathematics* (MAA, 1963), §4.2, for the formula
+the program evaluates permanents with.

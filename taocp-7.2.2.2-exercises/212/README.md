@@ -262,8 +262,12 @@ cd 212/verify
 ## References
 
 Donald E. Knuth, *The Art of Computer Programming*, Volume 4B (Addison-Wesley,
-2022), §7.2.2.2: exercises 204–209 on p. 334 and 210–212 on p. 335; answers
-204 on p. 587, 207 and 208 on p. 588, 211 and 212 on p. 589. Answer 212 cites
+2022), §7.2.2.2: exercises 204–209 on p. 334 and 210–212 on p. 335; answer 204
+on p. 587, answers 207 and 208 on p. 588, answers 211 and 212 on p. 589.
+
 R. W. Irving and M. Jerrum, *SIAM Journal on Computing* **23** (1994),
-170–184; answer 207 cites K. Iwama and K. Takaki, *DIMACS Series* **35**
-(1997), 315–333.
+170–184, cited by answer 212 and by exercise 211.
+
+K. Iwama and K. Takaki, *DIMACS Series* **35** (1997), 315–333, cited by
+answer 207 for the sixteen clauses that use each of twelve variables four
+times, and for the proof that no twelve clauses do the same.

@@ -239,11 +239,17 @@ cd 363/verify
 Donald E. Knuth, *The Art of Computer Programming*, Volume 4B (Addison-Wesley,
 2022), §7.2.2.2: exercise 363 on pp. 349–350 and its answer on pp. 619–620;
 exercise 364, on covering and core assignments, on p. 350; the clauses *F* of
-(1) on pp. 186–187. The weights are from E. Maneva, E. Mossel, and
-M. J. Wainwright, *JACM* **54** (2007), 17:1–17:41, who show that survey
-propagation is the limit as *p* → 1; the lattice is from F. Ardila and
-E. Maneva, *Discrete Mathematics* **309** (2009), 3083–3091; the identity of
-part (j) is what let E. Maneva and A. Sinclair, *Theoretical Computer Science*
-**407** (2008), 359–369, sharpen the known bounds. Covering assignments are due
-to A. Braunstein and R. Zecchina, *Journal of Statistical Mechanics* (June
-2004), P06007:1–18.
+(1) on pp. 186–187.
+
+E. Maneva, E. Mossel, and M. J. Wainwright, *JACM* **54** (2007), 17:1–17:41,
+for the weights, and for showing that survey propagation is the limit as
+*p* → 1.
+
+F. Ardila and E. Maneva, *Discrete Mathematics* **309** (2009), 3083–3091, for
+the lattice.
+
+E. Maneva and A. Sinclair, *Theoretical Computer Science* **407** (2008),
+359–369, who used the identity of part (j) to sharpen the known bounds.
+
+A. Braunstein and R. Zecchina, *Journal of Statistical Mechanics* (June 2004),
+P06007:1–18, for covering assignments.

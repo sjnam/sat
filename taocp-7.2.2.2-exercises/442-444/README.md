@@ -280,10 +280,15 @@ cd 442-444/verify
 Donald E. Knuth, *The Art of Computer Programming*, Volume 4B (Addison-Wesley,
 2022), §7.2.2.2: exercises 442–444 on pp. 359–360 and their answers on
 pp. 636–637; honest representations on p. 289; the clauses *R* and *R*′ in
-(6) and (7) on pp. 187–188. The hierarchy is due to O. Kullmann, *Annals of
-Mathematics and Artificial Intelligence* **40** (2004), 303–352, and
-M. Gwynne and O. Kullmann, [arXiv:1406.7398](https://arxiv.org/abs/1406.7398)
-(2014), 67 pages; the equivalence of SLUR with UC₁ is in M. Gwynne and
-O. Kullmann, *Journal of Automated Reasoning* **52** (2014), 31–65. SLUR
-itself is due to J. S. Schlipf, F. S. Annexstein, J. V. Franco, and
-R. P. Swaminathan, *Information Processing Letters* **54** (1995), 133–137.
+(6) and (7) on pp. 187–188.
+
+O. Kullmann, *Annals of Mathematics and Artificial Intelligence* **40** (2004),
+303–352, and M. Gwynne and O. Kullmann,
+[arXiv:1406.7398](https://arxiv.org/abs/1406.7398) (2014), 67 pages, for the
+hierarchy.
+
+M. Gwynne and O. Kullmann, *Journal of Automated Reasoning* **52** (2014),
+31–65, for the equivalence of SLUR with UC₁.
+
+J. S. Schlipf, F. S. Annexstein, J. V. Franco, and R. P. Swaminathan,
+*Information Processing Letters* **54** (1995), 133–137, for SLUR itself.
