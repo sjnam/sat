@@ -20,11 +20,12 @@ readings follow its layout.
 
 ## The readings
 
-The news page lists fourteen exercises from §7.2.2.2, and listed a fifteenth
-until 15 October 2026. Eight of the fifteen are read here — every one that a
-satisfiability solver can be put to work on. The other seven ask for proofs
-about probabilities, dependency graphs, restart strategies, and trace
-monoids, where a solver has nothing to decide.
+The news page lists fourteen entries for §7.2.2.2 — eighteen exercises, since
+two of the entries are ranges — and listed a fifteenth entry until 15 October
+2026. Eight of the fifteen are read here, every one that a satisfiability
+solver can be put to work on. The other seven ask for proofs about
+probabilities, dependency graphs, restart strategies, and trace monoids, where
+a solver has nothing to decide.
 
 | Exercise | What it asks | What came out |
 | --- | --- | --- |
@@ -35,7 +36,7 @@ monoids, where a solver has nothing to decide.
 | [282](282)† | Find a linear certificate of unsatisfiability for the flower snark clauses | confirmed to the last clause; four numbers in the surrounding text do not reproduce |
 | [363](363) | Study the stable partial assignments of a satisfiability problem | confirmed, except for one clause in answer 363(g) |
 | [442–444](442-444) | Study the UC and PC hierarchy of progressively harder sets of clauses | confirmed; two places decide what a phrase means |
-| [518](518) | Reduce 3SAT to testing the permanent of a {−1,0,1,2} matrix for zero | confirmed, and it counts solutions; two hypotheses go unsaid |
+| [518](518) | Reduce 3SAT to testing the permanent of a {−1,0,1,2} matrix for zero | confirmed, and it counts solutions; one hypothesis goes unsaid |
 
 † Exercise 282 was on the news page until 15 October 2026, when it came
 off the list. This reading was written in September; since it turned up four
@@ -100,10 +101,11 @@ figures on page 255 that do not reproduce, it stays.
   and by the `sat` package one at a time. The 6 × 6 gadget of answer 518(a)
   is settled exactly: both sides of its identity are multilinear in nine
   letters, so the 512 points of {0,1}⁹ decide it, and exactly four of the
-  6,561 symmetric shapes work. Two hypotheses are needed but not stated —
-  every variable must occur in some clause, and no literal may occur twice in
-  one clause — and the permanent is off by a factor of two per idle variable
-  without the first. The headline claim has a half that brute force cannot
+  6,561 symmetric shapes work. One hypothesis the construction needs is
+  nowhere stated — every variable must occur in some clause — and the permanent
+  is off by a factor of two per idle variable without it. It needs clauses to
+  hold no repeated literal as well, but that one the section supplies on
+  page 187. The headline claim has a half that brute force cannot
   reach: an unsatisfiable 3SAT needs eight clauses, so its matrix is at least
   51 × 51.
 - **[442–444](442-444).** The relation ⊢ₖ is computed exactly as

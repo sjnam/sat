@@ -562,21 +562,26 @@ if permanent(build(cl, n)).Cmp(want) != 0 {
 }
 
 @* What the construction assumes.
-Two hypotheses are never stated, and the identity fails without either.
+The identity fails without either of two hypotheses, and only one of them is
+unstated.
 
-The first is that no literal occurs twice in the same clause. The answer
-indexes the clauses that hold a literal as $i_1<\cdots<i_t$, which leaves no
-room for two elements of one clause; threading them in the order they are
-written is the obvious repair, and it is what |build| does, but the count
-comes out wrong all the same.
+The first is that no literal occurs twice in the same clause, and that one the
+section supplies: page 187 rules out ``multisets such as $11\bar2$ or
+$1\bar2\bar2$ that aren't sets,'' adding that in this sense a binary clause is
+not a special case of a ternary clause. The exercise asks for it in its own
+notation as well, indexing the clauses that hold a literal as
+$i_1<\cdots<i_t$, which leaves no room for two elements of one clause. Ignoring
+it is not harmless: threading a repeated literal in the order it is written is
+the obvious repair, and it is what |build| does, but the count comes out wrong
+all the same.
 
-The second is that every variable occurs somewhere. If variable $v$ occurs in
+The second hypothesis is nowhere stated: every variable occurs somewhere. If variable $v$ occurs in
 no clause then both of its literals thread the empty chain, which is the
 single entry in row $v$ and column $6m+v$, so that row holds one 2 instead of
 the two that part (b) promises, and the permanent loses a factor of 2 for
 each such variable.
 @<Check what the construction quietly assumes@>=
-fmt.Println("the two hypotheses the construction needs")
+fmt.Println("the hypotheses the construction needs")
 @<Show that a repeated literal breaks it@>
 @<Show that an absent variable breaks it@>
 

@@ -9,7 +9,7 @@ one as "reduce 3SAT to testing the permanent of a {−1,0,1,2} matrix for zero".
 
 | Item | Finding |
 | --- | --- |
-| Exercise 518 (statement) | **Two hypotheses are left unsaid.** Every variable must occur in some clause, and no literal may occur twice in one clause. |
+| Exercise 518 (statement) | **One hypothesis is left unsaid:** every variable must occur in some clause. (That no literal occurs twice in a clause is the section's own convention, p. 187.) |
 | Answer 518(a), the 6 × 6 matrix | Confirmed exactly: both sides are multilinear, so the 512 points of {0,1}⁹ settle it. |
 | Answer 518(b), where the 2s fall | Confirmed on 307 random problems, in all six classes of row and column. |
 | Answer 518(c), per *M* = 2^(4*m*+*n*)·*s* | Confirmed on 291 random problems, against two independent counts of *s*. |
@@ -92,18 +92,23 @@ would change it.
 
 ## 6. Two hypotheses the construction needs
 
-Neither is stated, and the identity fails without either.
+The identity fails without either, and only one of them is unstated.
 
-**No literal twice in one clause.** The answer indexes the clauses holding a
-literal as *i*₁ < ⋯ < *iₜ*, which leaves no room for two elements of the same
-clause. Threading them in the order written is the obvious repair, but the
-count then comes out wrong: for {1 1 2, 1̄ 2 3} the permanent is 13,312 where
+**No literal twice in one clause — the section's convention.** Page 187 says
+that when clauses are taken as sets of literals "we usually rule out multisets
+such as 112̄ or 12̄2̄ that aren't sets; in that sense a binary clause is not a
+special case of a ternary clause." Exercise 518 inherits that, and its own
+notation asks for it too: the clauses holding a literal are indexed
+*i*₁ < ⋯ < *iₜ*, which leaves no room for two elements of the same clause.
+Ignoring it is not harmless. Threading a repeated literal in the order written
+is the obvious repair, and the count then comes out wrong: for {1 1 2, 1̄ 2 3}
+the permanent is 13,312 where
 2^(4*m*+*n*)·*s* is 10,240.
 
-**Every variable occurs somewhere.** If variable *v* is in no clause, both of
-its literals thread the empty chain, which is the single entry in row *v* and
-column 6*m*+*v*. That row then holds one 2 instead of the two part (b)
-promises, and the permanent loses a factor of 2:
+**Every variable occurs somewhere — this one is nowhere stated.** If variable
+*v* is in no clause, both of its literals thread the empty chain, which is the
+single entry in row *v* and column 6*m*+*v*. That row then holds one 2 instead
+of the two part (b) promises, and the permanent loses a factor of 2:
 
 | the single clause {1 2 3} | per *M* against 2^(4*m*+*n*)·*s* |
 | --- | --- |
@@ -111,9 +116,8 @@ promises, and the permanent loses a factor of 2:
 | *n* = 4 | half |
 | *n* = 5 | a quarter |
 
-Both are mild — a repeated literal makes a clause shorter than ternary, and an
-idle variable is usually dropped before counting — but part (c) is an exact
-identity, and it needs them.
+An idle variable is mild — it is usually dropped before counting — but part (c)
+is an exact identity, and it needs to be ruled out.
 
 ## 7. The example of page 188, and a limit
 
@@ -143,7 +147,7 @@ cd 518/verify
 ./verify -mode gadget         # answer 518(a), and how unique it is
 ./verify -mode twos           # answer 518(b)
 ./verify -mode permanent      # answer 518(c), the three routes
-./verify -mode limits         # the two unstated hypotheses
+./verify -mode limits         # the hypotheses the construction needs
 ./verify -mode example        # the 46x46 matrix of equation (7)
 ./verify -max 24 -reps 2000   # a longer run
 ```
@@ -153,9 +157,10 @@ The package needed no change for this reading.
 ## References
 
 Donald E. Knuth, *The Art of Computer Programming*, Volume 4B (Addison-Wesley,
-2022), §7.2.2.2: the clauses (7) on p. 188; exercise 518 on p. 367 and its
-answer on p. 653. The construction is due to A. Ben-Dor and S. Halevi,
-*Israel Symposium on the Theory of Computing Systems* **2** (IEEE, 1993),
+2022), §7.2.2.2: clauses as sets of strictly distinct literals on p. 187; the
+clauses (7) on p. 188; exercise 518 on p. 367 and its answer on p. 653. The
+construction is due to A. Ben-Dor and S. Halevi, *Israel Symposium on the
+Theory of Computing Systems* **2** (IEEE, 1993),
 108–117. That the permanent is hard to compute even for 0–1 matrices is
 L. G. Valiant, *Theoretical Computer Science* **8** (1979), 189–201; Ryser's
 formula is in H. J. Ryser, *Combinatorial Mathematics* (MAA, 1963), §4.2.

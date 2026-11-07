@@ -670,15 +670,16 @@ func (c *ctx) pk(a, k int, primed bool) (int, uint32, bool) {
 
 @ The procedure agrees with the relation whenever it does not end in a
 conflict. When it does end in one, the answer says that every literal then
-belongs to $L_k$---and at $k\ge2$ that is what we find, but at $k=1$ it is not.
-The reason is the strictly distinct rule. Take $F=\{2,1\bar2,\bar1\bar2\}$.
+belongs to $L_k$, and at $k\ge2$ that is what we find. The sentence is in the
+paragraph written for $k\ge2$, and it has to be: at $k=1$ the same words would
+be false, by the strictly distinct rule. Take $F=\{2,1\bar2,\bar1\bar2\}$.
 Unit propagation forces 2, then 1, then $\bar1$: so $F\vdash_1 1$,
 $F\vdash_1\bar1$, $F\vdash_1 2$, and hence $F\vdash_1\epsilon$. But no sequence
 of strictly distinct literals ends in $\bar2$, because the only prefixes that
 lead anywhere use the variable 2 at their first step. So
-$L_1(F)=\{1,\bar1,2\}$, one literal short of everything. The procedure of
-part~(f) treats $k=1$ separately, by unit propagation, so this costs it
-nothing; but the parenthesis is worth reading twice.
+$L_1(F)=\{1,\bar1,2\}$, one literal short of everything. Part~(f) treats $k=1$
+separately, by unit propagation, so the answer never says the false thing;
+but the parenthesis is worth reading twice.
 @<Run the procedure of part (f)@>=
 var nord, badOrder, badDead, atOne, atTwo int
 var unprimed [4]int

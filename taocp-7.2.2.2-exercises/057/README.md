@@ -214,12 +214,13 @@ The observation of §6 replaces that one instance with a thousand small ones.
   operations, hides a random third of each truth table, and asks both searches
   for the fewest steps. They agree every time, and never exceed the chain that
   was built. (Twenty-five of the thousand targets turn out to be fit by a
-  single variable, and those are left to the exhaustive search: with trivial
-  operations excluded, the clauses cannot express a chain of no steps, as
-  answer 477 itself warns.) The read-once list
-  is checked the same way, against random formulas built by merging a pool of
-  six variables, which is a different construction from the one that made the
-  list.
+  single variable, and those are left to the exhaustive search: answer 477's
+  clauses ask every output to be one of the *r* steps, so they cannot express
+  a chain of no steps at all. Answer 477 warns of the neighboring trap, that
+  ruling out trivial operations makes even the constant 0 need three steps.)
+  The read-once list is checked the same way, against random formulas built by
+  merging a pool of six variables, which is a different construction from the
+  one that made the list.
 - **The `sat` package.** Every SAT answer in this reading has a SAT-free
   counterpart, and all of them agree: 1054 unsatisfiable instances, five
   satisfiable ones whose chains check out, and the self-test.

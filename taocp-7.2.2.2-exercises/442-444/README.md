@@ -11,7 +11,7 @@ and its answer very carefully, then report back.
 | Exercise 442 (statement) | No error. |
 | Answer 442(a)–(e) | All confirmed. |
 | Answer 442(f), the procedure *Pₖ* | Needs one more line: it must begin by applying *Pₖ*₋₁ to *F* itself. |
-| Answer 442(f), "in the latter case, every literal is in *Lₖ*" | True for *k* ≥ 2, false for *k* = 1. |
+| Answer 442(f), "in the latter case, every literal is in *Lₖ*" | Confirmed. The sentence stands in the paragraph written for *k* ≥ 2; the same words would fail at *k* = 1, which part (f) handles separately. |
 | Exercise 443 (statement) | No error. |
 | Answer 443(a)–(f) | All confirmed; the witnesses in (a) go on past *k* = 3. |
 | Exercise 444 (statement) | Its "if and only if" holds under one reading of step E2 and fails under the other. |
@@ -19,9 +19,12 @@ and its answer very carefully, then report back.
 | p. 289, "the examples in exercises 439–444" | Those three exercises contain no representations; 431–441 do. |
 | p. 702, "Propagation completeness (UC₁)" | Propagation completeness is PC₁. |
 
-Nothing in the three answers is wrong. Two sentences, though, say a little less
-than they need to, and both concern the same corner of the definition of ⊢ₖ:
-what happens when no fresh variable is left to spend.
+Nothing in the three answers is wrong. One of them, though, says a little less
+than it needs to: the procedure of answer 442(f) must begin by applying
+*P*ₖ₋₁ to *F* itself. That and the reading of step E2 in exercise 444 are both
+about the same corner of the definitions: what happens when no fresh variable
+is left to spend, or when a literal that does not occur in *F* is the one
+needed.
 
 ## 1. What the exercises ask
 
@@ -77,19 +80,19 @@ answer's reason checks out too: *R*′ ⊢₃ 1̄ because *R*′ | 1 ⊢₂ ε, 
 *R*′ | 1 ⊢₂ 3 and *R*′ | 1 ⊢₂ 3̄. For the unsatisfiable *R* of (6), *L*₂ is
 empty and *L*₃ is everything.
 
-### The parenthesis in answer 442(f)
+### The parenthesis in answer 442(f), and why it says *k* ≥ 2
 
 Answer 442(f) says that when the procedure ends in the empty clause, "every
-literal is in *Lₖ*". At *k* ≥ 2 that is what the tables show. At *k* = 1 it is
-not. Let *F* = {2, 12̄, 1̄2̄}. Unit propagation forces 2, then 1, then 1̄, so
-*F* ⊢₁ 1, *F* ⊢₁ 1̄, *F* ⊢₁ 2, and *F* ⊢₁ ε. But no sequence of strictly
-distinct literals ends in 2̄: every prefix that gets anywhere spends the
-variable 2 at its first step, and it cannot be spent twice. So
-*L*₁(*F*) = {1, 1̄, 2}, one literal short of everything. In 36,000 runs this
-happened 320 times, always at *k* = 1.
-
-It costs the answer nothing, because part (f) handles *k* = 1 separately, by
-unit propagation. The procedure is right; only the sentence overreaches.
+literal is in *Lₖ*". The tables bear that out at *k* ≥ 2, which is where the
+sentence sits: it belongs to the paragraph that opens "For *k* ≥ 2", and at
+*k* = 1 the same words would be false. Let *F* = {2, 12̄, 1̄2̄}. Unit
+propagation forces 2, then 1, then 1̄, so *F* ⊢₁ 1, *F* ⊢₁ 1̄, *F* ⊢₁ 2, and
+*F* ⊢₁ ε. But no sequence of strictly distinct literals ends in 2̄: every
+prefix that gets anywhere spends the variable 2 at its first step, and it
+cannot be spent twice. So *L*₁(*F*) = {1, 1̄, 2}, one literal short of
+everything. In 36,000 runs this happened 320 times, always at *k* = 1 — and
+never where the answer speaks, since part (f) sends *k* = 1 to unit
+propagation before the paragraph begins.
 
 ### The line that answer 442(f) leaves out
 

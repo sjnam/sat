@@ -174,3 +174,12 @@ Y. Li and J. Shu, "A lower bound for off-diagonal van der Waerden numbers,"
 
 Zach Hunter, "A short proof that w(3, k) ≥ (1 − o(1))k²,"
 arXiv:2209.07651 (2022), whose Remark 1.1 summarizes the two bounds above.
+
+The errata replaces the neighboring exercise 5 and writes a new answer for it
+(18 May and 18 June 2023). The exercise now asks [HM47] for the asymptotic
+behavior of W(3, *k*); the answer gives the upper bound
+W(3, *k*) = e^(*O*(log *k*)¹¹), which follows from Z. Kelley and R. Meka,
+arXiv:2302.05537 [math.NT] (2023), 79 pages, and a superpolynomial lower
+bound credited to B. Green and Z. Hunter, *Forum of Mathematics, Pi* **10**
+(2022), e18:1–51, and *Combinatorica* **42** (2022), 1231–1252. Neither
+touches exercise 6, which asks what the Local Lemma gives.
