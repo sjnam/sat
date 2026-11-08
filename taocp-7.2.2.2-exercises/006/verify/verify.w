@@ -563,7 +563,7 @@ func feasible(k, D, d float64) (bool, float64, float64, float64) {
 the table on page 189: $W(3,k)$ is known for $k\le19$, and at least the
 tabulated number for $20\le k\le30$.
 @<Compute the bounds that Theorem L gives for concrete $k$@>=
-fmt.Println("6. concrete bounds")
+fmt.Println("concrete bounds")
 badKnown := 0
 var lllN [31]int
 for k := 3; k <= 30; k++ {
@@ -628,7 +628,7 @@ $\theta=y$ for the $A$'s and $\theta=x$ for the $A'$'s, with $p$, $x$, $y$ from
 |feasible| at the largest $n$ found for $k=30$. The event resampled is always
 the first one that happens.
 @<Run Algorithm M@>=
-fmt.Println("6. Algorithm M")
+fmt.Println("Algorithm M and Theorem M")
 k := 30
 n := k
 for {
@@ -746,7 +746,7 @@ $W(3,k)-1$, which is checked against the definition, and should find none of
 length $W(3,k)$. For $k\le6$ a backtracking search that extends strings one
 bit at a time gives the values independently.
 @<Recompute small values of $W(3,k)$@>=
-fmt.Println("6. W(3,k) with the sat package")
+fmt.Println("W(3,k) with the sat package")
 for k := 3; k <= wmax && k <= 19; k++ {
 	W := known[k]
 	s := waerden(k, W-1)

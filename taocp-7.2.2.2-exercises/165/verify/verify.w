@@ -571,7 +571,7 @@ and only if the clauses that $A$ does not touch are satisfiable; and a model
 of those, with the literals of $A$ made true, satisfies $F$. The solver is
 asked both questions and the model is checked.
 @<Check large problems with the {\tt sat} package@>=
-fmt.Println("165. larger problems, with the sat package")
+fmt.Println("larger problems, with the sat package")
 var np, calls, badMax, badModel, badPlant, badPrinciple, badExtend, sats, unsats int
 var badDef, sizeH, sizeA int
 rp := rand.New(rand.NewPCG(seed, 228))
