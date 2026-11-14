@@ -24,7 +24,7 @@ SAT~2025에 실린 Ohashi, Soh, Le~Berre, Nabeshima, Banbara, Inoue, Tamura의 �
 @^Ohashi, Ryoga@>
 
 커누스는 \.{SAT13}의 |mem| 위쪽에 새 절을 쌓고 수준 0으로 돌아가 풀이를 이어 간다.
-우리 꾸러미에서는 그 일이 |AddClause|와 |Solve|면 된다. 옆집 \.{cdcl.w}의 점진적 풀이가
+우리 패키지에서는 그 일이 |AddClause|와 |Solve|면 된다. 옆집 \.{cdcl.w}의 점진적 풀이가
 배운 절과 활동도를 간직한 채 이어 풀기 때문이다. 그러니 이 글은 \.{HAMSAT}의 앞과
 뒤, 곧 절을 적는 부분과 순환을 분석하는 부분만 옮긴다. 풀이기의 속이 조금 다르므로
 mem 수는 원본과 같지 않지만, 해밀턴 그래프인지 아닌지의 답은 같아야 한다.
