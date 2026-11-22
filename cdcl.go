@@ -475,7 +475,7 @@ func (s *Solver) Solve(ctx context.Context, assumptions ...Lit) (Status, error) 
 //line cdcl.w:392
 	if s.pre != nil {
 		if len(assumptions) != 0 {
-			return Unknown, errors.New("sat: 전처리한 풀이기에는 가정을 줄 수 없다")
+			return Unknown, errors.New("sat: 전처리한 솔버에는 가정을 줄 수 없다")
 		}
 		return s.solvePreprocessed(ctx)
 	}

@@ -127,7 +127,7 @@ type Params struct {
 	LearnSave          int     // \.K: 증서에 적을 절 길이의 문턱 (10000)
 }
 
-@ \.{sat.w}의 |New|는 풀이기를 이 기본값으로 채운다.
+@ \.{sat.w}의 |New|는 솔버를 이 기본값으로 채운다.
 
 @<자료 구조@>=
 var defaultParams = Params{
@@ -341,7 +341,7 @@ func (s *Solver) writeProof(lits []uint32, subsumer bool) {
 두 번째 제약은 쉽게 풀린다. 커누스는 레지스터 변수 |h|, |j|, |k|, |l|, \dots를
 |main| 머리에 한꺼번에 선언하고 전역 변수는 파일 머리에 둔다. 나는 그 둘을 모두
 |Solve|의 머리에 지역 변수로 선언한다. 그러면 함수 몸통 어디에도 새 선언이 없다.
-전역 변수를 지역 변수로 옮기니 풀이기 여럿이 동시에 돌아도 서로 밟지 않는다는 덤도
+전역 변수를 지역 변수로 옮기니 솔버 여럿이 동시에 돌아도 서로 밟지 않는다는 덤도
 생긴다.
 
 첫 번째 제약은 레이블을 함수 몸통의 맨 바깥에 두면 풀린다. 안쪽 블록에서 바깥
@@ -391,7 +391,7 @@ allDone:
 @<전처리 결과나 빈 절이...@>=
 if s.pre != nil {
 	if len(assumptions) != 0 {
-		return Unknown, errors.New("sat: 전처리한 풀이기에는 가정을 줄 수 없다")
+		return Unknown, errors.New("sat: 전처리한 솔버에는 가정을 줄 수 없다")
 	}
 	return s.solvePreprocessed(ctx)
 }
@@ -481,7 +481,7 @@ $$\vbox{\halign{\quad\hfil#&\quad#\hfil\cr
 |mem[c-4]|&배운 절에만: 재활용 점수 |range(c)|\cr
 |mem[c-5]|&배운 절에만: 활동도 |activ(c)|, |float32|의 비트 그대로\cr}}$$
 원본의 이 매크로들은 \GO/에 없으므로 코드에서는 |mem[c-1]|처럼 첨자를 그대로 쓴다.
-감시 목록을 절 머리의 연결로 엮는 방법은 PicoSat에서 왔다. 커누스는 요즘 풀이기들이
+감시 목록을 절 머리의 연결로 엮는 방법은 PicoSat에서 왔다. 커누스는 요즘 솔버들이
 쓰는 ``막는 리터럴''(blocking literal) 대신 이 방법을 고집한다고 적었다. 동적인
 배열 할당이 필요 없고 메모리 접근도 적기 때문이다.
 @^Biere, Armin@>
@@ -771,7 +771,7 @@ for jj, j = minLearned+2, s.binaries; j != 0; j-- {
 }
 
 @ 원본은 여기서 임시 변수의 이름을 |vmem|으로 옮기고 도장을 지운다. 이름은
-\.{sat.w}의 풀이기에 이미 있으니 도장만 지우지만, mem은 원본처럼 둘씩 센다.
+\.{sat.w}의 솔버에 이미 있으니 도장만 지우지만, mem은 원본처럼 둘씩 센다.
 
 @<변수들의 도장을 지운다@>=
 for c = vars; c != 0; c-- {
@@ -2437,7 +2437,7 @@ mem은 원본과 같은 방식으로 센다. 견줄 원본은 없지만 |Timeout
 @<함수들@>=
 func (s *Solver) Failed() []Lit { return slices.Clone(s.failed) }
 
-@ 가정도 절의 리터럴처럼 이 풀이기의 것이어야 한다.
+@ 가정도 절의 리터럴처럼 이 솔버의 것이어야 한다.
 
 @<가정 리터럴들을 확인한다@>=
 s.failed = nil
@@ -2569,7 +2569,7 @@ for i = 0; i < len(asm); i++ {
 모두 이어진다. 배운 절과 수준 0의 리터럴은 입력 절만으로 따라 나오는 것이니 절을 더
 보태도 여전히 참이다. 가정은 결정일 뿐이므로 거기에 기댄 것도 없다.
 
-그래서 풀이기는 풀고 난 뒤 커누스의 전역 변수들을 |cdclState|에 담아 두고, 다음 |Solve|는
+그래서 솔버는 풀고 난 뒤 커누스의 전역 변수들을 |cdclState|에 담아 두고, 다음 |Solve|는
 그것들을 지역 변수로 도로 불러온다. 조각(slice)은 참조이므로 담고 부르는 품이 작다.
 원본의 코드가 지역 변수를 그대로 쓰니 손댈 곳도 없다. 필드를 곧바로 쓰지 않는 까닭이
 하나 더 있다. \GO/ 컴파일러는 지역 변수를 레지스터에 둘 수 있지만, 필드에 닿으려면 늘
@@ -2974,7 +2974,7 @@ func TestSolveCancelAndParams(t *testing.T) {
 }
 
 @ 여섯째 시험부터는 원본에 없는 가정과 점진적 풀이를 본다. 견줄 원본이 없으니 답이
-옳은지를 본다. 먼저 변수 열둘의 무작위 3-SAT 식이다. 한 풀이기에 절을 다섯 개씩 보태 가며
+옳은지를 본다. 먼저 변수 열둘의 무작위 3-SAT 식이다. 한 솔버에 절을 다섯 개씩 보태 가며
 그때마다 무작위 가정을 주어 풀고, 모든 배정을 따지는 무식한 방법과 견준다. 전체 달리기와
 재활용, 자명한 절, 무작위 결정이 잦도록 매개변수를 바꾼 판도 돌린다.
 
@@ -3021,7 +3021,7 @@ checkAnswer(t, s, st, cls, asm, func(units []Lit) bool { return bruteSat(n, cls,
 
 @ 일곱째 시험은 큰 문제를 조금씩 쌓아 가며 푼다. \.{testdata}의 문제 넷을 절 차례대로
 넷으로 나눠 보태며 그때마다 무작위 가정 셋을 주어 풀고, 마지막에는 가정 없이 푼다. 마지막
-답은 원본의 답과 같아야 한다. 중간에 나온 |Unsat|은 새 풀이기로 그때까지의 절과 |Failed|를
+답은 원본의 답과 같아야 한다. 중간에 나온 |Unsat|은 새 솔버로 그때까지의 절과 |Failed|를
 풀어 확인한다. 재활용과 전체 달리기가 잦도록 \.{j50 J20 w1}을 준다.
 
 @<시험들@>=
@@ -3088,11 +3088,11 @@ func TestSolveResume(t *testing.T) {
 	wantLine(t, "rivest7", s, "Altogether 291+144 mems, 5764 bytes, 2 nodes,"+
 		" 0 clauses learned, 47 memcells.")
 	@<책임이 있는 가정들을 본다@>
-	@<전처리한 풀이기에 가정을 주어 본다@>
+	@<전처리한 솔버에 가정을 주어 본다@>
 }
 
 @ $x_1$과 $\bar x_1$을 함께 가정하면 둘 다 책임이 있다. 일곱 절에 $x_1$을 더하면 만족할
-수 없으니, $x_1$만 가정하면 $x_1$이 책임을 진다. 이때 풀이기는 $\bar x_1$을 배워 수준 0에
+수 없으니, $x_1$만 가정하면 $x_1$이 책임을 진다. 이때 솔버는 $\bar x_1$을 배워 수준 0에
 두므로, 그다음에 $\bar x_2$를 곁들여 가정해도 책임은 $x_1$에게만 있다. 여덟째 절을 보태고
 가정 없이 풀면 만족할 수 없고 |Failed|가 비어야 한다. 그 뒤로는 가정을 주어도 곧바로 같은
 답이 나온다.
@@ -3112,7 +3112,7 @@ if st, _ := s.Solve(context.Background(), x1); st != Unsat || s.Failed() != nil 
 	t.Errorf("여덟 절에서 %v, %v가 나왔다", st, s.Failed())
 }
 
-@ @<전처리한 풀이기에...@>=
+@ @<전처리한 솔버에...@>=
 s = New()
 if err := s.ReadKnuth(strings.NewReader(seven)); err != nil {
 	t.Fatal(err)
@@ -3121,7 +3121,7 @@ if _, err := s.Simplify(context.Background()); err != nil {
 	t.Fatal(err)
 }
 if _, err := s.Solve(context.Background(), s.Lookup("x1")); err == nil {
-	t.Error("전처리한 풀이기가 가정을 받았다")
+	t.Error("전처리한 솔버가 가정을 받았다")
 }
 
 @ 글자로 적힌 문제를 읽어 푸는 문.
@@ -3263,7 +3263,7 @@ next:
 	return false
 }
 
-@ 새 풀이기로 절들과 단위 절들을 풀어 만족할 수 있는지 알려 주는 문.
+@ 새 솔버로 절들과 단위 절들을 풀어 만족할 수 있는지 알려 주는 문.
 
 @<시험에 쓰는 함수들@>=
 func freshSat(t *testing.T, n int, cls [][]Lit, units []Lit) bool {
@@ -3285,7 +3285,7 @@ func freshSat(t *testing.T, n int, cls [][]Lit, units []Lit) bool {
 }
 
 @ 마지막 시험은 증서다. 만족할 수 없는 Rivest의 여덟 절을 풀면서 배운 절을 받아
-적고, 그것이 정말 증서인지 단위 전파만으로 되짚는다. 곧 정리 G를 우리 풀이기에서
+적고, 그것이 정말 증서인지 단위 전파만으로 되짚는다. 곧 정리 G를 우리 솔버에서
 확인하는 시험이다. 문턱 \.K를 1로 두면 단위 절만 적히는지도 함께 본다.
 
 @<시험들@>=
@@ -3326,7 +3326,7 @@ for _, line := range strings.Split(short.String(), "\n") {
 
 @ 증서를 되짚는 문. 절마다, 그 앞의 절들과 원래 절들에 그 절의 리터럴을 모두 거짓으로
 두면 단위 전파만으로 충돌이 나야 한다. 마지막에는 증서 전체가 빈 절을 강제해야 한다.
-풀이기의 전파는 전혀 쓰지 않는다. 그것이 증서를 따로 검사하는 까닭이다.
+솔버의 전파는 전혀 쓰지 않는다. 그것이 증서를 따로 검사하는 까닭이다.
 
 @<시험에 쓰는 함수들@>=
 func rupCheck(t *testing.T, s *Solver, proof string) int {

@@ -13,8 +13,8 @@
 @s Stats int
 
 @* 들어가며.
-이 글은 커누스의 \.{SAT12}와 \.{SAT12-ERP}를 \GO/로 옮긴 것이다. 앞의 것은 풀이기가
-아니라 {\it 전처리기\/}다. 절들을 받아 뜻을 바꾸지 않고 줄인 다음 진짜 풀이기에게
+이 글은 커누스의 \.{SAT12}와 \.{SAT12-ERP}를 \GO/로 옮긴 것이다. 앞의 것은 솔버가
+아니라 {\it 전처리기\/}다. 절들을 받아 뜻을 바꾸지 않고 줄인 다음 진짜 솔버에게
 넘긴다. 뒤의 것은 그 거꾸로다. 줄인 절의 해를 받아, 전처리가 없애 버린 변수들의 값을
 되찾아 원래 절의 해로 만든다.
 @^Knuth, Donald Ervin@>
@@ -34,7 +34,7 @@ Biere의 논문을 따라, 분해한 절이 원래보다 많지 않을 때만 �
 
 원본은 줄인 절을 표준 출력에, 되돌리는 정보를 \.{/tmp/erp} 파일에 쓴다. 파이프라인
 세 단계 사이를 파일로 잇는 셈이다. 패키지에서는 그럴 까닭이 없다. |Simplify|는 줄인
-절과 erp 자료를 풀이기 안에 들고 있고, 뒤이어 부르는 |Solve|는 줄인 절을 풀고 erp를
+절과 erp 자료를 솔버 안에 들고 있고, 뒤이어 부르는 |Solve|는 줄인 절을 풀고 erp를
 되짚어 원래 변수 모두의 값을 채운다. 부르는 쪽에서 보면 |Simplify|를 한 줄 더
 불렀을 뿐, |Value|와 |Model|은 여전히 원래 변수들로 답한다.
 
@@ -57,7 +57,7 @@ import (
 @<함수들@>
 
 @* 겉모습.
-매개변수는 커누스의 명령 줄 선택들이다. 풀이기의 |Params|와 글자가 겹치므로(가령
+매개변수는 커누스의 명령 줄 선택들이다. 솔버의 |Params|와 글자가 겹치므로(가령
 \.m과 \.T) 따로 둔다.
 
 @<자료 구조@>=
@@ -183,7 +183,7 @@ func ratio(a, b uint64) float64 {
 	return float64(a) / float64(b)
 }
 
-@ 풀이기에 달리는 전처리의 결과. 줄인 절은 |cells|에 \.{sat.w}의 임시 표와 같은 꼴로
+@ 솔버에 달리는 전처리의 결과. 줄인 절은 |cells|에 \.{sat.w}의 임시 표와 같은 꼴로
 담고, erp 자료는 |erp|에 담는다. erp의 칸마다 리터럴 하나와 표가 붙는다. 표
 |erpFirst|는 절의 첫 리터럴, |erpDef|는 값을 정할 리터럴이다.
 
@@ -1453,7 +1453,7 @@ s.simpStats = SimplifyStats{IMems: imems, Mems: mems, Bytes: bytes, Cells: xcell
 
 @* 줄인 절 풀기와 되돌리기.
 |Simplify| 뒤에 |Solve|를 부르면 \.{cdcl.w}의 |Solve|가 곧바로 이 문으로 넘어온다.
-줄인 절로 풀이기를 새로 지어 풀고, 해가 나오면 erp 자료로 원래 변수 모두의 값을 채운다.
+줄인 절로 솔버를 새로 지어 풀고, 해가 나오면 erp 자료로 원래 변수 모두의 값을 채운다.
 파일 경계를 넘어 부르므로 이름 있는 절 대신 문으로 두었다. 가정 리터럴은 받지 않는다.
 전처리가 없앤 변수에 가정을 걸면 erp 자료로는 답할 길이 없기 때문이다.
 
@@ -1466,7 +1466,7 @@ func (s *Solver) solvePreprocessed(ctx context.Context) (Status, error) {
 	}
 	var sol []Lit
 	if len(pre.cells) > 0 {
-		@<줄인 절로 풀이기 |red|를 짓는다@>
+		@<줄인 절로 솔버 |red|를 짓는다@>
 		@<|red|를 풀고 해를 원래 변수로 옮긴다@>
 	}
 	@<erp를 거꾸로 되짚어 해를 채운다@>
@@ -1477,7 +1477,7 @@ func (s *Solver) solvePreprocessed(ctx context.Context) (Status, error) {
 나온 차례로 새로 매겨진다. 그 차례를 따라야 mem 수가 같다. |renum|은 원래 변수 번호에서
 새 번호로, |old|는 그 거꾸로 간다.
 
-@<줄인 절로 풀이기 |red|를...@>=
+@<줄인 절로 솔버 |red|를...@>=
 red := New()
 red.Params = s.Params
 renum, old := make([]int, s.NumVars()+1), []int{0}
