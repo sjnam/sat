@@ -14,7 +14,7 @@
 형식이고, 다른 하나는 SAT 경진대회가 쓰는 DIMACS 형식이다.
 @^Knuth, Donald Ervin@>
 
-읽은 리터럴은 옆집 \.{sat.w}의 세 걸음, 곧 |beginClause|, |addLit|, |endClause|로
+읽은 리터럴은 옆집 \.{sat.gw}의 세 걸음, 곧 |beginClause|, |addLit|, |endClause|로
 솔버에 쌓는다. 늘 참인 절과 겹친 리터럴은 그 셋이 커누스와 똑같이 다루므로,
 여기서는 글자를 리터럴로 바꾸기만 하면 된다. 뼈대는 다음과 같다.
 

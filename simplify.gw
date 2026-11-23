@@ -183,7 +183,7 @@ func ratio(a, b uint64) float64 {
 	return float64(a) / float64(b)
 }
 
-@ 솔버에 달리는 전처리의 결과. 줄인 절은 |cells|에 \.{sat.w}의 임시 표와 같은 꼴로
+@ 솔버에 달리는 전처리의 결과. 줄인 절은 |cells|에 \.{sat.gw}의 임시 표와 같은 꼴로
 담고, erp 자료는 |erp|에 담는다. erp의 칸마다 리터럴 하나와 표가 붙는다. 표
 |erpFirst|는 절의 첫 리터럴, |erpDef|는 값을 정할 리터럴이다.
 
@@ -211,7 +211,7 @@ const (
 |ErrMemory|를 돌려주고 전처리한 것을 버린다. mem 한도에 이르거나 |context|를 거두면
 원본처럼 그때까지 줄인 것을 남기고 |ErrTimeout|이나 |ctx.Err()|를 돌려준다.
 
-\.{cdcl.w}의 |Solve|처럼 커누스의 전역 변수와 레지스터 변수를 모두 지역 변수로 두고,
+\.{cdcl.gw}의 |Solve|처럼 커누스의 전역 변수와 레지스터 변수를 모두 지역 변수로 두고,
 레이블은 함수 몸통 바깥에 둔다. 원본의 레지스터는 |uint|이고 32비트 부호 없는 산술에
 기대는 곳이 있으므로 여기서도 |uint32|로 옮겼다.
 
@@ -1452,7 +1452,7 @@ s.simpStats = SimplifyStats{IMems: imems, Mems: mems, Bytes: bytes, Cells: xcell
 	Unsat: status == Unsat}
 
 @* 줄인 절 풀기와 되돌리기.
-|Simplify| 뒤에 |Solve|를 부르면 \.{cdcl.w}의 |Solve|가 곧바로 이 문으로 넘어온다.
+|Simplify| 뒤에 |Solve|를 부르면 \.{cdcl.gw}의 |Solve|가 곧바로 이 문으로 넘어온다.
 줄인 절로 솔버를 새로 지어 풀고, 해가 나오면 erp 자료로 원래 변수 모두의 값을 채운다.
 파일 경계를 넘어 부르므로 이름 있는 절 대신 문으로 두었다. 가정 리터럴은 받지 않는다.
 전처리가 없앤 변수에 가정을 걸면 erp 자료로는 답할 길이 없기 때문이다.

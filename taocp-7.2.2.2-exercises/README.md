@@ -149,11 +149,11 @@ Reports are in English, and so are the literate programs; both are typeset with
 ## Building
 
 ```sh
-make          # tangle every verify.w and build verify/verify
+make          # tangle every verify.gw and build verify/verify
 make vet      # go vet
 make pdf      # weave and typeset every reading
 make check    # typeset, and insist on a clean log
-make clean    # remove everything the .w files generate, verify.pdf excepted
+make clean    # remove everything the .gw files generate, verify.pdf excepted
 ```
 
 Adding a reading means putting its directory name in `EXERCISES` in the
@@ -162,7 +162,7 @@ Adding a reading means putting its directory name in `EXERCISES` in the
 Each program also runs on its own:
 
 ```sh
-cd 057/verify && gtangle verify.w && go run . -mode formula
+cd 057/verify && gtangle verify.gw && go run . -mode formula
 ```
 
 The modes differ from reading to reading; the last section of each `README.md`

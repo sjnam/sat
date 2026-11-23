@@ -1,4 +1,4 @@
-//line simplify.w:42
+//line simplify.gw:42
 package sat
 
 import (
@@ -12,7 +12,7 @@ import (
 	"github.com/sjnam/go-sgb/gbflip"
 )
 
-//line simplify.w:64
+//line simplify.gw:64
 type SimplifyParams struct {
 	Seed      int    // \.s: 난수 씨앗 (0)
 	MemMax    uint64 // \.m: |mem| 칸 수의 하한 (100000)
@@ -23,7 +23,7 @@ type SimplifyParams struct {
 	Timeout   uint64 // \.T: mem 한도
 }
 
-//line simplify.w:75
+//line simplify.gw:75
 var defaultSimplifyParams = SimplifyParams{
 	MemMax:    100000,
 	Cutoff:    10,
@@ -33,7 +33,7 @@ var defaultSimplifyParams = SimplifyParams{
 	Timeout:   0x1fffffffffffffff,
 }
 
-//line simplify.w:123
+//line simplify.gw:123
 type SimplifyStats struct {
 	IMems, Mems         uint64 // 준비와 전처리에 든 mem
 	Bytes               uint64 // 자료 구조의 바이트 수 (원본의 크기로 셈)
@@ -49,7 +49,7 @@ type SimplifyStats struct {
 	Unsat               bool   // 만족할 수 없음을 밝혔는가
 }
 
-//line simplify.w:191
+//line simplify.gw:191
 type preprocessed struct {
 	cells []Lit     // 줄인 절들
 	erp   []erpCell // 되돌리는 자료
@@ -66,14 +66,14 @@ const (
 	erpDef   = 2 // 값을 정할 리터럴
 )
 
-//line simplify.w:304
+//line simplify.gw:304
 type simpCell struct {
 	lit, cls              uint32 // 리터럴과 절 (머리에서는 표 참고)
 	up, down, left, right uint32 // 세로와 가로의 이웃
 	sig                   uint64 // 머리의 서명
 }
 
-//line simplify.w:314
+//line simplify.gw:314
 type simpVar struct {
 	link   uint32 // 할 일 더미의 다음
 	status uint8  // 지금의 처지
@@ -95,7 +95,7 @@ const (
 	sentinel    = 1 // 강화된 절 더미의 바닥
 )
 
-//line simplify.w:88
+//line simplify.gw:88
 func (p *SimplifyParams) Set(opt string) error {
 	if opt == "" {
 		return errors.New("sat: 빈 선택")
@@ -128,10 +128,10 @@ func (p *SimplifyParams) Set(opt string) error {
 	return nil
 }
 
-//line simplify.w:139
+//line simplify.gw:139
 func (s *Solver) SimplifyStats() SimplifyStats { return s.simpStats }
 
-//line simplify.w:145
+//line simplify.gw:145
 func (st SimplifyStats) String() string {
 	var b strings.Builder
 	switch {
@@ -147,7 +147,7 @@ func (st SimplifyStats) String() string {
 	}
 	fmt.Fprintf(&b, "\nAltogether %d+%d mems, %d bytes, %d cells;", st.IMems, st.Mems, st.Bytes, st.Cells)
 
-//line simplify.w:164
+//line simplify.gw:164
 	if st.Subsumptions+st.Strengthenings != 0 {
 		fmt.Fprintf(&b, "\n %d subsumption%s, %d strengthening%s.",
 			st.Subsumptions, plural(uint64(st.Subsumptions), "", "s"),
@@ -160,11 +160,11 @@ func (st SimplifyStats) String() string {
 			ratio(st.FuncDeps, st.ElimTries), st.ElimTries)
 	}
 
-//line simplify.w:160
+//line simplify.gw:160
 	return b.String()
 }
 
-//line simplify.w:179
+//line simplify.gw:179
 func ratio(a, b uint64) float64 {
 	if b == 0 {
 		return 0
@@ -172,10 +172,10 @@ func ratio(a, b uint64) float64 {
 	return float64(a) / float64(b)
 }
 
-//line simplify.w:219
+//line simplify.gw:219
 func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 
-//line simplify.w:249
+//line simplify.gw:249
 	var (
 		b, c, cc, j, k, l, ll, p, pp, q, qq, r uint32
 		sz, u, uu, v, vv, w, x                 uint32
@@ -185,7 +185,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 		cur                                    int
 	)
 
-//line simplify.w:259
+//line simplify.gw:259
 	var (
 		status               Status
 		err                  error
@@ -196,7 +196,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 		imems, mems, bytes   uint64
 	)
 
-//line simplify.w:336
+//line simplify.gw:336
 	var (
 		mem                    []simpCell
 		memMax                 uint64 // |mem|의 칸 수
@@ -213,16 +213,16 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 		bucket                 []uint32
 	)
 
-//line simplify.w:576
+//line simplify.gw:576
 	var nextCheck uint64 = checkEvery
 
-//line simplify.w:735
+//line simplify.gw:735
 	var (
 		subTotal, strTotal                     uint32
 		subTries, subFalse, strTries, strFalse uint64
 	)
 
-//line simplify.w:1043
+//line simplify.gw:1043
 	var (
 		stamp        uint64 // 한 번에 하나뿐인 도장
 		beta0        uint32 // 좋은 가르기의 $\beta^{(0)}$ 절
@@ -234,7 +234,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 		funcTotal    uint64
 	)
 
-//line simplify.w:221
+//line simplify.gw:221
 	s.pre, s.simpStats = nil, SimplifyStats{}
 	if s.empty {
 		s.pre, s.simpStats.Unsat = &preprocessed{unsat: true}, true
@@ -244,7 +244,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 		return Unknown, nil
 	}
 
-//line simplify.w:272
+//line simplify.gw:272
 	par = s.SimplifyParams
 	if par.Cutoff < 0 || par.MaxRounds < 0 {
 		return Unknown, errors.New("sat: 전처리 매개변수가 범위를 벗어났다")
@@ -256,9 +256,9 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 	}
 	pre = &preprocessed{}
 
-//line simplify.w:230
+//line simplify.gw:230
 
-//line simplify.w:364
+//line simplify.gw:364
 	litHeadTop = vars + vars + 2
 	clsHeadTop = litHeadTop + clauses
 	xcells = clsHeadTop + cells + 1
@@ -273,11 +273,11 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 	bytes = memMax*24 + uint64(vars+1)*24
 	vmem = make([]simpVar, vars+1)
 
-//line simplify.w:382
+//line simplify.gw:382
 	for l = 2; l < litHeadTop; l++ {
 		mems++
 		mem[l].down = l
-//line simplify.w:384
+//line simplify.gw:384
 	}
 	cur = len(s.cells)
 	for c, j = clauses, clsHeadTop; c != 0; c-- {
@@ -289,47 +289,47 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 			mems++
 			mem[j].lit = p
 			mem[j].cls = cc
-//line simplify.w:393
+//line simplify.gw:393
 			mems += 3
 			mem[j].down = mem[p].down
 			mem[p].down = j
 			j++
-//line simplify.w:394
+//line simplify.gw:394
 			if x&uint32(firstLit) != 0 {
 				break
 			}
 		}
 		mems++
 		mem[cc].left = cc
-//line simplify.w:399
+//line simplify.gw:399
 	}
 	if j != clsHeadTop+cells {
 		panic("sat: 이럴 수는 없다 (cells)")
 	}
 
-//line simplify.w:407
+//line simplify.gw:407
 	for c = vars; c != 0; c-- {
 		mems += 2
 		vmem[c].stable = 0
 		vmem[c].status = varNorm
-//line simplify.w:409
+//line simplify.gw:409
 	}
 
-//line simplify.w:416
+//line simplify.gw:416
 	for l = 2; l < litHeadTop; l++ {
 
-//line simplify.w:427
+//line simplify.gw:427
 		for j, k, sz = l, mem[l].down, 0; k >= litHeadTop; mems, j, k = mems+1, k, mem[k].down {
 			mems++
 			mem[k].up = j
-//line simplify.w:429
+//line simplify.gw:429
 			mems++
 			c = mem[k].cls
-//line simplify.w:430
+//line simplify.gw:430
 			mems += 3
 			mem[k].left = mem[c].left
 			mem[c].left = k
-//line simplify.w:431
+//line simplify.gw:431
 			sz++
 		}
 		if k != l {
@@ -338,14 +338,14 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 		mems++
 		mem[l].lit = sz
 		mem[l].cls = 0
-//line simplify.w:437
+//line simplify.gw:437
 		mems++
 		mem[l].up = j
-//line simplify.w:438
+//line simplify.gw:438
 		if sz == 0 {
 			w = l
 
-//line simplify.w:503
+//line simplify.gw:503
 			kv = w >> 1
 			mems++
 			if vmem[kv].status == varNorm {
@@ -357,56 +357,56 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 				}
 				vmem[kv].link = toDo
 				toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 			} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 				mems++
 				vmem[kv].status = elimQuiet
 				vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 			}
 
-//line simplify.w:441
+//line simplify.gw:441
 		} else {
 
-//line simplify.w:449
+//line simplify.gw:449
 			if rbits < 0x40 {
 				mems += 4
 				rbits = uint32(rng.Next()) | 1<<30
-//line simplify.w:451
+//line simplify.gw:451
 			}
 			mems++
 			mem[l].sig = 1 << (rbits & 0x3f)
-//line simplify.w:453
+//line simplify.gw:453
 			rbits >>= 6
 			if rbits < 0x40 {
 				mems += 4
 				rbits = uint32(rng.Next()) | 1<<30
-//line simplify.w:456
+//line simplify.gw:456
 			}
 			mems++
 			mem[l].sig |= 1 << (rbits & 0x3f)
-//line simplify.w:458
+//line simplify.gw:458
 			rbits >>= 6
 
-//line simplify.w:443
+//line simplify.gw:443
 		}
 
-//line simplify.w:418
+//line simplify.gw:418
 	}
 	for c = l; c < clsHeadTop; c++ {
 
-//line simplify.w:461
+//line simplify.gw:461
 		bits = 0
 		for j, k, sz = c, mem[c].left, 0; k >= clsHeadTop; mems, j, k = mems+1, k, mem[k].left {
 			mems++
 			mem[k].right = j
-//line simplify.w:464
+//line simplify.gw:464
 			mems++
 			w = mem[k].lit
-//line simplify.w:465
+//line simplify.gw:465
 			mems++
 			bits |= mem[w].sig
-//line simplify.w:466
+//line simplify.gw:466
 			sz++
 		}
 		if k != c {
@@ -415,14 +415,14 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 		mems++
 		mem[c].cls = sz
 		mem[c].lit = 0
-//line simplify.w:472
+//line simplify.gw:472
 		mems += 2
 		mem[c].sig = bits
 		mem[c].right = j
-//line simplify.w:473
+//line simplify.gw:473
 		if sz <= 1 {
 
-//line simplify.w:481
+//line simplify.gw:481
 			kv = w >> 1
 			mems++
 			if w&1 != 0 {
@@ -431,7 +431,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 					vmem[kv].status = forcedFalse
 					vmem[kv].link = toDo
 					toDo = kv
-//line simplify.w:486
+//line simplify.gw:486
 				} else if vmem[kv].status == forcedTrue {
 					goto unsat
 				}
@@ -441,24 +441,24 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 					vmem[kv].status = forcedTrue
 					vmem[kv].link = toDo
 					toDo = kv
-//line simplify.w:492
+//line simplify.gw:492
 				} else if vmem[kv].status == forcedFalse {
 					goto unsat
 				}
 			}
 
-//line simplify.w:475
+//line simplify.gw:475
 		}
 
-//line simplify.w:421
+//line simplify.gw:421
 	}
 
-//line simplify.w:520
+//line simplify.gw:520
 	lmem = make([]uint64, litHeadTop)
 	for l = 0; l < litHeadTop; l++ {
 		mems++
 		lmem[l] = 0
-//line simplify.w:523
+//line simplify.gw:523
 	}
 	cmem = make([]simpClause, clauses)
 	if par.Buckets < 2 {
@@ -467,31 +467,31 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 	bucket = make([]uint32, par.Buckets+1)
 	bytes += uint64(litHeadTop)*8 + uint64(clauses)*8 + uint64(par.Buckets+1)*4
 
-//line simplify.w:231
+//line simplify.gw:231
 	imems, mems = mems, 0
 
-//line simplify.w:1316
+//line simplify.gw:1316
 	mems++
 	cmem[0].link = sentinel
 	cmem[0].size = 0
-//line simplify.w:1317
+//line simplify.gw:1317
 	for c = litHeadTop + 1; c < clsHeadTop; c++ {
 		mems++
 		cmem[c-litHeadTop].link = c - 1
 		cmem[c-litHeadTop].size = 0
-//line simplify.w:1319
+//line simplify.gw:1319
 	}
 	strengthened = c - 1
 
-//line simplify.w:860
+//line simplify.gw:860
 	csave = c
 
-//line simplify.w:541
+//line simplify.gw:541
 	for toDo != 0 {
 		k = toDo
 		mems++
 		toDo = vmem[k].link
-//line simplify.w:544
+//line simplify.gw:544
 		if vmem[k].status != elimQuiet {
 			if vmem[k].status == forcedTrue {
 				l = k + k
@@ -501,36 +501,36 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 			pre.erp = append(pre.erp, erpCell{Lit(l), erpDef})
 			mems++
 			vmem[k].stable = 1
-//line simplify.w:552
+//line simplify.gw:552
 
-//line simplify.w:620
+//line simplify.gw:620
 			for mems, ll = mems+1, mem[l].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 				mems++
 				cd = mem[ll].cls
-//line simplify.w:622
+//line simplify.gw:622
 				for mems, p = mems+1, mem[cd].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 					if p != ll {
 						mems++
 						w = mem[p].lit
-//line simplify.w:625
+//line simplify.gw:625
 
-//line simplify.w:639
+//line simplify.gw:639
 						mems++
 						q, r = mem[p].up, mem[p].down
-//line simplify.w:640
+//line simplify.gw:640
 						mems += 2
 						mem[q].down = r
 						mem[r].up = q
-//line simplify.w:641
+//line simplify.gw:641
 						mems++
 						vmem[w>>1].stable = 0
-//line simplify.w:642
+//line simplify.gw:642
 						mems += 2
 						mem[w].lit--
-//line simplify.w:643
+//line simplify.gw:643
 						if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 							kv = w >> 1
 							mems++
 							if vmem[kv].status == varNorm {
@@ -542,54 +542,54 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 								}
 								vmem[kv].link = toDo
 								toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 							} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 								mems++
 								vmem[kv].status = elimQuiet
 								vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 							}
 
-//line simplify.w:645
+//line simplify.gw:645
 						}
 
-//line simplify.w:626
+//line simplify.gw:626
 					}
 				}
 				mems++
 				mem[mem[cd].right].left = avail
 				avail = mem[cd].left
-//line simplify.w:629
+//line simplify.gw:629
 				mems++
 				mem[cd].cls = 0
 				clausesGone++
-//line simplify.w:630
+//line simplify.gw:630
 			}
 
-//line simplify.w:553
+//line simplify.gw:553
 
-//line simplify.w:583
+//line simplify.gw:583
 			for mems, ll = mems+1, mem[l^1].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 				mems++
 				cd = mem[ll].cls
-//line simplify.w:585
+//line simplify.gw:585
 				mems++
 				p, q = mem[ll].left, mem[ll].right
-//line simplify.w:586
+//line simplify.gw:586
 				mems += 2
 				mem[p].right = q
 				mem[q].left = p
-//line simplify.w:587
+//line simplify.gw:587
 				mems++
 				mem[ll].left = avail
 				avail = ll
-//line simplify.w:588
+//line simplify.gw:588
 				mems++
 				j = mem[cd].cls - 1
-//line simplify.w:589
+//line simplify.gw:589
 				mems++
 				mem[cd].cls = j
-//line simplify.w:590
+//line simplify.gw:590
 				if j == 1 {
 					mems++
 					if p == cd {
@@ -598,7 +598,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 						w = mem[p].lit
 					}
 
-//line simplify.w:481
+//line simplify.gw:481
 					kv = w >> 1
 					mems++
 					if w&1 != 0 {
@@ -607,7 +607,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 							vmem[kv].status = forcedFalse
 							vmem[kv].link = toDo
 							toDo = kv
-//line simplify.w:486
+//line simplify.gw:486
 						} else if vmem[kv].status == forcedTrue {
 							goto unsat
 						}
@@ -617,45 +617,45 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 							vmem[kv].status = forcedTrue
 							vmem[kv].link = toDo
 							toDo = kv
-//line simplify.w:492
+//line simplify.gw:492
 						} else if vmem[kv].status == forcedFalse {
 							goto unsat
 						}
 					}
 
-//line simplify.w:598
+//line simplify.gw:598
 				}
 
-//line simplify.w:604
+//line simplify.gw:604
 				bits2 = 0
 				for mems, t2 = mems+1, mem[cd].right; t2 >= clsHeadTop; mems, t2 = mems+1, mem[t2].right {
 					mems += 2
 					bits2 |= mem[mem[t2].lit].sig
-//line simplify.w:607
+//line simplify.gw:607
 				}
 				mems++
 				mem[cd].sig = bits2
 
-//line simplify.w:600
+//line simplify.gw:600
 
-//line simplify.w:611
+//line simplify.gw:611
 				mems++
 				if cmem[cd-litHeadTop].link == 0 {
 					mems++
 					cmem[cd-litHeadTop].link = strengthened
 					strengthened = cd
-//line simplify.w:614
+//line simplify.gw:614
 				}
 
-//line simplify.w:601
+//line simplify.gw:601
 			}
 
-//line simplify.w:554
+//line simplify.gw:554
 		}
 		varsGone++
 	}
 
-//line simplify.w:563
+//line simplify.gw:563
 	if mems > par.Timeout {
 		err = ErrTimeout
 		goto finishUp
@@ -668,42 +668,42 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 		}
 	}
 
-//line simplify.w:862
+//line simplify.gw:862
 	for strengthened != sentinel {
 		c = strengthened
 		mems++
 		strengthened = cmem[c-litHeadTop].link
-//line simplify.w:865
+//line simplify.gw:865
 		mems++
 		if mem[c].cls != 0 {
 			mems++
 			cmem[c-litHeadTop].link = 0
-//line simplify.w:868
+//line simplify.gw:868
 
-//line simplify.w:680
+//line simplify.gw:680
 			mems += 3
 			p = mem[c].right
 			l = mem[p].lit
 			k = mem[l].lit
-//line simplify.w:681
+//line simplify.gw:681
 			for mems, p = mems+1, mem[p].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 				mems++
 				ll = mem[p].lit
-//line simplify.w:683
+//line simplify.gw:683
 				mems++
 				if mem[ll].lit < k {
 					k, l = mem[ll].lit, ll
 				}
 			}
 
-//line simplify.w:656
+//line simplify.gw:656
 			mems += 3
 			sz, bits, v = mem[c].cls, mem[c].sig, mem[c].left
-//line simplify.w:657
+//line simplify.gw:657
 			for mems, pp = mems+1, mem[l].down; pp >= litHeadTop; mems, pp = mems+1, mem[pp].down {
 				mems++
 				cc = mem[pp].cls
-//line simplify.w:659
+//line simplify.gw:659
 				if cc == c {
 					continue
 				}
@@ -717,78 +717,78 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 					continue
 				}
 
-//line simplify.w:693
+//line simplify.gw:693
 				mems++
 				q, qq = v, mem[cc].left
-//line simplify.w:694
+//line simplify.gw:694
 				for {
 					mems += 2
 					l, ll = mem[q].lit, mem[qq].lit
-//line simplify.w:696
+//line simplify.gw:696
 
-//line simplify.w:713
+//line simplify.gw:713
 					for l < ll {
 						mems++
 						qq = mem[qq].left
-//line simplify.w:715
+//line simplify.gw:715
 						if qq < clsHeadTop {
 							ll = 0
 						} else {
 							mems++
 							ll = mem[qq].lit
-//line simplify.w:719
+//line simplify.gw:719
 						}
 					}
 
-//line simplify.w:697
+//line simplify.gw:697
 					if l > ll {
 						break
 					}
 					mems++
 					q = mem[q].left
-//line simplify.w:701
+//line simplify.gw:701
 					if q < clsHeadTop {
 						l = 0
 						break
 					}
 					mems++
 					qq = mem[qq].left
-//line simplify.w:706
+//line simplify.gw:706
 					if qq < clsHeadTop {
 						ll = 0
 						break
 					}
 				}
 
-//line simplify.w:672
+//line simplify.gw:672
 				if l > ll {
 					subFalse++
 				} else {
 
-//line simplify.w:723
+//line simplify.gw:723
 					subTotal++
 					for mems, p = mems+1, mem[cc].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 						mems++
 						w = mem[p].lit
-//line simplify.w:726
+//line simplify.gw:726
 
-//line simplify.w:639
+//line simplify.gw:639
 						mems++
 						q, r = mem[p].up, mem[p].down
-//line simplify.w:640
+//line simplify.gw:640
 						mems += 2
 						mem[q].down = r
 						mem[r].up = q
-//line simplify.w:641
+//line simplify.gw:641
 						mems++
 						vmem[w>>1].stable = 0
-//line simplify.w:642
+//line simplify.gw:642
 						mems += 2
 						mem[w].lit--
-//line simplify.w:643
+//line simplify.gw:643
 						if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 							kv = w >> 1
 							mems++
 							if vmem[kv].status == varNorm {
@@ -800,39 +800,39 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 								}
 								vmem[kv].link = toDo
 								toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 							} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 								mems++
 								vmem[kv].status = elimQuiet
 								vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 							}
 
-//line simplify.w:645
+//line simplify.gw:645
 						}
 
-//line simplify.w:727
+//line simplify.gw:727
 					}
 					mems++
 					mem[mem[cc].right].left = avail
 					avail = mem[cc].left
-//line simplify.w:729
+//line simplify.gw:729
 					mems++
 					mem[cc].cls = 0
 					clausesGone++
 
-//line simplify.w:676
+//line simplify.gw:676
 				}
 			}
 
-//line simplify.w:869
+//line simplify.gw:869
 
-//line simplify.w:541
+//line simplify.gw:541
 			for toDo != 0 {
 				k = toDo
 				mems++
 				toDo = vmem[k].link
-//line simplify.w:544
+//line simplify.gw:544
 				if vmem[k].status != elimQuiet {
 					if vmem[k].status == forcedTrue {
 						l = k + k
@@ -842,36 +842,36 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 					pre.erp = append(pre.erp, erpCell{Lit(l), erpDef})
 					mems++
 					vmem[k].stable = 1
-//line simplify.w:552
+//line simplify.gw:552
 
-//line simplify.w:620
+//line simplify.gw:620
 					for mems, ll = mems+1, mem[l].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 						mems++
 						cd = mem[ll].cls
-//line simplify.w:622
+//line simplify.gw:622
 						for mems, p = mems+1, mem[cd].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 							if p != ll {
 								mems++
 								w = mem[p].lit
-//line simplify.w:625
+//line simplify.gw:625
 
-//line simplify.w:639
+//line simplify.gw:639
 								mems++
 								q, r = mem[p].up, mem[p].down
-//line simplify.w:640
+//line simplify.gw:640
 								mems += 2
 								mem[q].down = r
 								mem[r].up = q
-//line simplify.w:641
+//line simplify.gw:641
 								mems++
 								vmem[w>>1].stable = 0
-//line simplify.w:642
+//line simplify.gw:642
 								mems += 2
 								mem[w].lit--
-//line simplify.w:643
+//line simplify.gw:643
 								if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 									kv = w >> 1
 									mems++
 									if vmem[kv].status == varNorm {
@@ -883,54 +883,54 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 										}
 										vmem[kv].link = toDo
 										toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 									} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 										mems++
 										vmem[kv].status = elimQuiet
 										vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 									}
 
-//line simplify.w:645
+//line simplify.gw:645
 								}
 
-//line simplify.w:626
+//line simplify.gw:626
 							}
 						}
 						mems++
 						mem[mem[cd].right].left = avail
 						avail = mem[cd].left
-//line simplify.w:629
+//line simplify.gw:629
 						mems++
 						mem[cd].cls = 0
 						clausesGone++
-//line simplify.w:630
+//line simplify.gw:630
 					}
 
-//line simplify.w:553
+//line simplify.gw:553
 
-//line simplify.w:583
+//line simplify.gw:583
 					for mems, ll = mems+1, mem[l^1].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 						mems++
 						cd = mem[ll].cls
-//line simplify.w:585
+//line simplify.gw:585
 						mems++
 						p, q = mem[ll].left, mem[ll].right
-//line simplify.w:586
+//line simplify.gw:586
 						mems += 2
 						mem[p].right = q
 						mem[q].left = p
-//line simplify.w:587
+//line simplify.gw:587
 						mems++
 						mem[ll].left = avail
 						avail = ll
-//line simplify.w:588
+//line simplify.gw:588
 						mems++
 						j = mem[cd].cls - 1
-//line simplify.w:589
+//line simplify.gw:589
 						mems++
 						mem[cd].cls = j
-//line simplify.w:590
+//line simplify.gw:590
 						if j == 1 {
 							mems++
 							if p == cd {
@@ -939,7 +939,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 								w = mem[p].lit
 							}
 
-//line simplify.w:481
+//line simplify.gw:481
 							kv = w >> 1
 							mems++
 							if w&1 != 0 {
@@ -948,7 +948,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 									vmem[kv].status = forcedFalse
 									vmem[kv].link = toDo
 									toDo = kv
-//line simplify.w:486
+//line simplify.gw:486
 								} else if vmem[kv].status == forcedTrue {
 									goto unsat
 								}
@@ -958,45 +958,45 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 									vmem[kv].status = forcedTrue
 									vmem[kv].link = toDo
 									toDo = kv
-//line simplify.w:492
+//line simplify.gw:492
 								} else if vmem[kv].status == forcedFalse {
 									goto unsat
 								}
 							}
 
-//line simplify.w:598
+//line simplify.gw:598
 						}
 
-//line simplify.w:604
+//line simplify.gw:604
 						bits2 = 0
 						for mems, t2 = mems+1, mem[cd].right; t2 >= clsHeadTop; mems, t2 = mems+1, mem[t2].right {
 							mems += 2
 							bits2 |= mem[mem[t2].lit].sig
-//line simplify.w:607
+//line simplify.gw:607
 						}
 						mems++
 						mem[cd].sig = bits2
 
-//line simplify.w:600
+//line simplify.gw:600
 
-//line simplify.w:611
+//line simplify.gw:611
 						mems++
 						if cmem[cd-litHeadTop].link == 0 {
 							mems++
 							cmem[cd-litHeadTop].link = strengthened
 							strengthened = cd
-//line simplify.w:614
+//line simplify.gw:614
 						}
 
-//line simplify.w:601
+//line simplify.gw:601
 					}
 
-//line simplify.w:554
+//line simplify.gw:554
 				}
 				varsGone++
 			}
 
-//line simplify.w:563
+//line simplify.gw:563
 			if mems > par.Timeout {
 				err = ErrTimeout
 				goto finishUp
@@ -1009,24 +1009,24 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 				}
 			}
 
-//line simplify.w:870
+//line simplify.gw:870
 
-//line simplify.w:876
+//line simplify.gw:876
 			mems++
 			if mem[c].cls != 0 {
 				specialcase = 0
 
-//line simplify.w:747
+//line simplify.gw:747
 				mems += 3
 				sz, bits, v = mem[c].cls, mem[c].sig, mem[c].left
-//line simplify.w:748
+//line simplify.gw:748
 				for mems, vv = mems+1, v; vv >= clsHeadTop; mems, vv = mems+1, mem[vv].left {
 					mems++
 					u = mem[vv].lit
-//line simplify.w:750
+//line simplify.gw:750
 					if specialcase != 0 {
 
-//line simplify.w:1402
+//line simplify.gw:1402
 						mems++
 						if mem[u^1].cls != round {
 							continue
@@ -1040,16 +1040,16 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 							continue
 						}
 
-//line simplify.w:752
+//line simplify.gw:752
 					}
 					mems++
 					ubits = bits &^ mem[u].sig
-//line simplify.w:754
+//line simplify.gw:754
 					for mems, pp = mems+1, mem[u^1].down; pp >= litHeadTop; mems, pp = mems+1, mem[pp].down {
 						strTries++
 						mems++
 						cc = mem[pp].cls
-//line simplify.w:757
+//line simplify.gw:757
 						mems++
 						if ubits&^mem[cc].sig != 0 {
 							continue
@@ -1059,80 +1059,80 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 							continue
 						}
 
-//line simplify.w:775
+//line simplify.gw:775
 						mems++
 						q, qq = v, mem[cc].left
-//line simplify.w:776
+//line simplify.gw:776
 						for {
 							mems += 2
 							l, ll = mem[q].lit, mem[qq].lit
-//line simplify.w:778
+//line simplify.gw:778
 							if l == u {
 								l ^= 1
 							}
 
-//line simplify.w:713
+//line simplify.gw:713
 							for l < ll {
 								mems++
 								qq = mem[qq].left
-//line simplify.w:715
+//line simplify.gw:715
 								if qq < clsHeadTop {
 									ll = 0
 								} else {
 									mems++
 									ll = mem[qq].lit
-//line simplify.w:719
+//line simplify.gw:719
 								}
 							}
 
-//line simplify.w:782
+//line simplify.gw:782
 							if l > ll {
 								break
 							}
 							mems++
 							q = mem[q].left
-//line simplify.w:786
+//line simplify.gw:786
 							if q < clsHeadTop {
 								l = 0
 								break
 							}
 							mems++
 							qq = mem[qq].left
-//line simplify.w:791
+//line simplify.gw:791
 							if qq < clsHeadTop {
 								ll = 0
 								break
 							}
 						}
 
-//line simplify.w:766
+//line simplify.gw:766
 						if l > ll {
 							strFalse++
 						} else {
 
-//line simplify.w:801
+//line simplify.gw:801
 							ccbits = 0
 							strTotal++
 							for mems, p = mems+1, mem[cc].right; ; mems, p = mems+1, mem[p].right {
 								mems++
 								w = mem[p].lit
-//line simplify.w:805
+//line simplify.gw:805
 								mems++
 								vmem[w>>1].stable = 0
-//line simplify.w:806
+//line simplify.gw:806
 								if w == u^1 {
 									break
 								}
 								mems++
 								ccbits |= mem[w].sig
-//line simplify.w:810
+//line simplify.gw:810
 							}
 							mems += 2
 							mem[w].lit--
-//line simplify.w:812
+//line simplify.gw:812
 							if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 								kv = w >> 1
 								mems++
 								if vmem[kv].status == varNorm {
@@ -1144,64 +1144,64 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 									}
 									vmem[kv].link = toDo
 									toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 								} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 									mems++
 									vmem[kv].status = elimQuiet
 									vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 								}
 
-//line simplify.w:814
+//line simplify.gw:814
 							}
 
-//line simplify.w:831
+//line simplify.gw:831
 							mems++
 							q, w = mem[p].up, mem[p].down
-//line simplify.w:832
+//line simplify.gw:832
 							mems += 2
 							mem[q].down = w
 							mem[w].up = q
-//line simplify.w:833
+//line simplify.gw:833
 							mems++
 							q, w = mem[p].right, mem[p].left
-//line simplify.w:834
+//line simplify.gw:834
 							mems += 2
 							mem[q].left = w
 							mem[w].right = q
-//line simplify.w:835
+//line simplify.gw:835
 							mems++
 							mem[p].left = avail
 							avail = p
 
-//line simplify.w:816
+//line simplify.gw:816
 							for p = q; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 								mems++
 								q = mem[p].lit
-//line simplify.w:818
+//line simplify.gw:818
 								mems++
 								vmem[q>>1].stable = 0
-//line simplify.w:819
+//line simplify.gw:819
 								mems++
 								ccbits |= mem[q].sig
-//line simplify.w:820
+//line simplify.gw:820
 							}
 							mems++
 							mem[cc].sig = ccbits
 
-//line simplify.w:841
+//line simplify.gw:841
 							mems += 2
 							mem[cc].cls--
-//line simplify.w:842
+//line simplify.gw:842
 							if mem[cc].cls <= 1 {
 								if mem[cc].cls == 0 {
 									panic("sat: 이럴 수는 없다 (strengthening)")
 								}
 								mems += 2
 								w = mem[mem[cc].right].lit
-//line simplify.w:847
+//line simplify.gw:847
 
-//line simplify.w:481
+//line simplify.gw:481
 								kv = w >> 1
 								mems++
 								if w&1 != 0 {
@@ -1210,7 +1210,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 										vmem[kv].status = forcedFalse
 										vmem[kv].link = toDo
 										toDo = kv
-//line simplify.w:486
+//line simplify.gw:486
 									} else if vmem[kv].status == forcedTrue {
 										goto unsat
 									}
@@ -1220,37 +1220,37 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 										vmem[kv].status = forcedTrue
 										vmem[kv].link = toDo
 										toDo = kv
-//line simplify.w:492
+//line simplify.gw:492
 									} else if vmem[kv].status == forcedFalse {
 										goto unsat
 									}
 								}
 
-//line simplify.w:848
+//line simplify.gw:848
 							}
 
-//line simplify.w:823
+//line simplify.gw:823
 							mems++
 							if cmem[cc-litHeadTop].link == 0 {
 								mems++
 								cmem[cc-litHeadTop].link = strengthened
 								strengthened = cc
-//line simplify.w:826
+//line simplify.gw:826
 							}
 
-//line simplify.w:770
+//line simplify.gw:770
 						}
 					}
 				}
 
-//line simplify.w:880
+//line simplify.gw:880
 
-//line simplify.w:541
+//line simplify.gw:541
 				for toDo != 0 {
 					k = toDo
 					mems++
 					toDo = vmem[k].link
-//line simplify.w:544
+//line simplify.gw:544
 					if vmem[k].status != elimQuiet {
 						if vmem[k].status == forcedTrue {
 							l = k + k
@@ -1260,36 +1260,36 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 						pre.erp = append(pre.erp, erpCell{Lit(l), erpDef})
 						mems++
 						vmem[k].stable = 1
-//line simplify.w:552
+//line simplify.gw:552
 
-//line simplify.w:620
+//line simplify.gw:620
 						for mems, ll = mems+1, mem[l].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 							mems++
 							cd = mem[ll].cls
-//line simplify.w:622
+//line simplify.gw:622
 							for mems, p = mems+1, mem[cd].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 								if p != ll {
 									mems++
 									w = mem[p].lit
-//line simplify.w:625
+//line simplify.gw:625
 
-//line simplify.w:639
+//line simplify.gw:639
 									mems++
 									q, r = mem[p].up, mem[p].down
-//line simplify.w:640
+//line simplify.gw:640
 									mems += 2
 									mem[q].down = r
 									mem[r].up = q
-//line simplify.w:641
+//line simplify.gw:641
 									mems++
 									vmem[w>>1].stable = 0
-//line simplify.w:642
+//line simplify.gw:642
 									mems += 2
 									mem[w].lit--
-//line simplify.w:643
+//line simplify.gw:643
 									if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 										kv = w >> 1
 										mems++
 										if vmem[kv].status == varNorm {
@@ -1301,54 +1301,54 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 											}
 											vmem[kv].link = toDo
 											toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 										} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 											mems++
 											vmem[kv].status = elimQuiet
 											vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 										}
 
-//line simplify.w:645
+//line simplify.gw:645
 									}
 
-//line simplify.w:626
+//line simplify.gw:626
 								}
 							}
 							mems++
 							mem[mem[cd].right].left = avail
 							avail = mem[cd].left
-//line simplify.w:629
+//line simplify.gw:629
 							mems++
 							mem[cd].cls = 0
 							clausesGone++
-//line simplify.w:630
+//line simplify.gw:630
 						}
 
-//line simplify.w:553
+//line simplify.gw:553
 
-//line simplify.w:583
+//line simplify.gw:583
 						for mems, ll = mems+1, mem[l^1].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 							mems++
 							cd = mem[ll].cls
-//line simplify.w:585
+//line simplify.gw:585
 							mems++
 							p, q = mem[ll].left, mem[ll].right
-//line simplify.w:586
+//line simplify.gw:586
 							mems += 2
 							mem[p].right = q
 							mem[q].left = p
-//line simplify.w:587
+//line simplify.gw:587
 							mems++
 							mem[ll].left = avail
 							avail = ll
-//line simplify.w:588
+//line simplify.gw:588
 							mems++
 							j = mem[cd].cls - 1
-//line simplify.w:589
+//line simplify.gw:589
 							mems++
 							mem[cd].cls = j
-//line simplify.w:590
+//line simplify.gw:590
 							if j == 1 {
 								mems++
 								if p == cd {
@@ -1357,7 +1357,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 									w = mem[p].lit
 								}
 
-//line simplify.w:481
+//line simplify.gw:481
 								kv = w >> 1
 								mems++
 								if w&1 != 0 {
@@ -1366,7 +1366,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 										vmem[kv].status = forcedFalse
 										vmem[kv].link = toDo
 										toDo = kv
-//line simplify.w:486
+//line simplify.gw:486
 									} else if vmem[kv].status == forcedTrue {
 										goto unsat
 									}
@@ -1376,45 +1376,45 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 										vmem[kv].status = forcedTrue
 										vmem[kv].link = toDo
 										toDo = kv
-//line simplify.w:492
+//line simplify.gw:492
 									} else if vmem[kv].status == forcedFalse {
 										goto unsat
 									}
 								}
 
-//line simplify.w:598
+//line simplify.gw:598
 							}
 
-//line simplify.w:604
+//line simplify.gw:604
 							bits2 = 0
 							for mems, t2 = mems+1, mem[cd].right; t2 >= clsHeadTop; mems, t2 = mems+1, mem[t2].right {
 								mems += 2
 								bits2 |= mem[mem[t2].lit].sig
-//line simplify.w:607
+//line simplify.gw:607
 							}
 							mems++
 							mem[cd].sig = bits2
 
-//line simplify.w:600
+//line simplify.gw:600
 
-//line simplify.w:611
+//line simplify.gw:611
 							mems++
 							if cmem[cd-litHeadTop].link == 0 {
 								mems++
 								cmem[cd-litHeadTop].link = strengthened
 								strengthened = cd
-//line simplify.w:614
+//line simplify.gw:614
 							}
 
-//line simplify.w:601
+//line simplify.gw:601
 						}
 
-//line simplify.w:554
+//line simplify.gw:554
 					}
 					varsGone++
 				}
 
-//line simplify.w:563
+//line simplify.gw:563
 				if mems > par.Timeout {
 					err = ErrTimeout
 					goto finishUp
@@ -1427,29 +1427,29 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 					}
 				}
 
-//line simplify.w:881
+//line simplify.gw:881
 				mems++
 				mem[c].lit = round
-//line simplify.w:882
+//line simplify.gw:882
 				mems++
 				cmem[c-litHeadTop].size = 0
-//line simplify.w:883
+//line simplify.gw:883
 			}
 
-//line simplify.w:871
+//line simplify.gw:871
 		}
 	}
 	c = csave
 
-//line simplify.w:1305
+//line simplify.gw:1305
 	for round = 1; round <= uint32(par.MaxRounds); round++ {
 		progress = varsGone
 
-//line simplify.w:1157
+//line simplify.gw:1157
 		for b = 2; b <= uint32(par.Buckets); b++ {
 			mems++
 			bucket[b] = 0
-//line simplify.w:1159
+//line simplify.gw:1159
 		}
 		for x = vars; x != 0; x-- {
 			mems++
@@ -1462,7 +1462,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 			l = x + x
 			mems += 2
 			p, q = mem[l].lit, mem[l+1].lit
-//line simplify.w:1170
+//line simplify.gw:1170
 			if p > uint32(par.Cutoff) && q > uint32(par.Cutoff) {
 				goto reject
 			}
@@ -1473,18 +1473,18 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 			b = min(b, uint32(par.Buckets))
 			mems += 2
 			vmem[x].blink = bucket[b]
-//line simplify.w:1179
+//line simplify.gw:1179
 			mems++
 			bucket[b] = x
-//line simplify.w:1180
+//line simplify.gw:1180
 			continue
 		reject:
 			mems++
 			vmem[x].stable = 1
-//line simplify.w:1183
+//line simplify.gw:1183
 		}
 
-//line simplify.w:1140
+//line simplify.gw:1140
 		for b = 2; b <= uint32(par.Buckets); b++ {
 			mems++
 			if bucket[b] != 0 {
@@ -1492,11 +1492,11 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 					mems++
 					if vmem[x].stable == 0 {
 
-//line simplify.w:1061
+//line simplify.gw:1061
 						l = x + x
 						mems += 2
 						clausesSaved = int(mem[l].lit + mem[l+1].lit)
-//line simplify.w:1063
+//line simplify.gw:1063
 						if mem[l].lit > uint32(par.Cutoff) && mem[l+1].lit > uint32(par.Cutoff) {
 							goto elimDone
 						}
@@ -1505,47 +1505,47 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 						}
 						elimTries++
 
-//line simplify.w:985
+//line simplify.gw:985
 						stbits = 0
 						beta0 = 0
 						stamp++
-//line simplify.w:986
+//line simplify.gw:986
 						ll = l ^ 1
 
-//line simplify.w:1004
+//line simplify.gw:1004
 						for mems, p = mems+1, mem[l].down; p >= litHeadTop; mems, p = mems+1, mem[p].down {
 							mems += 2
 							if mem[mem[p].cls].cls == 2 {
 								mems++
 								q = mem[p].right
-//line simplify.w:1008
+//line simplify.gw:1008
 								if q < clsHeadTop {
 									mems++
 									q = mem[p].left
-//line simplify.w:1010
+//line simplify.gw:1010
 								}
 								mems += 2
 								lmem[mem[q].lit] = stamp
-//line simplify.w:1012
+//line simplify.gw:1012
 								mems++
 								stbits |= mem[mem[q].lit^1].sig
-//line simplify.w:1013
+//line simplify.gw:1013
 							}
 						}
 
-//line simplify.w:988
+//line simplify.gw:988
 						if stbits != 0 {
 							mems++
 							stbits |= mem[ll].sig
-//line simplify.w:990
+//line simplify.gw:990
 							for mems, p = mems+1, mem[ll].down; p >= litHeadTop; mems, p = mems+1, mem[p].down {
 								mems++
 								c = mem[p].cls
-//line simplify.w:992
+//line simplify.gw:992
 								mems++
 								if mem[c].sig&^stbits == 0 {
 
-//line simplify.w:1017
+//line simplify.gw:1017
 									for mems, q = mems+1, mem[p].left; q != p; mems, q = mems+1, mem[q].left {
 										if q < clsHeadTop {
 											continue
@@ -1560,14 +1560,14 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 										break
 									}
 
-//line simplify.w:995
+//line simplify.gw:995
 								}
 							}
 						}
 						if beta0 != 0 {
 							stamp++
 
-//line simplify.w:1032
+//line simplify.gw:1032
 							if mem[p].cls != beta0 || mem[p].lit != ll {
 								panic("sat: 이럴 수는 없다 (partitioning)")
 							}
@@ -1577,57 +1577,57 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 								}
 								mems += 2
 								lmem[mem[q].lit^1] = stamp
-//line simplify.w:1040
+//line simplify.gw:1040
 							}
 
-//line simplify.w:1001
+//line simplify.gw:1001
 						}
 
-//line simplify.w:1071
+//line simplify.gw:1071
 						if beta0 == 0 {
 							l++
 
-//line simplify.w:985
+//line simplify.gw:985
 							stbits = 0
 							beta0 = 0
 							stamp++
-//line simplify.w:986
+//line simplify.gw:986
 							ll = l ^ 1
 
-//line simplify.w:1004
+//line simplify.gw:1004
 							for mems, p = mems+1, mem[l].down; p >= litHeadTop; mems, p = mems+1, mem[p].down {
 								mems += 2
 								if mem[mem[p].cls].cls == 2 {
 									mems++
 									q = mem[p].right
-//line simplify.w:1008
+//line simplify.gw:1008
 									if q < clsHeadTop {
 										mems++
 										q = mem[p].left
-//line simplify.w:1010
+//line simplify.gw:1010
 									}
 									mems += 2
 									lmem[mem[q].lit] = stamp
-//line simplify.w:1012
+//line simplify.gw:1012
 									mems++
 									stbits |= mem[mem[q].lit^1].sig
-//line simplify.w:1013
+//line simplify.gw:1013
 								}
 							}
 
-//line simplify.w:988
+//line simplify.gw:988
 							if stbits != 0 {
 								mems++
 								stbits |= mem[ll].sig
-//line simplify.w:990
+//line simplify.gw:990
 								for mems, p = mems+1, mem[ll].down; p >= litHeadTop; mems, p = mems+1, mem[p].down {
 									mems++
 									c = mem[p].cls
-//line simplify.w:992
+//line simplify.gw:992
 									mems++
 									if mem[c].sig&^stbits == 0 {
 
-//line simplify.w:1017
+//line simplify.gw:1017
 										for mems, q = mems+1, mem[p].left; q != p; mems, q = mems+1, mem[q].left {
 											if q < clsHeadTop {
 												continue
@@ -1642,14 +1642,14 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 											break
 										}
 
-//line simplify.w:995
+//line simplify.gw:995
 									}
 								}
 							}
 							if beta0 != 0 {
 								stamp++
 
-//line simplify.w:1032
+//line simplify.gw:1032
 								if mem[p].cls != beta0 || mem[p].lit != ll {
 									panic("sat: 이럴 수는 없다 (partitioning)")
 								}
@@ -1659,26 +1659,26 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 									}
 									mems += 2
 									lmem[mem[q].lit^1] = stamp
-//line simplify.w:1040
+//line simplify.gw:1040
 								}
 
-//line simplify.w:1001
+//line simplify.gw:1001
 							}
 
-//line simplify.w:1074
+//line simplify.gw:1074
 						}
 						if beta0 != 0 {
 							funcTotal++
 						}
 						lastNew = 0
 
-//line simplify.w:1086
+//line simplify.gw:1086
 						for mems, alf = mems+1, mem[l].down; alf >= litHeadTop; mems, alf = mems+1, mem[alf].down {
 							mems++
 							c = mem[alf].cls
-//line simplify.w:1088
+//line simplify.gw:1088
 
-//line simplify.w:1107
+//line simplify.gw:1107
 							if beta0 == 0 {
 								alpha0 = true
 							} else {
@@ -1687,7 +1687,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 								if mem[c].cls == 2 {
 									mems++
 									q = mem[c].right
-//line simplify.w:1114
+//line simplify.gw:1114
 									if q == alf {
 										q = mem[c].left
 									}
@@ -1698,37 +1698,37 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 								}
 							}
 
-//line simplify.w:1089
+//line simplify.gw:1089
 							for mems, bet = mems+1, mem[ll].down; bet >= litHeadTop; mems, bet = mems+1, mem[bet].down {
 								mems++
 								cc = mem[bet].cls
-//line simplify.w:1091
+//line simplify.gw:1091
 								if cc == beta0 && alpha0 || cc != beta0 && !alpha0 {
 									continue
 								}
 
-//line simplify.w:900
+//line simplify.gw:900
 								p = 1
 								mems += 2
 								v = mem[c].left
 								u = mem[v].lit
-//line simplify.w:902
+//line simplify.gw:902
 								mems += 2
 								vv = mem[cc].left
 								uu = mem[vv].lit
-//line simplify.w:903
+//line simplify.gw:903
 								for u+uu != 0 {
 									if u == uu {
 
-//line simplify.w:943
+//line simplify.gw:943
 										q = p
 
-//line simplify.w:953
+//line simplify.gw:953
 										if avail != 0 {
 											p = avail
 											mems++
 											avail = mem[p].left
-//line simplify.w:956
+//line simplify.gw:956
 										} else {
 											if uint64(xcells) == memMax {
 												err = ErrMemory
@@ -1738,94 +1738,94 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 											xcells++
 										}
 
-//line simplify.w:945
+//line simplify.gw:945
 										mems += 2
 										mem[q].left = p
 										mem[p].lit = u
 
-//line simplify.w:906
+//line simplify.gw:906
 
-//line simplify.w:924
+//line simplify.gw:924
 										mems++
 										v = mem[v].left
-//line simplify.w:925
+//line simplify.gw:925
 										if v < clsHeadTop {
 											u = 0
 										} else {
 											mems++
 											u = mem[v].lit
-//line simplify.w:929
+//line simplify.gw:929
 										}
 
-//line simplify.w:907
+//line simplify.gw:907
 
-//line simplify.w:932
+//line simplify.gw:932
 										mems++
 										vv = mem[vv].left
-//line simplify.w:933
+//line simplify.gw:933
 										if vv < clsHeadTop {
 											uu = 0
 										} else {
 											mems++
 											uu = mem[vv].lit
-//line simplify.w:937
+//line simplify.gw:937
 										}
 
-//line simplify.w:908
+//line simplify.gw:908
 									} else if u == uu^1 {
 										if u != l {
 
-//line simplify.w:966
+//line simplify.gw:966
 											if p != 1 {
 												mems += 2
 												mem[p].left = avail
 												avail = mem[1].left
-//line simplify.w:968
+//line simplify.gw:968
 											}
 											p = 0
 											break
 
-//line simplify.w:911
+//line simplify.gw:911
 										}
 
-//line simplify.w:924
+//line simplify.gw:924
 										mems++
 										v = mem[v].left
-//line simplify.w:925
+//line simplify.gw:925
 										if v < clsHeadTop {
 											u = 0
 										} else {
 											mems++
 											u = mem[v].lit
-//line simplify.w:929
+//line simplify.gw:929
 										}
 
-//line simplify.w:913
+//line simplify.gw:913
 
-//line simplify.w:932
+//line simplify.gw:932
 										mems++
 										vv = mem[vv].left
-//line simplify.w:933
+//line simplify.gw:933
 										if vv < clsHeadTop {
 											uu = 0
 										} else {
 											mems++
 											uu = mem[vv].lit
-//line simplify.w:937
+//line simplify.gw:937
 										}
 
-//line simplify.w:914
+//line simplify.gw:914
 									} else if u > uu {
 
-//line simplify.w:943
+//line simplify.gw:943
 										q = p
 
-//line simplify.w:953
+//line simplify.gw:953
 										if avail != 0 {
 											p = avail
 											mems++
 											avail = mem[p].left
-//line simplify.w:956
+//line simplify.gw:956
 										} else {
 											if uint64(xcells) == memMax {
 												err = ErrMemory
@@ -1835,37 +1835,37 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 											xcells++
 										}
 
-//line simplify.w:945
+//line simplify.gw:945
 										mems += 2
 										mem[q].left = p
 										mem[p].lit = u
 
-//line simplify.w:916
+//line simplify.gw:916
 
-//line simplify.w:924
+//line simplify.gw:924
 										mems++
 										v = mem[v].left
-//line simplify.w:925
+//line simplify.gw:925
 										if v < clsHeadTop {
 											u = 0
 										} else {
 											mems++
 											u = mem[v].lit
-//line simplify.w:929
+//line simplify.gw:929
 										}
 
-//line simplify.w:917
+//line simplify.gw:917
 									} else {
 
-//line simplify.w:948
+//line simplify.gw:948
 										q = p
 
-//line simplify.w:953
+//line simplify.gw:953
 										if avail != 0 {
 											p = avail
 											mems++
 											avail = mem[p].left
-//line simplify.w:956
+//line simplify.gw:956
 										} else {
 											if uint64(xcells) == memMax {
 												err = ErrMemory
@@ -1875,68 +1875,68 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 											xcells++
 										}
 
-//line simplify.w:950
+//line simplify.gw:950
 										mems += 2
 										mem[q].left = p
 										mem[p].lit = uu
 
-//line simplify.w:919
+//line simplify.gw:919
 
-//line simplify.w:932
+//line simplify.gw:932
 										mems++
 										vv = mem[vv].left
-//line simplify.w:933
+//line simplify.gw:933
 										if vv < clsHeadTop {
 											uu = 0
 										} else {
 											mems++
 											uu = mem[vv].lit
-//line simplify.w:937
+//line simplify.gw:937
 										}
 
-//line simplify.w:920
+//line simplify.gw:920
 									}
 								}
 
-//line simplify.w:1095
+//line simplify.gw:1095
 								if p != 0 {
 									mems++
 									mem[p].left = 0
-//line simplify.w:1097
+//line simplify.gw:1097
 									mems += 2
 									mem[lastNew].down = mem[1].left
-//line simplify.w:1098
+//line simplify.gw:1098
 									mems++
 									lastNew = mem[1].left
 									mem[lastNew].right = p
-//line simplify.w:1099
+//line simplify.gw:1099
 									if clausesSaved--; clausesSaved < 0 {
 
-//line simplify.w:1127
+//line simplify.gw:1127
 										for mems, p = mems+1, mem[0].down; ; mems, p = mems+1, mem[p].down {
 											mems += 2
 											mem[mem[p].right].left = avail
 											avail = p
-//line simplify.w:1129
+//line simplify.gw:1129
 											if p == lastNew {
 												break
 											}
 										}
 										goto elimDone
 
-//line simplify.w:1101
+//line simplify.gw:1101
 									}
 								}
 							}
 						}
 
-//line simplify.w:1080
+//line simplify.gw:1080
 						mems++
 						mem[lastNew].down = 0
 
-//line simplify.w:1147
+//line simplify.gw:1147
 
-//line simplify.w:1207
+//line simplify.gw:1207
 						if beta0 != 0 {
 							pre.erp = append(pre.erp, erpCell{Lit(l), erpDef})
 							flag := uint8(erpFirst)
@@ -1949,10 +1949,10 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 							}
 						} else {
 
-//line simplify.w:1222
+//line simplify.gw:1222
 							mems++
 							k, v = mem[l].lit, l
-//line simplify.w:1223
+//line simplify.gw:1223
 							mems++
 							if k > mem[ll].lit {
 								k, v = mem[ll].lit, ll
@@ -1964,84 +1964,84 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 									if q >= clsHeadTop {
 										mems++
 										pre.erp = append(pre.erp, erpCell{Lit(mem[q].lit), flag})
-//line simplify.w:1233
+//line simplify.gw:1233
 										flag = 0
 									}
 								}
 							}
 
-//line simplify.w:1219
+//line simplify.gw:1219
 						}
 
-//line simplify.w:1190
+//line simplify.gw:1190
 						mems += 2
 						mem[lastNew].down = 0
 						lastNew = mem[0].down
-//line simplify.w:1191
+//line simplify.gw:1191
 						v = x + x
 
-//line simplify.w:1242
+//line simplify.gw:1242
 						for mems, p = mems+1, mem[v].down; p >= litHeadTop; mems, p = mems+1, mem[p].down {
 							mems++
 							c = mem[p].cls
-//line simplify.w:1244
+//line simplify.gw:1244
 							mems++
 							q, r = mem[c].right, mem[c].left
-//line simplify.w:1245
+//line simplify.gw:1245
 							mems += 2
 							mem[q].left = r
 							mem[r].right = q
-//line simplify.w:1246
+//line simplify.gw:1246
 							if lastNew != 0 {
 								mems++
 								pp = mem[lastNew].down
-//line simplify.w:1248
+//line simplify.gw:1248
 
-//line simplify.w:1260
+//line simplify.gw:1260
 								for q, r, sz, bits = lastNew, c, 0, 0; q != 0; mems, r, q = mems+1, q, mem[q].left {
 									mems++
 									u = mem[q].lit
-//line simplify.w:1262
+//line simplify.gw:1262
 									mems += 2
 									mem[u].lit++
-//line simplify.w:1263
+//line simplify.gw:1263
 									mems++
 									w = mem[u].up
-//line simplify.w:1264
+//line simplify.gw:1264
 									mems += 2
 									mem[u].up = q
 									mem[w].down = q
-//line simplify.w:1265
+//line simplify.gw:1265
 									mems++
 									mem[q].up = w
 									mem[q].down = u
-//line simplify.w:1266
+//line simplify.gw:1266
 									mems++
 									bits |= mem[u].sig
-//line simplify.w:1267
+//line simplify.gw:1267
 									mems++
 									mem[q].right = r
-//line simplify.w:1268
+//line simplify.gw:1268
 									mems++
 									mem[q].cls = c
-//line simplify.w:1269
+//line simplify.gw:1269
 									sz++
 								}
 								mems += 2
 								mem[c].cls = sz
 								mem[c].sig = bits
-//line simplify.w:1272
+//line simplify.gw:1272
 								mems += 2
 								mem[c].left = lastNew
 								mem[c].right = r
 								mem[r].left = c
-//line simplify.w:1273
+//line simplify.gw:1273
 								if sz == 1 {
 									mems++
 									w = mem[r].lit
-//line simplify.w:1275
+//line simplify.gw:1275
 
-//line simplify.w:481
+//line simplify.gw:481
 									kv = w >> 1
 									mems++
 									if w&1 != 0 {
@@ -2050,7 +2050,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 											vmem[kv].status = forcedFalse
 											vmem[kv].link = toDo
 											toDo = kv
-//line simplify.w:486
+//line simplify.gw:486
 										} else if vmem[kv].status == forcedTrue {
 											goto unsat
 										}
@@ -2060,94 +2060,94 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 											vmem[kv].status = forcedTrue
 											vmem[kv].link = toDo
 											toDo = kv
-//line simplify.w:492
+//line simplify.gw:492
 										} else if vmem[kv].status == forcedFalse {
 											goto unsat
 										}
 									}
 
-//line simplify.w:1276
+//line simplify.gw:1276
 								}
 
-//line simplify.w:1249
+//line simplify.gw:1249
 								mems++
 								cmem[c-litHeadTop].size = 1
-//line simplify.w:1250
+//line simplify.gw:1250
 								mems++
 								lastNew = pp
-//line simplify.w:1251
+//line simplify.gw:1251
 							} else {
 								mems++
 								mem[c].cls = 0
-//line simplify.w:1253
+//line simplify.gw:1253
 							}
 						}
 
-//line simplify.w:1193
+//line simplify.gw:1193
 						v++
 
-//line simplify.w:1242
+//line simplify.gw:1242
 						for mems, p = mems+1, mem[v].down; p >= litHeadTop; mems, p = mems+1, mem[p].down {
 							mems++
 							c = mem[p].cls
-//line simplify.w:1244
+//line simplify.gw:1244
 							mems++
 							q, r = mem[c].right, mem[c].left
-//line simplify.w:1245
+//line simplify.gw:1245
 							mems += 2
 							mem[q].left = r
 							mem[r].right = q
-//line simplify.w:1246
+//line simplify.gw:1246
 							if lastNew != 0 {
 								mems++
 								pp = mem[lastNew].down
-//line simplify.w:1248
+//line simplify.gw:1248
 
-//line simplify.w:1260
+//line simplify.gw:1260
 								for q, r, sz, bits = lastNew, c, 0, 0; q != 0; mems, r, q = mems+1, q, mem[q].left {
 									mems++
 									u = mem[q].lit
-//line simplify.w:1262
+//line simplify.gw:1262
 									mems += 2
 									mem[u].lit++
-//line simplify.w:1263
+//line simplify.gw:1263
 									mems++
 									w = mem[u].up
-//line simplify.w:1264
+//line simplify.gw:1264
 									mems += 2
 									mem[u].up = q
 									mem[w].down = q
-//line simplify.w:1265
+//line simplify.gw:1265
 									mems++
 									mem[q].up = w
 									mem[q].down = u
-//line simplify.w:1266
+//line simplify.gw:1266
 									mems++
 									bits |= mem[u].sig
-//line simplify.w:1267
+//line simplify.gw:1267
 									mems++
 									mem[q].right = r
-//line simplify.w:1268
+//line simplify.gw:1268
 									mems++
 									mem[q].cls = c
-//line simplify.w:1269
+//line simplify.gw:1269
 									sz++
 								}
 								mems += 2
 								mem[c].cls = sz
 								mem[c].sig = bits
-//line simplify.w:1272
+//line simplify.gw:1272
 								mems += 2
 								mem[c].left = lastNew
 								mem[c].right = r
 								mem[r].left = c
-//line simplify.w:1273
+//line simplify.gw:1273
 								if sz == 1 {
 									mems++
 									w = mem[r].lit
-//line simplify.w:1275
+//line simplify.gw:1275
 
-//line simplify.w:481
+//line simplify.gw:481
 									kv = w >> 1
 									mems++
 									if w&1 != 0 {
@@ -2156,7 +2156,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 											vmem[kv].status = forcedFalse
 											vmem[kv].link = toDo
 											toDo = kv
-//line simplify.w:486
+//line simplify.gw:486
 										} else if vmem[kv].status == forcedTrue {
 											goto unsat
 										}
@@ -2166,52 +2166,52 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 											vmem[kv].status = forcedTrue
 											vmem[kv].link = toDo
 											toDo = kv
-//line simplify.w:492
+//line simplify.gw:492
 										} else if vmem[kv].status == forcedFalse {
 											goto unsat
 										}
 									}
 
-//line simplify.w:1276
+//line simplify.gw:1276
 								}
 
-//line simplify.w:1249
+//line simplify.gw:1249
 								mems++
 								cmem[c-litHeadTop].size = 1
-//line simplify.w:1250
+//line simplify.gw:1250
 								mems++
 								lastNew = pp
-//line simplify.w:1251
+//line simplify.gw:1251
 							} else {
 								mems++
 								mem[c].cls = 0
-//line simplify.w:1253
+//line simplify.gw:1253
 							}
 						}
 
-//line simplify.w:1282
+//line simplify.gw:1282
 						for mems, p = mems+1, mem[v].down; p >= litHeadTop; mems, p = mems+1, mem[p].down {
 							for mems, q = mems+1, mem[p].right; q != p; mems, q = mems+1, mem[q].right {
 								mems++
 								r, w = mem[q].up, mem[q].down
-//line simplify.w:1285
+//line simplify.gw:1285
 								mems += 2
 								mem[r].down = w
 								mem[w].up = r
-//line simplify.w:1286
+//line simplify.gw:1286
 								mems++
 								w = mem[q].lit
-//line simplify.w:1287
+//line simplify.gw:1287
 								mems++
 								vmem[w>>1].stable = 0
-//line simplify.w:1288
+//line simplify.gw:1288
 								mems += 2
 								mem[w].lit--
 								mem[w].cls = round
-//line simplify.w:1289
+//line simplify.gw:1289
 								if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 									kv = w >> 1
 									mems++
 									if vmem[kv].status == varNorm {
@@ -2223,49 +2223,49 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 										}
 										vmem[kv].link = toDo
 										toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 									} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 										mems++
 										vmem[kv].status = elimQuiet
 										vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 									}
 
-//line simplify.w:1291
+//line simplify.gw:1291
 								}
 							}
 							mems++
 							mem[mem[p].right].left = avail
 							avail = p
-//line simplify.w:1294
+//line simplify.gw:1294
 						}
 
-//line simplify.w:1196
+//line simplify.gw:1196
 						v--
 
-//line simplify.w:1282
+//line simplify.gw:1282
 						for mems, p = mems+1, mem[v].down; p >= litHeadTop; mems, p = mems+1, mem[p].down {
 							for mems, q = mems+1, mem[p].right; q != p; mems, q = mems+1, mem[q].right {
 								mems++
 								r, w = mem[q].up, mem[q].down
-//line simplify.w:1285
+//line simplify.gw:1285
 								mems += 2
 								mem[r].down = w
 								mem[w].up = r
-//line simplify.w:1286
+//line simplify.gw:1286
 								mems++
 								w = mem[q].lit
-//line simplify.w:1287
+//line simplify.gw:1287
 								mems++
 								vmem[w>>1].stable = 0
-//line simplify.w:1288
+//line simplify.gw:1288
 								mems += 2
 								mem[w].lit--
 								mem[w].cls = round
-//line simplify.w:1289
+//line simplify.gw:1289
 								if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 									kv = w >> 1
 									mems++
 									if vmem[kv].status == varNorm {
@@ -2277,41 +2277,41 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 										}
 										vmem[kv].link = toDo
 										toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 									} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 										mems++
 										vmem[kv].status = elimQuiet
 										vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 									}
 
-//line simplify.w:1291
+//line simplify.gw:1291
 								}
 							}
 							mems++
 							mem[mem[p].right].left = avail
 							avail = p
-//line simplify.w:1294
+//line simplify.gw:1294
 						}
 
-//line simplify.w:1198
+//line simplify.gw:1198
 						mems++
 						vmem[x].status = elimRes
 						varsGone++
-//line simplify.w:1199
+//line simplify.gw:1199
 						clausesGone += uint32(clausesSaved)
 
-//line simplify.w:1148
+//line simplify.gw:1148
 
-//line simplify.w:860
+//line simplify.gw:860
 						csave = c
 
-//line simplify.w:541
+//line simplify.gw:541
 						for toDo != 0 {
 							k = toDo
 							mems++
 							toDo = vmem[k].link
-//line simplify.w:544
+//line simplify.gw:544
 							if vmem[k].status != elimQuiet {
 								if vmem[k].status == forcedTrue {
 									l = k + k
@@ -2321,36 +2321,36 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 								pre.erp = append(pre.erp, erpCell{Lit(l), erpDef})
 								mems++
 								vmem[k].stable = 1
-//line simplify.w:552
+//line simplify.gw:552
 
-//line simplify.w:620
+//line simplify.gw:620
 								for mems, ll = mems+1, mem[l].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 									mems++
 									cd = mem[ll].cls
-//line simplify.w:622
+//line simplify.gw:622
 									for mems, p = mems+1, mem[cd].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 										if p != ll {
 											mems++
 											w = mem[p].lit
-//line simplify.w:625
+//line simplify.gw:625
 
-//line simplify.w:639
+//line simplify.gw:639
 											mems++
 											q, r = mem[p].up, mem[p].down
-//line simplify.w:640
+//line simplify.gw:640
 											mems += 2
 											mem[q].down = r
 											mem[r].up = q
-//line simplify.w:641
+//line simplify.gw:641
 											mems++
 											vmem[w>>1].stable = 0
-//line simplify.w:642
+//line simplify.gw:642
 											mems += 2
 											mem[w].lit--
-//line simplify.w:643
+//line simplify.gw:643
 											if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 												kv = w >> 1
 												mems++
 												if vmem[kv].status == varNorm {
@@ -2362,54 +2362,54 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 													}
 													vmem[kv].link = toDo
 													toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 												} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 													mems++
 													vmem[kv].status = elimQuiet
 													vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 												}
 
-//line simplify.w:645
+//line simplify.gw:645
 											}
 
-//line simplify.w:626
+//line simplify.gw:626
 										}
 									}
 									mems++
 									mem[mem[cd].right].left = avail
 									avail = mem[cd].left
-//line simplify.w:629
+//line simplify.gw:629
 									mems++
 									mem[cd].cls = 0
 									clausesGone++
-//line simplify.w:630
+//line simplify.gw:630
 								}
 
-//line simplify.w:553
+//line simplify.gw:553
 
-//line simplify.w:583
+//line simplify.gw:583
 								for mems, ll = mems+1, mem[l^1].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 									mems++
 									cd = mem[ll].cls
-//line simplify.w:585
+//line simplify.gw:585
 									mems++
 									p, q = mem[ll].left, mem[ll].right
-//line simplify.w:586
+//line simplify.gw:586
 									mems += 2
 									mem[p].right = q
 									mem[q].left = p
-//line simplify.w:587
+//line simplify.gw:587
 									mems++
 									mem[ll].left = avail
 									avail = ll
-//line simplify.w:588
+//line simplify.gw:588
 									mems++
 									j = mem[cd].cls - 1
-//line simplify.w:589
+//line simplify.gw:589
 									mems++
 									mem[cd].cls = j
-//line simplify.w:590
+//line simplify.gw:590
 									if j == 1 {
 										mems++
 										if p == cd {
@@ -2418,7 +2418,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 											w = mem[p].lit
 										}
 
-//line simplify.w:481
+//line simplify.gw:481
 										kv = w >> 1
 										mems++
 										if w&1 != 0 {
@@ -2427,7 +2427,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 												vmem[kv].status = forcedFalse
 												vmem[kv].link = toDo
 												toDo = kv
-//line simplify.w:486
+//line simplify.gw:486
 											} else if vmem[kv].status == forcedTrue {
 												goto unsat
 											}
@@ -2437,45 +2437,45 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 												vmem[kv].status = forcedTrue
 												vmem[kv].link = toDo
 												toDo = kv
-//line simplify.w:492
+//line simplify.gw:492
 											} else if vmem[kv].status == forcedFalse {
 												goto unsat
 											}
 										}
 
-//line simplify.w:598
+//line simplify.gw:598
 									}
 
-//line simplify.w:604
+//line simplify.gw:604
 									bits2 = 0
 									for mems, t2 = mems+1, mem[cd].right; t2 >= clsHeadTop; mems, t2 = mems+1, mem[t2].right {
 										mems += 2
 										bits2 |= mem[mem[t2].lit].sig
-//line simplify.w:607
+//line simplify.gw:607
 									}
 									mems++
 									mem[cd].sig = bits2
 
-//line simplify.w:600
+//line simplify.gw:600
 
-//line simplify.w:611
+//line simplify.gw:611
 									mems++
 									if cmem[cd-litHeadTop].link == 0 {
 										mems++
 										cmem[cd-litHeadTop].link = strengthened
 										strengthened = cd
-//line simplify.w:614
+//line simplify.gw:614
 									}
 
-//line simplify.w:601
+//line simplify.gw:601
 								}
 
-//line simplify.w:554
+//line simplify.gw:554
 							}
 							varsGone++
 						}
 
-//line simplify.w:563
+//line simplify.gw:563
 						if mems > par.Timeout {
 							err = ErrTimeout
 							goto finishUp
@@ -2488,42 +2488,42 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 							}
 						}
 
-//line simplify.w:862
+//line simplify.gw:862
 						for strengthened != sentinel {
 							c = strengthened
 							mems++
 							strengthened = cmem[c-litHeadTop].link
-//line simplify.w:865
+//line simplify.gw:865
 							mems++
 							if mem[c].cls != 0 {
 								mems++
 								cmem[c-litHeadTop].link = 0
-//line simplify.w:868
+//line simplify.gw:868
 
-//line simplify.w:680
+//line simplify.gw:680
 								mems += 3
 								p = mem[c].right
 								l = mem[p].lit
 								k = mem[l].lit
-//line simplify.w:681
+//line simplify.gw:681
 								for mems, p = mems+1, mem[p].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 									mems++
 									ll = mem[p].lit
-//line simplify.w:683
+//line simplify.gw:683
 									mems++
 									if mem[ll].lit < k {
 										k, l = mem[ll].lit, ll
 									}
 								}
 
-//line simplify.w:656
+//line simplify.gw:656
 								mems += 3
 								sz, bits, v = mem[c].cls, mem[c].sig, mem[c].left
-//line simplify.w:657
+//line simplify.gw:657
 								for mems, pp = mems+1, mem[l].down; pp >= litHeadTop; mems, pp = mems+1, mem[pp].down {
 									mems++
 									cc = mem[pp].cls
-//line simplify.w:659
+//line simplify.gw:659
 									if cc == c {
 										continue
 									}
@@ -2537,78 +2537,78 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 										continue
 									}
 
-//line simplify.w:693
+//line simplify.gw:693
 									mems++
 									q, qq = v, mem[cc].left
-//line simplify.w:694
+//line simplify.gw:694
 									for {
 										mems += 2
 										l, ll = mem[q].lit, mem[qq].lit
-//line simplify.w:696
+//line simplify.gw:696
 
-//line simplify.w:713
+//line simplify.gw:713
 										for l < ll {
 											mems++
 											qq = mem[qq].left
-//line simplify.w:715
+//line simplify.gw:715
 											if qq < clsHeadTop {
 												ll = 0
 											} else {
 												mems++
 												ll = mem[qq].lit
-//line simplify.w:719
+//line simplify.gw:719
 											}
 										}
 
-//line simplify.w:697
+//line simplify.gw:697
 										if l > ll {
 											break
 										}
 										mems++
 										q = mem[q].left
-//line simplify.w:701
+//line simplify.gw:701
 										if q < clsHeadTop {
 											l = 0
 											break
 										}
 										mems++
 										qq = mem[qq].left
-//line simplify.w:706
+//line simplify.gw:706
 										if qq < clsHeadTop {
 											ll = 0
 											break
 										}
 									}
 
-//line simplify.w:672
+//line simplify.gw:672
 									if l > ll {
 										subFalse++
 									} else {
 
-//line simplify.w:723
+//line simplify.gw:723
 										subTotal++
 										for mems, p = mems+1, mem[cc].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 											mems++
 											w = mem[p].lit
-//line simplify.w:726
+//line simplify.gw:726
 
-//line simplify.w:639
+//line simplify.gw:639
 											mems++
 											q, r = mem[p].up, mem[p].down
-//line simplify.w:640
+//line simplify.gw:640
 											mems += 2
 											mem[q].down = r
 											mem[r].up = q
-//line simplify.w:641
+//line simplify.gw:641
 											mems++
 											vmem[w>>1].stable = 0
-//line simplify.w:642
+//line simplify.gw:642
 											mems += 2
 											mem[w].lit--
-//line simplify.w:643
+//line simplify.gw:643
 											if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 												kv = w >> 1
 												mems++
 												if vmem[kv].status == varNorm {
@@ -2620,39 +2620,39 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 													}
 													vmem[kv].link = toDo
 													toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 												} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 													mems++
 													vmem[kv].status = elimQuiet
 													vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 												}
 
-//line simplify.w:645
+//line simplify.gw:645
 											}
 
-//line simplify.w:727
+//line simplify.gw:727
 										}
 										mems++
 										mem[mem[cc].right].left = avail
 										avail = mem[cc].left
-//line simplify.w:729
+//line simplify.gw:729
 										mems++
 										mem[cc].cls = 0
 										clausesGone++
 
-//line simplify.w:676
+//line simplify.gw:676
 									}
 								}
 
-//line simplify.w:869
+//line simplify.gw:869
 
-//line simplify.w:541
+//line simplify.gw:541
 								for toDo != 0 {
 									k = toDo
 									mems++
 									toDo = vmem[k].link
-//line simplify.w:544
+//line simplify.gw:544
 									if vmem[k].status != elimQuiet {
 										if vmem[k].status == forcedTrue {
 											l = k + k
@@ -2662,36 +2662,36 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 										pre.erp = append(pre.erp, erpCell{Lit(l), erpDef})
 										mems++
 										vmem[k].stable = 1
-//line simplify.w:552
+//line simplify.gw:552
 
-//line simplify.w:620
+//line simplify.gw:620
 										for mems, ll = mems+1, mem[l].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 											mems++
 											cd = mem[ll].cls
-//line simplify.w:622
+//line simplify.gw:622
 											for mems, p = mems+1, mem[cd].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 												if p != ll {
 													mems++
 													w = mem[p].lit
-//line simplify.w:625
+//line simplify.gw:625
 
-//line simplify.w:639
+//line simplify.gw:639
 													mems++
 													q, r = mem[p].up, mem[p].down
-//line simplify.w:640
+//line simplify.gw:640
 													mems += 2
 													mem[q].down = r
 													mem[r].up = q
-//line simplify.w:641
+//line simplify.gw:641
 													mems++
 													vmem[w>>1].stable = 0
-//line simplify.w:642
+//line simplify.gw:642
 													mems += 2
 													mem[w].lit--
-//line simplify.w:643
+//line simplify.gw:643
 													if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 														kv = w >> 1
 														mems++
 														if vmem[kv].status == varNorm {
@@ -2703,54 +2703,54 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 															}
 															vmem[kv].link = toDo
 															toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 														} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 															mems++
 															vmem[kv].status = elimQuiet
 															vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 														}
 
-//line simplify.w:645
+//line simplify.gw:645
 													}
 
-//line simplify.w:626
+//line simplify.gw:626
 												}
 											}
 											mems++
 											mem[mem[cd].right].left = avail
 											avail = mem[cd].left
-//line simplify.w:629
+//line simplify.gw:629
 											mems++
 											mem[cd].cls = 0
 											clausesGone++
-//line simplify.w:630
+//line simplify.gw:630
 										}
 
-//line simplify.w:553
+//line simplify.gw:553
 
-//line simplify.w:583
+//line simplify.gw:583
 										for mems, ll = mems+1, mem[l^1].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 											mems++
 											cd = mem[ll].cls
-//line simplify.w:585
+//line simplify.gw:585
 											mems++
 											p, q = mem[ll].left, mem[ll].right
-//line simplify.w:586
+//line simplify.gw:586
 											mems += 2
 											mem[p].right = q
 											mem[q].left = p
-//line simplify.w:587
+//line simplify.gw:587
 											mems++
 											mem[ll].left = avail
 											avail = ll
-//line simplify.w:588
+//line simplify.gw:588
 											mems++
 											j = mem[cd].cls - 1
-//line simplify.w:589
+//line simplify.gw:589
 											mems++
 											mem[cd].cls = j
-//line simplify.w:590
+//line simplify.gw:590
 											if j == 1 {
 												mems++
 												if p == cd {
@@ -2759,7 +2759,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 													w = mem[p].lit
 												}
 
-//line simplify.w:481
+//line simplify.gw:481
 												kv = w >> 1
 												mems++
 												if w&1 != 0 {
@@ -2768,7 +2768,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 														vmem[kv].status = forcedFalse
 														vmem[kv].link = toDo
 														toDo = kv
-//line simplify.w:486
+//line simplify.gw:486
 													} else if vmem[kv].status == forcedTrue {
 														goto unsat
 													}
@@ -2778,45 +2778,45 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 														vmem[kv].status = forcedTrue
 														vmem[kv].link = toDo
 														toDo = kv
-//line simplify.w:492
+//line simplify.gw:492
 													} else if vmem[kv].status == forcedFalse {
 														goto unsat
 													}
 												}
 
-//line simplify.w:598
+//line simplify.gw:598
 											}
 
-//line simplify.w:604
+//line simplify.gw:604
 											bits2 = 0
 											for mems, t2 = mems+1, mem[cd].right; t2 >= clsHeadTop; mems, t2 = mems+1, mem[t2].right {
 												mems += 2
 												bits2 |= mem[mem[t2].lit].sig
-//line simplify.w:607
+//line simplify.gw:607
 											}
 											mems++
 											mem[cd].sig = bits2
 
-//line simplify.w:600
+//line simplify.gw:600
 
-//line simplify.w:611
+//line simplify.gw:611
 											mems++
 											if cmem[cd-litHeadTop].link == 0 {
 												mems++
 												cmem[cd-litHeadTop].link = strengthened
 												strengthened = cd
-//line simplify.w:614
+//line simplify.gw:614
 											}
 
-//line simplify.w:601
+//line simplify.gw:601
 										}
 
-//line simplify.w:554
+//line simplify.gw:554
 									}
 									varsGone++
 								}
 
-//line simplify.w:563
+//line simplify.gw:563
 								if mems > par.Timeout {
 									err = ErrTimeout
 									goto finishUp
@@ -2829,24 +2829,24 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 									}
 								}
 
-//line simplify.w:870
+//line simplify.gw:870
 
-//line simplify.w:876
+//line simplify.gw:876
 								mems++
 								if mem[c].cls != 0 {
 									specialcase = 0
 
-//line simplify.w:747
+//line simplify.gw:747
 									mems += 3
 									sz, bits, v = mem[c].cls, mem[c].sig, mem[c].left
-//line simplify.w:748
+//line simplify.gw:748
 									for mems, vv = mems+1, v; vv >= clsHeadTop; mems, vv = mems+1, mem[vv].left {
 										mems++
 										u = mem[vv].lit
-//line simplify.w:750
+//line simplify.gw:750
 										if specialcase != 0 {
 
-//line simplify.w:1402
+//line simplify.gw:1402
 											mems++
 											if mem[u^1].cls != round {
 												continue
@@ -2860,16 +2860,16 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 												continue
 											}
 
-//line simplify.w:752
+//line simplify.gw:752
 										}
 										mems++
 										ubits = bits &^ mem[u].sig
-//line simplify.w:754
+//line simplify.gw:754
 										for mems, pp = mems+1, mem[u^1].down; pp >= litHeadTop; mems, pp = mems+1, mem[pp].down {
 											strTries++
 											mems++
 											cc = mem[pp].cls
-//line simplify.w:757
+//line simplify.gw:757
 											mems++
 											if ubits&^mem[cc].sig != 0 {
 												continue
@@ -2879,80 +2879,80 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 												continue
 											}
 
-//line simplify.w:775
+//line simplify.gw:775
 											mems++
 											q, qq = v, mem[cc].left
-//line simplify.w:776
+//line simplify.gw:776
 											for {
 												mems += 2
 												l, ll = mem[q].lit, mem[qq].lit
-//line simplify.w:778
+//line simplify.gw:778
 												if l == u {
 													l ^= 1
 												}
 
-//line simplify.w:713
+//line simplify.gw:713
 												for l < ll {
 													mems++
 													qq = mem[qq].left
-//line simplify.w:715
+//line simplify.gw:715
 													if qq < clsHeadTop {
 														ll = 0
 													} else {
 														mems++
 														ll = mem[qq].lit
-//line simplify.w:719
+//line simplify.gw:719
 													}
 												}
 
-//line simplify.w:782
+//line simplify.gw:782
 												if l > ll {
 													break
 												}
 												mems++
 												q = mem[q].left
-//line simplify.w:786
+//line simplify.gw:786
 												if q < clsHeadTop {
 													l = 0
 													break
 												}
 												mems++
 												qq = mem[qq].left
-//line simplify.w:791
+//line simplify.gw:791
 												if qq < clsHeadTop {
 													ll = 0
 													break
 												}
 											}
 
-//line simplify.w:766
+//line simplify.gw:766
 											if l > ll {
 												strFalse++
 											} else {
 
-//line simplify.w:801
+//line simplify.gw:801
 												ccbits = 0
 												strTotal++
 												for mems, p = mems+1, mem[cc].right; ; mems, p = mems+1, mem[p].right {
 													mems++
 													w = mem[p].lit
-//line simplify.w:805
+//line simplify.gw:805
 													mems++
 													vmem[w>>1].stable = 0
-//line simplify.w:806
+//line simplify.gw:806
 													if w == u^1 {
 														break
 													}
 													mems++
 													ccbits |= mem[w].sig
-//line simplify.w:810
+//line simplify.gw:810
 												}
 												mems += 2
 												mem[w].lit--
-//line simplify.w:812
+//line simplify.gw:812
 												if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 													kv = w >> 1
 													mems++
 													if vmem[kv].status == varNorm {
@@ -2964,64 +2964,64 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 														}
 														vmem[kv].link = toDo
 														toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 													} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 														mems++
 														vmem[kv].status = elimQuiet
 														vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 													}
 
-//line simplify.w:814
+//line simplify.gw:814
 												}
 
-//line simplify.w:831
+//line simplify.gw:831
 												mems++
 												q, w = mem[p].up, mem[p].down
-//line simplify.w:832
+//line simplify.gw:832
 												mems += 2
 												mem[q].down = w
 												mem[w].up = q
-//line simplify.w:833
+//line simplify.gw:833
 												mems++
 												q, w = mem[p].right, mem[p].left
-//line simplify.w:834
+//line simplify.gw:834
 												mems += 2
 												mem[q].left = w
 												mem[w].right = q
-//line simplify.w:835
+//line simplify.gw:835
 												mems++
 												mem[p].left = avail
 												avail = p
 
-//line simplify.w:816
+//line simplify.gw:816
 												for p = q; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 													mems++
 													q = mem[p].lit
-//line simplify.w:818
+//line simplify.gw:818
 													mems++
 													vmem[q>>1].stable = 0
-//line simplify.w:819
+//line simplify.gw:819
 													mems++
 													ccbits |= mem[q].sig
-//line simplify.w:820
+//line simplify.gw:820
 												}
 												mems++
 												mem[cc].sig = ccbits
 
-//line simplify.w:841
+//line simplify.gw:841
 												mems += 2
 												mem[cc].cls--
-//line simplify.w:842
+//line simplify.gw:842
 												if mem[cc].cls <= 1 {
 													if mem[cc].cls == 0 {
 														panic("sat: 이럴 수는 없다 (strengthening)")
 													}
 													mems += 2
 													w = mem[mem[cc].right].lit
-//line simplify.w:847
+//line simplify.gw:847
 
-//line simplify.w:481
+//line simplify.gw:481
 													kv = w >> 1
 													mems++
 													if w&1 != 0 {
@@ -3030,7 +3030,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 															vmem[kv].status = forcedFalse
 															vmem[kv].link = toDo
 															toDo = kv
-//line simplify.w:486
+//line simplify.gw:486
 														} else if vmem[kv].status == forcedTrue {
 															goto unsat
 														}
@@ -3040,37 +3040,37 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 															vmem[kv].status = forcedTrue
 															vmem[kv].link = toDo
 															toDo = kv
-//line simplify.w:492
+//line simplify.gw:492
 														} else if vmem[kv].status == forcedFalse {
 															goto unsat
 														}
 													}
 
-//line simplify.w:848
+//line simplify.gw:848
 												}
 
-//line simplify.w:823
+//line simplify.gw:823
 												mems++
 												if cmem[cc-litHeadTop].link == 0 {
 													mems++
 													cmem[cc-litHeadTop].link = strengthened
 													strengthened = cc
-//line simplify.w:826
+//line simplify.gw:826
 												}
 
-//line simplify.w:770
+//line simplify.gw:770
 											}
 										}
 									}
 
-//line simplify.w:880
+//line simplify.gw:880
 
-//line simplify.w:541
+//line simplify.gw:541
 									for toDo != 0 {
 										k = toDo
 										mems++
 										toDo = vmem[k].link
-//line simplify.w:544
+//line simplify.gw:544
 										if vmem[k].status != elimQuiet {
 											if vmem[k].status == forcedTrue {
 												l = k + k
@@ -3080,36 +3080,36 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 											pre.erp = append(pre.erp, erpCell{Lit(l), erpDef})
 											mems++
 											vmem[k].stable = 1
-//line simplify.w:552
+//line simplify.gw:552
 
-//line simplify.w:620
+//line simplify.gw:620
 											for mems, ll = mems+1, mem[l].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 												mems++
 												cd = mem[ll].cls
-//line simplify.w:622
+//line simplify.gw:622
 												for mems, p = mems+1, mem[cd].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 													if p != ll {
 														mems++
 														w = mem[p].lit
-//line simplify.w:625
+//line simplify.gw:625
 
-//line simplify.w:639
+//line simplify.gw:639
 														mems++
 														q, r = mem[p].up, mem[p].down
-//line simplify.w:640
+//line simplify.gw:640
 														mems += 2
 														mem[q].down = r
 														mem[r].up = q
-//line simplify.w:641
+//line simplify.gw:641
 														mems++
 														vmem[w>>1].stable = 0
-//line simplify.w:642
+//line simplify.gw:642
 														mems += 2
 														mem[w].lit--
-//line simplify.w:643
+//line simplify.gw:643
 														if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 															kv = w >> 1
 															mems++
 															if vmem[kv].status == varNorm {
@@ -3121,54 +3121,54 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 																}
 																vmem[kv].link = toDo
 																toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 															} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 																mems++
 																vmem[kv].status = elimQuiet
 																vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 															}
 
-//line simplify.w:645
+//line simplify.gw:645
 														}
 
-//line simplify.w:626
+//line simplify.gw:626
 													}
 												}
 												mems++
 												mem[mem[cd].right].left = avail
 												avail = mem[cd].left
-//line simplify.w:629
+//line simplify.gw:629
 												mems++
 												mem[cd].cls = 0
 												clausesGone++
-//line simplify.w:630
+//line simplify.gw:630
 											}
 
-//line simplify.w:553
+//line simplify.gw:553
 
-//line simplify.w:583
+//line simplify.gw:583
 											for mems, ll = mems+1, mem[l^1].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 												mems++
 												cd = mem[ll].cls
-//line simplify.w:585
+//line simplify.gw:585
 												mems++
 												p, q = mem[ll].left, mem[ll].right
-//line simplify.w:586
+//line simplify.gw:586
 												mems += 2
 												mem[p].right = q
 												mem[q].left = p
-//line simplify.w:587
+//line simplify.gw:587
 												mems++
 												mem[ll].left = avail
 												avail = ll
-//line simplify.w:588
+//line simplify.gw:588
 												mems++
 												j = mem[cd].cls - 1
-//line simplify.w:589
+//line simplify.gw:589
 												mems++
 												mem[cd].cls = j
-//line simplify.w:590
+//line simplify.gw:590
 												if j == 1 {
 													mems++
 													if p == cd {
@@ -3177,7 +3177,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 														w = mem[p].lit
 													}
 
-//line simplify.w:481
+//line simplify.gw:481
 													kv = w >> 1
 													mems++
 													if w&1 != 0 {
@@ -3186,7 +3186,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 															vmem[kv].status = forcedFalse
 															vmem[kv].link = toDo
 															toDo = kv
-//line simplify.w:486
+//line simplify.gw:486
 														} else if vmem[kv].status == forcedTrue {
 															goto unsat
 														}
@@ -3196,45 +3196,45 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 															vmem[kv].status = forcedTrue
 															vmem[kv].link = toDo
 															toDo = kv
-//line simplify.w:492
+//line simplify.gw:492
 														} else if vmem[kv].status == forcedFalse {
 															goto unsat
 														}
 													}
 
-//line simplify.w:598
+//line simplify.gw:598
 												}
 
-//line simplify.w:604
+//line simplify.gw:604
 												bits2 = 0
 												for mems, t2 = mems+1, mem[cd].right; t2 >= clsHeadTop; mems, t2 = mems+1, mem[t2].right {
 													mems += 2
 													bits2 |= mem[mem[t2].lit].sig
-//line simplify.w:607
+//line simplify.gw:607
 												}
 												mems++
 												mem[cd].sig = bits2
 
-//line simplify.w:600
+//line simplify.gw:600
 
-//line simplify.w:611
+//line simplify.gw:611
 												mems++
 												if cmem[cd-litHeadTop].link == 0 {
 													mems++
 													cmem[cd-litHeadTop].link = strengthened
 													strengthened = cd
-//line simplify.w:614
+//line simplify.gw:614
 												}
 
-//line simplify.w:601
+//line simplify.gw:601
 											}
 
-//line simplify.w:554
+//line simplify.gw:554
 										}
 										varsGone++
 									}
 
-//line simplify.w:563
+//line simplify.gw:563
 									if mems > par.Timeout {
 										err = ErrTimeout
 										goto finishUp
@@ -3247,36 +3247,36 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 										}
 									}
 
-//line simplify.w:881
+//line simplify.gw:881
 									mems++
 									mem[c].lit = round
-//line simplify.w:882
+//line simplify.gw:882
 									mems++
 									cmem[c-litHeadTop].size = 0
-//line simplify.w:883
+//line simplify.gw:883
 								}
 
-//line simplify.w:871
+//line simplify.gw:871
 							}
 						}
 						c = csave
 
-//line simplify.w:1149
+//line simplify.gw:1149
 					elimDone:
 						mems++
 						vmem[x].stable = 1
-//line simplify.w:1151
+//line simplify.gw:1151
 					}
 				}
 			}
 		}
 
-//line simplify.w:1308
+//line simplify.gw:1308
 		if progress == varsGone || varsGone == vars {
 			break
 		}
 
-//line simplify.w:1332
+//line simplify.gw:1332
 		for l = 2; l < litHeadTop; l++ {
 			if l&1 == 0 {
 				mems++
@@ -3288,25 +3288,25 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 			mems++
 			if mem[l].cls == round {
 
-//line simplify.w:1356
+//line simplify.gw:1356
 				for mems, p = mems+1, mem[l].down; p >= litHeadTop; mems, p = mems+1, mem[p].down {
 					mems++
 					c = mem[p].cls
-//line simplify.w:1358
+//line simplify.gw:1358
 					mems += 2
 					cmem[c-litHeadTop].size += 4
-//line simplify.w:1359
+//line simplify.gw:1359
 				}
 				for mems, p = mems+1, mem[l^1].down; p >= litHeadTop; mems, p = mems+1, mem[p].down {
 					mems++
 					c = mem[p].cls
-//line simplify.w:1362
+//line simplify.gw:1362
 					mems += 2
 					cmem[c-litHeadTop].size |= 2
-//line simplify.w:1363
+//line simplify.gw:1363
 				}
 
-//line simplify.w:1343
+//line simplify.gw:1343
 			}
 		}
 		for c = litHeadTop; c < clsHeadTop; c++ {
@@ -3314,34 +3314,34 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 			if mem[c].cls != 0 {
 				if mem[c].lit < round {
 
-//line simplify.w:1368
+//line simplify.gw:1368
 					mems++
 					if mem[c].cls == cmem[c-litHeadTop].size>>2 {
 
-//line simplify.w:680
+//line simplify.gw:680
 						mems += 3
 						p = mem[c].right
 						l = mem[p].lit
 						k = mem[l].lit
-//line simplify.w:681
+//line simplify.gw:681
 						for mems, p = mems+1, mem[p].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 							mems++
 							ll = mem[p].lit
-//line simplify.w:683
+//line simplify.gw:683
 							mems++
 							if mem[ll].lit < k {
 								k, l = mem[ll].lit, ll
 							}
 						}
 
-//line simplify.w:656
+//line simplify.gw:656
 						mems += 3
 						sz, bits, v = mem[c].cls, mem[c].sig, mem[c].left
-//line simplify.w:657
+//line simplify.gw:657
 						for mems, pp = mems+1, mem[l].down; pp >= litHeadTop; mems, pp = mems+1, mem[pp].down {
 							mems++
 							cc = mem[pp].cls
-//line simplify.w:659
+//line simplify.gw:659
 							if cc == c {
 								continue
 							}
@@ -3355,78 +3355,78 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 								continue
 							}
 
-//line simplify.w:693
+//line simplify.gw:693
 							mems++
 							q, qq = v, mem[cc].left
-//line simplify.w:694
+//line simplify.gw:694
 							for {
 								mems += 2
 								l, ll = mem[q].lit, mem[qq].lit
-//line simplify.w:696
+//line simplify.gw:696
 
-//line simplify.w:713
+//line simplify.gw:713
 								for l < ll {
 									mems++
 									qq = mem[qq].left
-//line simplify.w:715
+//line simplify.gw:715
 									if qq < clsHeadTop {
 										ll = 0
 									} else {
 										mems++
 										ll = mem[qq].lit
-//line simplify.w:719
+//line simplify.gw:719
 									}
 								}
 
-//line simplify.w:697
+//line simplify.gw:697
 								if l > ll {
 									break
 								}
 								mems++
 								q = mem[q].left
-//line simplify.w:701
+//line simplify.gw:701
 								if q < clsHeadTop {
 									l = 0
 									break
 								}
 								mems++
 								qq = mem[qq].left
-//line simplify.w:706
+//line simplify.gw:706
 								if qq < clsHeadTop {
 									ll = 0
 									break
 								}
 							}
 
-//line simplify.w:672
+//line simplify.gw:672
 							if l > ll {
 								subFalse++
 							} else {
 
-//line simplify.w:723
+//line simplify.gw:723
 								subTotal++
 								for mems, p = mems+1, mem[cc].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 									mems++
 									w = mem[p].lit
-//line simplify.w:726
+//line simplify.gw:726
 
-//line simplify.w:639
+//line simplify.gw:639
 									mems++
 									q, r = mem[p].up, mem[p].down
-//line simplify.w:640
+//line simplify.gw:640
 									mems += 2
 									mem[q].down = r
 									mem[r].up = q
-//line simplify.w:641
+//line simplify.gw:641
 									mems++
 									vmem[w>>1].stable = 0
-//line simplify.w:642
+//line simplify.gw:642
 									mems += 2
 									mem[w].lit--
-//line simplify.w:643
+//line simplify.gw:643
 									if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 										kv = w >> 1
 										mems++
 										if vmem[kv].status == varNorm {
@@ -3438,42 +3438,42 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 											}
 											vmem[kv].link = toDo
 											toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 										} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 											mems++
 											vmem[kv].status = elimQuiet
 											vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 										}
 
-//line simplify.w:645
+//line simplify.gw:645
 									}
 
-//line simplify.w:727
+//line simplify.gw:727
 								}
 								mems++
 								mem[mem[cc].right].left = avail
 								avail = mem[cc].left
-//line simplify.w:729
+//line simplify.gw:729
 								mems++
 								mem[cc].cls = 0
 								clausesGone++
 
-//line simplify.w:676
+//line simplify.gw:676
 							}
 						}
 
-//line simplify.w:1371
+//line simplify.gw:1371
 
-//line simplify.w:860
+//line simplify.gw:860
 						csave = c
 
-//line simplify.w:541
+//line simplify.gw:541
 						for toDo != 0 {
 							k = toDo
 							mems++
 							toDo = vmem[k].link
-//line simplify.w:544
+//line simplify.gw:544
 							if vmem[k].status != elimQuiet {
 								if vmem[k].status == forcedTrue {
 									l = k + k
@@ -3483,36 +3483,36 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 								pre.erp = append(pre.erp, erpCell{Lit(l), erpDef})
 								mems++
 								vmem[k].stable = 1
-//line simplify.w:552
+//line simplify.gw:552
 
-//line simplify.w:620
+//line simplify.gw:620
 								for mems, ll = mems+1, mem[l].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 									mems++
 									cd = mem[ll].cls
-//line simplify.w:622
+//line simplify.gw:622
 									for mems, p = mems+1, mem[cd].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 										if p != ll {
 											mems++
 											w = mem[p].lit
-//line simplify.w:625
+//line simplify.gw:625
 
-//line simplify.w:639
+//line simplify.gw:639
 											mems++
 											q, r = mem[p].up, mem[p].down
-//line simplify.w:640
+//line simplify.gw:640
 											mems += 2
 											mem[q].down = r
 											mem[r].up = q
-//line simplify.w:641
+//line simplify.gw:641
 											mems++
 											vmem[w>>1].stable = 0
-//line simplify.w:642
+//line simplify.gw:642
 											mems += 2
 											mem[w].lit--
-//line simplify.w:643
+//line simplify.gw:643
 											if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 												kv = w >> 1
 												mems++
 												if vmem[kv].status == varNorm {
@@ -3524,54 +3524,54 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 													}
 													vmem[kv].link = toDo
 													toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 												} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 													mems++
 													vmem[kv].status = elimQuiet
 													vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 												}
 
-//line simplify.w:645
+//line simplify.gw:645
 											}
 
-//line simplify.w:626
+//line simplify.gw:626
 										}
 									}
 									mems++
 									mem[mem[cd].right].left = avail
 									avail = mem[cd].left
-//line simplify.w:629
+//line simplify.gw:629
 									mems++
 									mem[cd].cls = 0
 									clausesGone++
-//line simplify.w:630
+//line simplify.gw:630
 								}
 
-//line simplify.w:553
+//line simplify.gw:553
 
-//line simplify.w:583
+//line simplify.gw:583
 								for mems, ll = mems+1, mem[l^1].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 									mems++
 									cd = mem[ll].cls
-//line simplify.w:585
+//line simplify.gw:585
 									mems++
 									p, q = mem[ll].left, mem[ll].right
-//line simplify.w:586
+//line simplify.gw:586
 									mems += 2
 									mem[p].right = q
 									mem[q].left = p
-//line simplify.w:587
+//line simplify.gw:587
 									mems++
 									mem[ll].left = avail
 									avail = ll
-//line simplify.w:588
+//line simplify.gw:588
 									mems++
 									j = mem[cd].cls - 1
-//line simplify.w:589
+//line simplify.gw:589
 									mems++
 									mem[cd].cls = j
-//line simplify.w:590
+//line simplify.gw:590
 									if j == 1 {
 										mems++
 										if p == cd {
@@ -3580,7 +3580,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 											w = mem[p].lit
 										}
 
-//line simplify.w:481
+//line simplify.gw:481
 										kv = w >> 1
 										mems++
 										if w&1 != 0 {
@@ -3589,7 +3589,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 												vmem[kv].status = forcedFalse
 												vmem[kv].link = toDo
 												toDo = kv
-//line simplify.w:486
+//line simplify.gw:486
 											} else if vmem[kv].status == forcedTrue {
 												goto unsat
 											}
@@ -3599,45 +3599,45 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 												vmem[kv].status = forcedTrue
 												vmem[kv].link = toDo
 												toDo = kv
-//line simplify.w:492
+//line simplify.gw:492
 											} else if vmem[kv].status == forcedFalse {
 												goto unsat
 											}
 										}
 
-//line simplify.w:598
+//line simplify.gw:598
 									}
 
-//line simplify.w:604
+//line simplify.gw:604
 									bits2 = 0
 									for mems, t2 = mems+1, mem[cd].right; t2 >= clsHeadTop; mems, t2 = mems+1, mem[t2].right {
 										mems += 2
 										bits2 |= mem[mem[t2].lit].sig
-//line simplify.w:607
+//line simplify.gw:607
 									}
 									mems++
 									mem[cd].sig = bits2
 
-//line simplify.w:600
+//line simplify.gw:600
 
-//line simplify.w:611
+//line simplify.gw:611
 									mems++
 									if cmem[cd-litHeadTop].link == 0 {
 										mems++
 										cmem[cd-litHeadTop].link = strengthened
 										strengthened = cd
-//line simplify.w:614
+//line simplify.gw:614
 									}
 
-//line simplify.w:601
+//line simplify.gw:601
 								}
 
-//line simplify.w:554
+//line simplify.gw:554
 							}
 							varsGone++
 						}
 
-//line simplify.w:563
+//line simplify.gw:563
 						if mems > par.Timeout {
 							err = ErrTimeout
 							goto finishUp
@@ -3650,42 +3650,42 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 							}
 						}
 
-//line simplify.w:862
+//line simplify.gw:862
 						for strengthened != sentinel {
 							c = strengthened
 							mems++
 							strengthened = cmem[c-litHeadTop].link
-//line simplify.w:865
+//line simplify.gw:865
 							mems++
 							if mem[c].cls != 0 {
 								mems++
 								cmem[c-litHeadTop].link = 0
-//line simplify.w:868
+//line simplify.gw:868
 
-//line simplify.w:680
+//line simplify.gw:680
 								mems += 3
 								p = mem[c].right
 								l = mem[p].lit
 								k = mem[l].lit
-//line simplify.w:681
+//line simplify.gw:681
 								for mems, p = mems+1, mem[p].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 									mems++
 									ll = mem[p].lit
-//line simplify.w:683
+//line simplify.gw:683
 									mems++
 									if mem[ll].lit < k {
 										k, l = mem[ll].lit, ll
 									}
 								}
 
-//line simplify.w:656
+//line simplify.gw:656
 								mems += 3
 								sz, bits, v = mem[c].cls, mem[c].sig, mem[c].left
-//line simplify.w:657
+//line simplify.gw:657
 								for mems, pp = mems+1, mem[l].down; pp >= litHeadTop; mems, pp = mems+1, mem[pp].down {
 									mems++
 									cc = mem[pp].cls
-//line simplify.w:659
+//line simplify.gw:659
 									if cc == c {
 										continue
 									}
@@ -3699,78 +3699,78 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 										continue
 									}
 
-//line simplify.w:693
+//line simplify.gw:693
 									mems++
 									q, qq = v, mem[cc].left
-//line simplify.w:694
+//line simplify.gw:694
 									for {
 										mems += 2
 										l, ll = mem[q].lit, mem[qq].lit
-//line simplify.w:696
+//line simplify.gw:696
 
-//line simplify.w:713
+//line simplify.gw:713
 										for l < ll {
 											mems++
 											qq = mem[qq].left
-//line simplify.w:715
+//line simplify.gw:715
 											if qq < clsHeadTop {
 												ll = 0
 											} else {
 												mems++
 												ll = mem[qq].lit
-//line simplify.w:719
+//line simplify.gw:719
 											}
 										}
 
-//line simplify.w:697
+//line simplify.gw:697
 										if l > ll {
 											break
 										}
 										mems++
 										q = mem[q].left
-//line simplify.w:701
+//line simplify.gw:701
 										if q < clsHeadTop {
 											l = 0
 											break
 										}
 										mems++
 										qq = mem[qq].left
-//line simplify.w:706
+//line simplify.gw:706
 										if qq < clsHeadTop {
 											ll = 0
 											break
 										}
 									}
 
-//line simplify.w:672
+//line simplify.gw:672
 									if l > ll {
 										subFalse++
 									} else {
 
-//line simplify.w:723
+//line simplify.gw:723
 										subTotal++
 										for mems, p = mems+1, mem[cc].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 											mems++
 											w = mem[p].lit
-//line simplify.w:726
+//line simplify.gw:726
 
-//line simplify.w:639
+//line simplify.gw:639
 											mems++
 											q, r = mem[p].up, mem[p].down
-//line simplify.w:640
+//line simplify.gw:640
 											mems += 2
 											mem[q].down = r
 											mem[r].up = q
-//line simplify.w:641
+//line simplify.gw:641
 											mems++
 											vmem[w>>1].stable = 0
-//line simplify.w:642
+//line simplify.gw:642
 											mems += 2
 											mem[w].lit--
-//line simplify.w:643
+//line simplify.gw:643
 											if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 												kv = w >> 1
 												mems++
 												if vmem[kv].status == varNorm {
@@ -3782,39 +3782,39 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 													}
 													vmem[kv].link = toDo
 													toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 												} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 													mems++
 													vmem[kv].status = elimQuiet
 													vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 												}
 
-//line simplify.w:645
+//line simplify.gw:645
 											}
 
-//line simplify.w:727
+//line simplify.gw:727
 										}
 										mems++
 										mem[mem[cc].right].left = avail
 										avail = mem[cc].left
-//line simplify.w:729
+//line simplify.gw:729
 										mems++
 										mem[cc].cls = 0
 										clausesGone++
 
-//line simplify.w:676
+//line simplify.gw:676
 									}
 								}
 
-//line simplify.w:869
+//line simplify.gw:869
 
-//line simplify.w:541
+//line simplify.gw:541
 								for toDo != 0 {
 									k = toDo
 									mems++
 									toDo = vmem[k].link
-//line simplify.w:544
+//line simplify.gw:544
 									if vmem[k].status != elimQuiet {
 										if vmem[k].status == forcedTrue {
 											l = k + k
@@ -3824,36 +3824,36 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 										pre.erp = append(pre.erp, erpCell{Lit(l), erpDef})
 										mems++
 										vmem[k].stable = 1
-//line simplify.w:552
+//line simplify.gw:552
 
-//line simplify.w:620
+//line simplify.gw:620
 										for mems, ll = mems+1, mem[l].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 											mems++
 											cd = mem[ll].cls
-//line simplify.w:622
+//line simplify.gw:622
 											for mems, p = mems+1, mem[cd].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 												if p != ll {
 													mems++
 													w = mem[p].lit
-//line simplify.w:625
+//line simplify.gw:625
 
-//line simplify.w:639
+//line simplify.gw:639
 													mems++
 													q, r = mem[p].up, mem[p].down
-//line simplify.w:640
+//line simplify.gw:640
 													mems += 2
 													mem[q].down = r
 													mem[r].up = q
-//line simplify.w:641
+//line simplify.gw:641
 													mems++
 													vmem[w>>1].stable = 0
-//line simplify.w:642
+//line simplify.gw:642
 													mems += 2
 													mem[w].lit--
-//line simplify.w:643
+//line simplify.gw:643
 													if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 														kv = w >> 1
 														mems++
 														if vmem[kv].status == varNorm {
@@ -3865,54 +3865,54 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 															}
 															vmem[kv].link = toDo
 															toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 														} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 															mems++
 															vmem[kv].status = elimQuiet
 															vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 														}
 
-//line simplify.w:645
+//line simplify.gw:645
 													}
 
-//line simplify.w:626
+//line simplify.gw:626
 												}
 											}
 											mems++
 											mem[mem[cd].right].left = avail
 											avail = mem[cd].left
-//line simplify.w:629
+//line simplify.gw:629
 											mems++
 											mem[cd].cls = 0
 											clausesGone++
-//line simplify.w:630
+//line simplify.gw:630
 										}
 
-//line simplify.w:553
+//line simplify.gw:553
 
-//line simplify.w:583
+//line simplify.gw:583
 										for mems, ll = mems+1, mem[l^1].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 											mems++
 											cd = mem[ll].cls
-//line simplify.w:585
+//line simplify.gw:585
 											mems++
 											p, q = mem[ll].left, mem[ll].right
-//line simplify.w:586
+//line simplify.gw:586
 											mems += 2
 											mem[p].right = q
 											mem[q].left = p
-//line simplify.w:587
+//line simplify.gw:587
 											mems++
 											mem[ll].left = avail
 											avail = ll
-//line simplify.w:588
+//line simplify.gw:588
 											mems++
 											j = mem[cd].cls - 1
-//line simplify.w:589
+//line simplify.gw:589
 											mems++
 											mem[cd].cls = j
-//line simplify.w:590
+//line simplify.gw:590
 											if j == 1 {
 												mems++
 												if p == cd {
@@ -3921,7 +3921,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 													w = mem[p].lit
 												}
 
-//line simplify.w:481
+//line simplify.gw:481
 												kv = w >> 1
 												mems++
 												if w&1 != 0 {
@@ -3930,7 +3930,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 														vmem[kv].status = forcedFalse
 														vmem[kv].link = toDo
 														toDo = kv
-//line simplify.w:486
+//line simplify.gw:486
 													} else if vmem[kv].status == forcedTrue {
 														goto unsat
 													}
@@ -3940,45 +3940,45 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 														vmem[kv].status = forcedTrue
 														vmem[kv].link = toDo
 														toDo = kv
-//line simplify.w:492
+//line simplify.gw:492
 													} else if vmem[kv].status == forcedFalse {
 														goto unsat
 													}
 												}
 
-//line simplify.w:598
+//line simplify.gw:598
 											}
 
-//line simplify.w:604
+//line simplify.gw:604
 											bits2 = 0
 											for mems, t2 = mems+1, mem[cd].right; t2 >= clsHeadTop; mems, t2 = mems+1, mem[t2].right {
 												mems += 2
 												bits2 |= mem[mem[t2].lit].sig
-//line simplify.w:607
+//line simplify.gw:607
 											}
 											mems++
 											mem[cd].sig = bits2
 
-//line simplify.w:600
+//line simplify.gw:600
 
-//line simplify.w:611
+//line simplify.gw:611
 											mems++
 											if cmem[cd-litHeadTop].link == 0 {
 												mems++
 												cmem[cd-litHeadTop].link = strengthened
 												strengthened = cd
-//line simplify.w:614
+//line simplify.gw:614
 											}
 
-//line simplify.w:601
+//line simplify.gw:601
 										}
 
-//line simplify.w:554
+//line simplify.gw:554
 									}
 									varsGone++
 								}
 
-//line simplify.w:563
+//line simplify.gw:563
 								if mems > par.Timeout {
 									err = ErrTimeout
 									goto finishUp
@@ -3991,24 +3991,24 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 									}
 								}
 
-//line simplify.w:870
+//line simplify.gw:870
 
-//line simplify.w:876
+//line simplify.gw:876
 								mems++
 								if mem[c].cls != 0 {
 									specialcase = 0
 
-//line simplify.w:747
+//line simplify.gw:747
 									mems += 3
 									sz, bits, v = mem[c].cls, mem[c].sig, mem[c].left
-//line simplify.w:748
+//line simplify.gw:748
 									for mems, vv = mems+1, v; vv >= clsHeadTop; mems, vv = mems+1, mem[vv].left {
 										mems++
 										u = mem[vv].lit
-//line simplify.w:750
+//line simplify.gw:750
 										if specialcase != 0 {
 
-//line simplify.w:1402
+//line simplify.gw:1402
 											mems++
 											if mem[u^1].cls != round {
 												continue
@@ -4022,16 +4022,16 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 												continue
 											}
 
-//line simplify.w:752
+//line simplify.gw:752
 										}
 										mems++
 										ubits = bits &^ mem[u].sig
-//line simplify.w:754
+//line simplify.gw:754
 										for mems, pp = mems+1, mem[u^1].down; pp >= litHeadTop; mems, pp = mems+1, mem[pp].down {
 											strTries++
 											mems++
 											cc = mem[pp].cls
-//line simplify.w:757
+//line simplify.gw:757
 											mems++
 											if ubits&^mem[cc].sig != 0 {
 												continue
@@ -4041,80 +4041,80 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 												continue
 											}
 
-//line simplify.w:775
+//line simplify.gw:775
 											mems++
 											q, qq = v, mem[cc].left
-//line simplify.w:776
+//line simplify.gw:776
 											for {
 												mems += 2
 												l, ll = mem[q].lit, mem[qq].lit
-//line simplify.w:778
+//line simplify.gw:778
 												if l == u {
 													l ^= 1
 												}
 
-//line simplify.w:713
+//line simplify.gw:713
 												for l < ll {
 													mems++
 													qq = mem[qq].left
-//line simplify.w:715
+//line simplify.gw:715
 													if qq < clsHeadTop {
 														ll = 0
 													} else {
 														mems++
 														ll = mem[qq].lit
-//line simplify.w:719
+//line simplify.gw:719
 													}
 												}
 
-//line simplify.w:782
+//line simplify.gw:782
 												if l > ll {
 													break
 												}
 												mems++
 												q = mem[q].left
-//line simplify.w:786
+//line simplify.gw:786
 												if q < clsHeadTop {
 													l = 0
 													break
 												}
 												mems++
 												qq = mem[qq].left
-//line simplify.w:791
+//line simplify.gw:791
 												if qq < clsHeadTop {
 													ll = 0
 													break
 												}
 											}
 
-//line simplify.w:766
+//line simplify.gw:766
 											if l > ll {
 												strFalse++
 											} else {
 
-//line simplify.w:801
+//line simplify.gw:801
 												ccbits = 0
 												strTotal++
 												for mems, p = mems+1, mem[cc].right; ; mems, p = mems+1, mem[p].right {
 													mems++
 													w = mem[p].lit
-//line simplify.w:805
+//line simplify.gw:805
 													mems++
 													vmem[w>>1].stable = 0
-//line simplify.w:806
+//line simplify.gw:806
 													if w == u^1 {
 														break
 													}
 													mems++
 													ccbits |= mem[w].sig
-//line simplify.w:810
+//line simplify.gw:810
 												}
 												mems += 2
 												mem[w].lit--
-//line simplify.w:812
+//line simplify.gw:812
 												if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 													kv = w >> 1
 													mems++
 													if vmem[kv].status == varNorm {
@@ -4126,64 +4126,64 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 														}
 														vmem[kv].link = toDo
 														toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 													} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 														mems++
 														vmem[kv].status = elimQuiet
 														vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 													}
 
-//line simplify.w:814
+//line simplify.gw:814
 												}
 
-//line simplify.w:831
+//line simplify.gw:831
 												mems++
 												q, w = mem[p].up, mem[p].down
-//line simplify.w:832
+//line simplify.gw:832
 												mems += 2
 												mem[q].down = w
 												mem[w].up = q
-//line simplify.w:833
+//line simplify.gw:833
 												mems++
 												q, w = mem[p].right, mem[p].left
-//line simplify.w:834
+//line simplify.gw:834
 												mems += 2
 												mem[q].left = w
 												mem[w].right = q
-//line simplify.w:835
+//line simplify.gw:835
 												mems++
 												mem[p].left = avail
 												avail = p
 
-//line simplify.w:816
+//line simplify.gw:816
 												for p = q; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 													mems++
 													q = mem[p].lit
-//line simplify.w:818
+//line simplify.gw:818
 													mems++
 													vmem[q>>1].stable = 0
-//line simplify.w:819
+//line simplify.gw:819
 													mems++
 													ccbits |= mem[q].sig
-//line simplify.w:820
+//line simplify.gw:820
 												}
 												mems++
 												mem[cc].sig = ccbits
 
-//line simplify.w:841
+//line simplify.gw:841
 												mems += 2
 												mem[cc].cls--
-//line simplify.w:842
+//line simplify.gw:842
 												if mem[cc].cls <= 1 {
 													if mem[cc].cls == 0 {
 														panic("sat: 이럴 수는 없다 (strengthening)")
 													}
 													mems += 2
 													w = mem[mem[cc].right].lit
-//line simplify.w:847
+//line simplify.gw:847
 
-//line simplify.w:481
+//line simplify.gw:481
 													kv = w >> 1
 													mems++
 													if w&1 != 0 {
@@ -4192,7 +4192,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 															vmem[kv].status = forcedFalse
 															vmem[kv].link = toDo
 															toDo = kv
-//line simplify.w:486
+//line simplify.gw:486
 														} else if vmem[kv].status == forcedTrue {
 															goto unsat
 														}
@@ -4202,37 +4202,37 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 															vmem[kv].status = forcedTrue
 															vmem[kv].link = toDo
 															toDo = kv
-//line simplify.w:492
+//line simplify.gw:492
 														} else if vmem[kv].status == forcedFalse {
 															goto unsat
 														}
 													}
 
-//line simplify.w:848
+//line simplify.gw:848
 												}
 
-//line simplify.w:823
+//line simplify.gw:823
 												mems++
 												if cmem[cc-litHeadTop].link == 0 {
 													mems++
 													cmem[cc-litHeadTop].link = strengthened
 													strengthened = cc
-//line simplify.w:826
+//line simplify.gw:826
 												}
 
-//line simplify.w:770
+//line simplify.gw:770
 											}
 										}
 									}
 
-//line simplify.w:880
+//line simplify.gw:880
 
-//line simplify.w:541
+//line simplify.gw:541
 									for toDo != 0 {
 										k = toDo
 										mems++
 										toDo = vmem[k].link
-//line simplify.w:544
+//line simplify.gw:544
 										if vmem[k].status != elimQuiet {
 											if vmem[k].status == forcedTrue {
 												l = k + k
@@ -4242,36 +4242,36 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 											pre.erp = append(pre.erp, erpCell{Lit(l), erpDef})
 											mems++
 											vmem[k].stable = 1
-//line simplify.w:552
+//line simplify.gw:552
 
-//line simplify.w:620
+//line simplify.gw:620
 											for mems, ll = mems+1, mem[l].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 												mems++
 												cd = mem[ll].cls
-//line simplify.w:622
+//line simplify.gw:622
 												for mems, p = mems+1, mem[cd].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 													if p != ll {
 														mems++
 														w = mem[p].lit
-//line simplify.w:625
+//line simplify.gw:625
 
-//line simplify.w:639
+//line simplify.gw:639
 														mems++
 														q, r = mem[p].up, mem[p].down
-//line simplify.w:640
+//line simplify.gw:640
 														mems += 2
 														mem[q].down = r
 														mem[r].up = q
-//line simplify.w:641
+//line simplify.gw:641
 														mems++
 														vmem[w>>1].stable = 0
-//line simplify.w:642
+//line simplify.gw:642
 														mems += 2
 														mem[w].lit--
-//line simplify.w:643
+//line simplify.gw:643
 														if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 															kv = w >> 1
 															mems++
 															if vmem[kv].status == varNorm {
@@ -4283,54 +4283,54 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 																}
 																vmem[kv].link = toDo
 																toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 															} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 																mems++
 																vmem[kv].status = elimQuiet
 																vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 															}
 
-//line simplify.w:645
+//line simplify.gw:645
 														}
 
-//line simplify.w:626
+//line simplify.gw:626
 													}
 												}
 												mems++
 												mem[mem[cd].right].left = avail
 												avail = mem[cd].left
-//line simplify.w:629
+//line simplify.gw:629
 												mems++
 												mem[cd].cls = 0
 												clausesGone++
-//line simplify.w:630
+//line simplify.gw:630
 											}
 
-//line simplify.w:553
+//line simplify.gw:553
 
-//line simplify.w:583
+//line simplify.gw:583
 											for mems, ll = mems+1, mem[l^1].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 												mems++
 												cd = mem[ll].cls
-//line simplify.w:585
+//line simplify.gw:585
 												mems++
 												p, q = mem[ll].left, mem[ll].right
-//line simplify.w:586
+//line simplify.gw:586
 												mems += 2
 												mem[p].right = q
 												mem[q].left = p
-//line simplify.w:587
+//line simplify.gw:587
 												mems++
 												mem[ll].left = avail
 												avail = ll
-//line simplify.w:588
+//line simplify.gw:588
 												mems++
 												j = mem[cd].cls - 1
-//line simplify.w:589
+//line simplify.gw:589
 												mems++
 												mem[cd].cls = j
-//line simplify.w:590
+//line simplify.gw:590
 												if j == 1 {
 													mems++
 													if p == cd {
@@ -4339,7 +4339,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 														w = mem[p].lit
 													}
 
-//line simplify.w:481
+//line simplify.gw:481
 													kv = w >> 1
 													mems++
 													if w&1 != 0 {
@@ -4348,7 +4348,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 															vmem[kv].status = forcedFalse
 															vmem[kv].link = toDo
 															toDo = kv
-//line simplify.w:486
+//line simplify.gw:486
 														} else if vmem[kv].status == forcedTrue {
 															goto unsat
 														}
@@ -4358,45 +4358,45 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 															vmem[kv].status = forcedTrue
 															vmem[kv].link = toDo
 															toDo = kv
-//line simplify.w:492
+//line simplify.gw:492
 														} else if vmem[kv].status == forcedFalse {
 															goto unsat
 														}
 													}
 
-//line simplify.w:598
+//line simplify.gw:598
 												}
 
-//line simplify.w:604
+//line simplify.gw:604
 												bits2 = 0
 												for mems, t2 = mems+1, mem[cd].right; t2 >= clsHeadTop; mems, t2 = mems+1, mem[t2].right {
 													mems += 2
 													bits2 |= mem[mem[t2].lit].sig
-//line simplify.w:607
+//line simplify.gw:607
 												}
 												mems++
 												mem[cd].sig = bits2
 
-//line simplify.w:600
+//line simplify.gw:600
 
-//line simplify.w:611
+//line simplify.gw:611
 												mems++
 												if cmem[cd-litHeadTop].link == 0 {
 													mems++
 													cmem[cd-litHeadTop].link = strengthened
 													strengthened = cd
-//line simplify.w:614
+//line simplify.gw:614
 												}
 
-//line simplify.w:601
+//line simplify.gw:601
 											}
 
-//line simplify.w:554
+//line simplify.gw:554
 										}
 										varsGone++
 									}
 
-//line simplify.w:563
+//line simplify.gw:563
 									if mems > par.Timeout {
 										err = ErrTimeout
 										goto finishUp
@@ -4409,27 +4409,27 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 										}
 									}
 
-//line simplify.w:881
+//line simplify.gw:881
 									mems++
 									mem[c].lit = round
-//line simplify.w:882
+//line simplify.gw:882
 									mems++
 									cmem[c-litHeadTop].size = 0
-//line simplify.w:883
+//line simplify.gw:883
 								}
 
-//line simplify.w:871
+//line simplify.gw:871
 							}
 						}
 						c = csave
 
-//line simplify.w:1372
+//line simplify.gw:1372
 					} else if cmem[c-litHeadTop].size&1 != 0 {
 						panic("sat: 이럴 수는 없다 (new clause not all new)")
 					}
 					if cmem[c-litHeadTop].size&3 != 0 {
 
-//line simplify.w:1385
+//line simplify.gw:1385
 						switch {
 						case cmem[c-litHeadTop].size&1 != 0:
 							specialcase = 0
@@ -4440,17 +4440,17 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 						}
 						if specialcase >= 0 {
 
-//line simplify.w:747
+//line simplify.gw:747
 							mems += 3
 							sz, bits, v = mem[c].cls, mem[c].sig, mem[c].left
-//line simplify.w:748
+//line simplify.gw:748
 							for mems, vv = mems+1, v; vv >= clsHeadTop; mems, vv = mems+1, mem[vv].left {
 								mems++
 								u = mem[vv].lit
-//line simplify.w:750
+//line simplify.gw:750
 								if specialcase != 0 {
 
-//line simplify.w:1402
+//line simplify.gw:1402
 									mems++
 									if mem[u^1].cls != round {
 										continue
@@ -4464,16 +4464,16 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 										continue
 									}
 
-//line simplify.w:752
+//line simplify.gw:752
 								}
 								mems++
 								ubits = bits &^ mem[u].sig
-//line simplify.w:754
+//line simplify.gw:754
 								for mems, pp = mems+1, mem[u^1].down; pp >= litHeadTop; mems, pp = mems+1, mem[pp].down {
 									strTries++
 									mems++
 									cc = mem[pp].cls
-//line simplify.w:757
+//line simplify.gw:757
 									mems++
 									if ubits&^mem[cc].sig != 0 {
 										continue
@@ -4483,80 +4483,80 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 										continue
 									}
 
-//line simplify.w:775
+//line simplify.gw:775
 									mems++
 									q, qq = v, mem[cc].left
-//line simplify.w:776
+//line simplify.gw:776
 									for {
 										mems += 2
 										l, ll = mem[q].lit, mem[qq].lit
-//line simplify.w:778
+//line simplify.gw:778
 										if l == u {
 											l ^= 1
 										}
 
-//line simplify.w:713
+//line simplify.gw:713
 										for l < ll {
 											mems++
 											qq = mem[qq].left
-//line simplify.w:715
+//line simplify.gw:715
 											if qq < clsHeadTop {
 												ll = 0
 											} else {
 												mems++
 												ll = mem[qq].lit
-//line simplify.w:719
+//line simplify.gw:719
 											}
 										}
 
-//line simplify.w:782
+//line simplify.gw:782
 										if l > ll {
 											break
 										}
 										mems++
 										q = mem[q].left
-//line simplify.w:786
+//line simplify.gw:786
 										if q < clsHeadTop {
 											l = 0
 											break
 										}
 										mems++
 										qq = mem[qq].left
-//line simplify.w:791
+//line simplify.gw:791
 										if qq < clsHeadTop {
 											ll = 0
 											break
 										}
 									}
 
-//line simplify.w:766
+//line simplify.gw:766
 									if l > ll {
 										strFalse++
 									} else {
 
-//line simplify.w:801
+//line simplify.gw:801
 										ccbits = 0
 										strTotal++
 										for mems, p = mems+1, mem[cc].right; ; mems, p = mems+1, mem[p].right {
 											mems++
 											w = mem[p].lit
-//line simplify.w:805
+//line simplify.gw:805
 											mems++
 											vmem[w>>1].stable = 0
-//line simplify.w:806
+//line simplify.gw:806
 											if w == u^1 {
 												break
 											}
 											mems++
 											ccbits |= mem[w].sig
-//line simplify.w:810
+//line simplify.gw:810
 										}
 										mems += 2
 										mem[w].lit--
-//line simplify.w:812
+//line simplify.gw:812
 										if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 											kv = w >> 1
 											mems++
 											if vmem[kv].status == varNorm {
@@ -4568,64 +4568,64 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 												}
 												vmem[kv].link = toDo
 												toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 											} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 												mems++
 												vmem[kv].status = elimQuiet
 												vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 											}
 
-//line simplify.w:814
+//line simplify.gw:814
 										}
 
-//line simplify.w:831
+//line simplify.gw:831
 										mems++
 										q, w = mem[p].up, mem[p].down
-//line simplify.w:832
+//line simplify.gw:832
 										mems += 2
 										mem[q].down = w
 										mem[w].up = q
-//line simplify.w:833
+//line simplify.gw:833
 										mems++
 										q, w = mem[p].right, mem[p].left
-//line simplify.w:834
+//line simplify.gw:834
 										mems += 2
 										mem[q].left = w
 										mem[w].right = q
-//line simplify.w:835
+//line simplify.gw:835
 										mems++
 										mem[p].left = avail
 										avail = p
 
-//line simplify.w:816
+//line simplify.gw:816
 										for p = q; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 											mems++
 											q = mem[p].lit
-//line simplify.w:818
+//line simplify.gw:818
 											mems++
 											vmem[q>>1].stable = 0
-//line simplify.w:819
+//line simplify.gw:819
 											mems++
 											ccbits |= mem[q].sig
-//line simplify.w:820
+//line simplify.gw:820
 										}
 										mems++
 										mem[cc].sig = ccbits
 
-//line simplify.w:841
+//line simplify.gw:841
 										mems += 2
 										mem[cc].cls--
-//line simplify.w:842
+//line simplify.gw:842
 										if mem[cc].cls <= 1 {
 											if mem[cc].cls == 0 {
 												panic("sat: 이럴 수는 없다 (strengthening)")
 											}
 											mems += 2
 											w = mem[mem[cc].right].lit
-//line simplify.w:847
+//line simplify.gw:847
 
-//line simplify.w:481
+//line simplify.gw:481
 											kv = w >> 1
 											mems++
 											if w&1 != 0 {
@@ -4634,7 +4634,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 													vmem[kv].status = forcedFalse
 													vmem[kv].link = toDo
 													toDo = kv
-//line simplify.w:486
+//line simplify.gw:486
 												} else if vmem[kv].status == forcedTrue {
 													goto unsat
 												}
@@ -4644,40 +4644,40 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 													vmem[kv].status = forcedTrue
 													vmem[kv].link = toDo
 													toDo = kv
-//line simplify.w:492
+//line simplify.gw:492
 												} else if vmem[kv].status == forcedFalse {
 													goto unsat
 												}
 											}
 
-//line simplify.w:848
+//line simplify.gw:848
 										}
 
-//line simplify.w:823
+//line simplify.gw:823
 										mems++
 										if cmem[cc-litHeadTop].link == 0 {
 											mems++
 											cmem[cc-litHeadTop].link = strengthened
 											strengthened = cc
-//line simplify.w:826
+//line simplify.gw:826
 										}
 
-//line simplify.w:770
+//line simplify.gw:770
 									}
 								}
 							}
 
-//line simplify.w:1395
+//line simplify.gw:1395
 
-//line simplify.w:860
+//line simplify.gw:860
 							csave = c
 
-//line simplify.w:541
+//line simplify.gw:541
 							for toDo != 0 {
 								k = toDo
 								mems++
 								toDo = vmem[k].link
-//line simplify.w:544
+//line simplify.gw:544
 								if vmem[k].status != elimQuiet {
 									if vmem[k].status == forcedTrue {
 										l = k + k
@@ -4687,36 +4687,36 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 									pre.erp = append(pre.erp, erpCell{Lit(l), erpDef})
 									mems++
 									vmem[k].stable = 1
-//line simplify.w:552
+//line simplify.gw:552
 
-//line simplify.w:620
+//line simplify.gw:620
 									for mems, ll = mems+1, mem[l].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 										mems++
 										cd = mem[ll].cls
-//line simplify.w:622
+//line simplify.gw:622
 										for mems, p = mems+1, mem[cd].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 											if p != ll {
 												mems++
 												w = mem[p].lit
-//line simplify.w:625
+//line simplify.gw:625
 
-//line simplify.w:639
+//line simplify.gw:639
 												mems++
 												q, r = mem[p].up, mem[p].down
-//line simplify.w:640
+//line simplify.gw:640
 												mems += 2
 												mem[q].down = r
 												mem[r].up = q
-//line simplify.w:641
+//line simplify.gw:641
 												mems++
 												vmem[w>>1].stable = 0
-//line simplify.w:642
+//line simplify.gw:642
 												mems += 2
 												mem[w].lit--
-//line simplify.w:643
+//line simplify.gw:643
 												if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 													kv = w >> 1
 													mems++
 													if vmem[kv].status == varNorm {
@@ -4728,54 +4728,54 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 														}
 														vmem[kv].link = toDo
 														toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 													} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 														mems++
 														vmem[kv].status = elimQuiet
 														vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 													}
 
-//line simplify.w:645
+//line simplify.gw:645
 												}
 
-//line simplify.w:626
+//line simplify.gw:626
 											}
 										}
 										mems++
 										mem[mem[cd].right].left = avail
 										avail = mem[cd].left
-//line simplify.w:629
+//line simplify.gw:629
 										mems++
 										mem[cd].cls = 0
 										clausesGone++
-//line simplify.w:630
+//line simplify.gw:630
 									}
 
-//line simplify.w:553
+//line simplify.gw:553
 
-//line simplify.w:583
+//line simplify.gw:583
 									for mems, ll = mems+1, mem[l^1].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 										mems++
 										cd = mem[ll].cls
-//line simplify.w:585
+//line simplify.gw:585
 										mems++
 										p, q = mem[ll].left, mem[ll].right
-//line simplify.w:586
+//line simplify.gw:586
 										mems += 2
 										mem[p].right = q
 										mem[q].left = p
-//line simplify.w:587
+//line simplify.gw:587
 										mems++
 										mem[ll].left = avail
 										avail = ll
-//line simplify.w:588
+//line simplify.gw:588
 										mems++
 										j = mem[cd].cls - 1
-//line simplify.w:589
+//line simplify.gw:589
 										mems++
 										mem[cd].cls = j
-//line simplify.w:590
+//line simplify.gw:590
 										if j == 1 {
 											mems++
 											if p == cd {
@@ -4784,7 +4784,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 												w = mem[p].lit
 											}
 
-//line simplify.w:481
+//line simplify.gw:481
 											kv = w >> 1
 											mems++
 											if w&1 != 0 {
@@ -4793,7 +4793,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 													vmem[kv].status = forcedFalse
 													vmem[kv].link = toDo
 													toDo = kv
-//line simplify.w:486
+//line simplify.gw:486
 												} else if vmem[kv].status == forcedTrue {
 													goto unsat
 												}
@@ -4803,45 +4803,45 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 													vmem[kv].status = forcedTrue
 													vmem[kv].link = toDo
 													toDo = kv
-//line simplify.w:492
+//line simplify.gw:492
 												} else if vmem[kv].status == forcedFalse {
 													goto unsat
 												}
 											}
 
-//line simplify.w:598
+//line simplify.gw:598
 										}
 
-//line simplify.w:604
+//line simplify.gw:604
 										bits2 = 0
 										for mems, t2 = mems+1, mem[cd].right; t2 >= clsHeadTop; mems, t2 = mems+1, mem[t2].right {
 											mems += 2
 											bits2 |= mem[mem[t2].lit].sig
-//line simplify.w:607
+//line simplify.gw:607
 										}
 										mems++
 										mem[cd].sig = bits2
 
-//line simplify.w:600
+//line simplify.gw:600
 
-//line simplify.w:611
+//line simplify.gw:611
 										mems++
 										if cmem[cd-litHeadTop].link == 0 {
 											mems++
 											cmem[cd-litHeadTop].link = strengthened
 											strengthened = cd
-//line simplify.w:614
+//line simplify.gw:614
 										}
 
-//line simplify.w:601
+//line simplify.gw:601
 									}
 
-//line simplify.w:554
+//line simplify.gw:554
 								}
 								varsGone++
 							}
 
-//line simplify.w:563
+//line simplify.gw:563
 							if mems > par.Timeout {
 								err = ErrTimeout
 								goto finishUp
@@ -4854,42 +4854,42 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 								}
 							}
 
-//line simplify.w:862
+//line simplify.gw:862
 							for strengthened != sentinel {
 								c = strengthened
 								mems++
 								strengthened = cmem[c-litHeadTop].link
-//line simplify.w:865
+//line simplify.gw:865
 								mems++
 								if mem[c].cls != 0 {
 									mems++
 									cmem[c-litHeadTop].link = 0
-//line simplify.w:868
+//line simplify.gw:868
 
-//line simplify.w:680
+//line simplify.gw:680
 									mems += 3
 									p = mem[c].right
 									l = mem[p].lit
 									k = mem[l].lit
-//line simplify.w:681
+//line simplify.gw:681
 									for mems, p = mems+1, mem[p].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 										mems++
 										ll = mem[p].lit
-//line simplify.w:683
+//line simplify.gw:683
 										mems++
 										if mem[ll].lit < k {
 											k, l = mem[ll].lit, ll
 										}
 									}
 
-//line simplify.w:656
+//line simplify.gw:656
 									mems += 3
 									sz, bits, v = mem[c].cls, mem[c].sig, mem[c].left
-//line simplify.w:657
+//line simplify.gw:657
 									for mems, pp = mems+1, mem[l].down; pp >= litHeadTop; mems, pp = mems+1, mem[pp].down {
 										mems++
 										cc = mem[pp].cls
-//line simplify.w:659
+//line simplify.gw:659
 										if cc == c {
 											continue
 										}
@@ -4903,78 +4903,78 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 											continue
 										}
 
-//line simplify.w:693
+//line simplify.gw:693
 										mems++
 										q, qq = v, mem[cc].left
-//line simplify.w:694
+//line simplify.gw:694
 										for {
 											mems += 2
 											l, ll = mem[q].lit, mem[qq].lit
-//line simplify.w:696
+//line simplify.gw:696
 
-//line simplify.w:713
+//line simplify.gw:713
 											for l < ll {
 												mems++
 												qq = mem[qq].left
-//line simplify.w:715
+//line simplify.gw:715
 												if qq < clsHeadTop {
 													ll = 0
 												} else {
 													mems++
 													ll = mem[qq].lit
-//line simplify.w:719
+//line simplify.gw:719
 												}
 											}
 
-//line simplify.w:697
+//line simplify.gw:697
 											if l > ll {
 												break
 											}
 											mems++
 											q = mem[q].left
-//line simplify.w:701
+//line simplify.gw:701
 											if q < clsHeadTop {
 												l = 0
 												break
 											}
 											mems++
 											qq = mem[qq].left
-//line simplify.w:706
+//line simplify.gw:706
 											if qq < clsHeadTop {
 												ll = 0
 												break
 											}
 										}
 
-//line simplify.w:672
+//line simplify.gw:672
 										if l > ll {
 											subFalse++
 										} else {
 
-//line simplify.w:723
+//line simplify.gw:723
 											subTotal++
 											for mems, p = mems+1, mem[cc].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 												mems++
 												w = mem[p].lit
-//line simplify.w:726
+//line simplify.gw:726
 
-//line simplify.w:639
+//line simplify.gw:639
 												mems++
 												q, r = mem[p].up, mem[p].down
-//line simplify.w:640
+//line simplify.gw:640
 												mems += 2
 												mem[q].down = r
 												mem[r].up = q
-//line simplify.w:641
+//line simplify.gw:641
 												mems++
 												vmem[w>>1].stable = 0
-//line simplify.w:642
+//line simplify.gw:642
 												mems += 2
 												mem[w].lit--
-//line simplify.w:643
+//line simplify.gw:643
 												if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 													kv = w >> 1
 													mems++
 													if vmem[kv].status == varNorm {
@@ -4986,39 +4986,39 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 														}
 														vmem[kv].link = toDo
 														toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 													} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 														mems++
 														vmem[kv].status = elimQuiet
 														vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 													}
 
-//line simplify.w:645
+//line simplify.gw:645
 												}
 
-//line simplify.w:727
+//line simplify.gw:727
 											}
 											mems++
 											mem[mem[cc].right].left = avail
 											avail = mem[cc].left
-//line simplify.w:729
+//line simplify.gw:729
 											mems++
 											mem[cc].cls = 0
 											clausesGone++
 
-//line simplify.w:676
+//line simplify.gw:676
 										}
 									}
 
-//line simplify.w:869
+//line simplify.gw:869
 
-//line simplify.w:541
+//line simplify.gw:541
 									for toDo != 0 {
 										k = toDo
 										mems++
 										toDo = vmem[k].link
-//line simplify.w:544
+//line simplify.gw:544
 										if vmem[k].status != elimQuiet {
 											if vmem[k].status == forcedTrue {
 												l = k + k
@@ -5028,36 +5028,36 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 											pre.erp = append(pre.erp, erpCell{Lit(l), erpDef})
 											mems++
 											vmem[k].stable = 1
-//line simplify.w:552
+//line simplify.gw:552
 
-//line simplify.w:620
+//line simplify.gw:620
 											for mems, ll = mems+1, mem[l].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 												mems++
 												cd = mem[ll].cls
-//line simplify.w:622
+//line simplify.gw:622
 												for mems, p = mems+1, mem[cd].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 													if p != ll {
 														mems++
 														w = mem[p].lit
-//line simplify.w:625
+//line simplify.gw:625
 
-//line simplify.w:639
+//line simplify.gw:639
 														mems++
 														q, r = mem[p].up, mem[p].down
-//line simplify.w:640
+//line simplify.gw:640
 														mems += 2
 														mem[q].down = r
 														mem[r].up = q
-//line simplify.w:641
+//line simplify.gw:641
 														mems++
 														vmem[w>>1].stable = 0
-//line simplify.w:642
+//line simplify.gw:642
 														mems += 2
 														mem[w].lit--
-//line simplify.w:643
+//line simplify.gw:643
 														if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 															kv = w >> 1
 															mems++
 															if vmem[kv].status == varNorm {
@@ -5069,54 +5069,54 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 																}
 																vmem[kv].link = toDo
 																toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 															} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 																mems++
 																vmem[kv].status = elimQuiet
 																vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 															}
 
-//line simplify.w:645
+//line simplify.gw:645
 														}
 
-//line simplify.w:626
+//line simplify.gw:626
 													}
 												}
 												mems++
 												mem[mem[cd].right].left = avail
 												avail = mem[cd].left
-//line simplify.w:629
+//line simplify.gw:629
 												mems++
 												mem[cd].cls = 0
 												clausesGone++
-//line simplify.w:630
+//line simplify.gw:630
 											}
 
-//line simplify.w:553
+//line simplify.gw:553
 
-//line simplify.w:583
+//line simplify.gw:583
 											for mems, ll = mems+1, mem[l^1].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 												mems++
 												cd = mem[ll].cls
-//line simplify.w:585
+//line simplify.gw:585
 												mems++
 												p, q = mem[ll].left, mem[ll].right
-//line simplify.w:586
+//line simplify.gw:586
 												mems += 2
 												mem[p].right = q
 												mem[q].left = p
-//line simplify.w:587
+//line simplify.gw:587
 												mems++
 												mem[ll].left = avail
 												avail = ll
-//line simplify.w:588
+//line simplify.gw:588
 												mems++
 												j = mem[cd].cls - 1
-//line simplify.w:589
+//line simplify.gw:589
 												mems++
 												mem[cd].cls = j
-//line simplify.w:590
+//line simplify.gw:590
 												if j == 1 {
 													mems++
 													if p == cd {
@@ -5125,7 +5125,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 														w = mem[p].lit
 													}
 
-//line simplify.w:481
+//line simplify.gw:481
 													kv = w >> 1
 													mems++
 													if w&1 != 0 {
@@ -5134,7 +5134,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 															vmem[kv].status = forcedFalse
 															vmem[kv].link = toDo
 															toDo = kv
-//line simplify.w:486
+//line simplify.gw:486
 														} else if vmem[kv].status == forcedTrue {
 															goto unsat
 														}
@@ -5144,45 +5144,45 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 															vmem[kv].status = forcedTrue
 															vmem[kv].link = toDo
 															toDo = kv
-//line simplify.w:492
+//line simplify.gw:492
 														} else if vmem[kv].status == forcedFalse {
 															goto unsat
 														}
 													}
 
-//line simplify.w:598
+//line simplify.gw:598
 												}
 
-//line simplify.w:604
+//line simplify.gw:604
 												bits2 = 0
 												for mems, t2 = mems+1, mem[cd].right; t2 >= clsHeadTop; mems, t2 = mems+1, mem[t2].right {
 													mems += 2
 													bits2 |= mem[mem[t2].lit].sig
-//line simplify.w:607
+//line simplify.gw:607
 												}
 												mems++
 												mem[cd].sig = bits2
 
-//line simplify.w:600
+//line simplify.gw:600
 
-//line simplify.w:611
+//line simplify.gw:611
 												mems++
 												if cmem[cd-litHeadTop].link == 0 {
 													mems++
 													cmem[cd-litHeadTop].link = strengthened
 													strengthened = cd
-//line simplify.w:614
+//line simplify.gw:614
 												}
 
-//line simplify.w:601
+//line simplify.gw:601
 											}
 
-//line simplify.w:554
+//line simplify.gw:554
 										}
 										varsGone++
 									}
 
-//line simplify.w:563
+//line simplify.gw:563
 									if mems > par.Timeout {
 										err = ErrTimeout
 										goto finishUp
@@ -5195,24 +5195,24 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 										}
 									}
 
-//line simplify.w:870
+//line simplify.gw:870
 
-//line simplify.w:876
+//line simplify.gw:876
 									mems++
 									if mem[c].cls != 0 {
 										specialcase = 0
 
-//line simplify.w:747
+//line simplify.gw:747
 										mems += 3
 										sz, bits, v = mem[c].cls, mem[c].sig, mem[c].left
-//line simplify.w:748
+//line simplify.gw:748
 										for mems, vv = mems+1, v; vv >= clsHeadTop; mems, vv = mems+1, mem[vv].left {
 											mems++
 											u = mem[vv].lit
-//line simplify.w:750
+//line simplify.gw:750
 											if specialcase != 0 {
 
-//line simplify.w:1402
+//line simplify.gw:1402
 												mems++
 												if mem[u^1].cls != round {
 													continue
@@ -5226,16 +5226,16 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 													continue
 												}
 
-//line simplify.w:752
+//line simplify.gw:752
 											}
 											mems++
 											ubits = bits &^ mem[u].sig
-//line simplify.w:754
+//line simplify.gw:754
 											for mems, pp = mems+1, mem[u^1].down; pp >= litHeadTop; mems, pp = mems+1, mem[pp].down {
 												strTries++
 												mems++
 												cc = mem[pp].cls
-//line simplify.w:757
+//line simplify.gw:757
 												mems++
 												if ubits&^mem[cc].sig != 0 {
 													continue
@@ -5245,80 +5245,80 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 													continue
 												}
 
-//line simplify.w:775
+//line simplify.gw:775
 												mems++
 												q, qq = v, mem[cc].left
-//line simplify.w:776
+//line simplify.gw:776
 												for {
 													mems += 2
 													l, ll = mem[q].lit, mem[qq].lit
-//line simplify.w:778
+//line simplify.gw:778
 													if l == u {
 														l ^= 1
 													}
 
-//line simplify.w:713
+//line simplify.gw:713
 													for l < ll {
 														mems++
 														qq = mem[qq].left
-//line simplify.w:715
+//line simplify.gw:715
 														if qq < clsHeadTop {
 															ll = 0
 														} else {
 															mems++
 															ll = mem[qq].lit
-//line simplify.w:719
+//line simplify.gw:719
 														}
 													}
 
-//line simplify.w:782
+//line simplify.gw:782
 													if l > ll {
 														break
 													}
 													mems++
 													q = mem[q].left
-//line simplify.w:786
+//line simplify.gw:786
 													if q < clsHeadTop {
 														l = 0
 														break
 													}
 													mems++
 													qq = mem[qq].left
-//line simplify.w:791
+//line simplify.gw:791
 													if qq < clsHeadTop {
 														ll = 0
 														break
 													}
 												}
 
-//line simplify.w:766
+//line simplify.gw:766
 												if l > ll {
 													strFalse++
 												} else {
 
-//line simplify.w:801
+//line simplify.gw:801
 													ccbits = 0
 													strTotal++
 													for mems, p = mems+1, mem[cc].right; ; mems, p = mems+1, mem[p].right {
 														mems++
 														w = mem[p].lit
-//line simplify.w:805
+//line simplify.gw:805
 														mems++
 														vmem[w>>1].stable = 0
-//line simplify.w:806
+//line simplify.gw:806
 														if w == u^1 {
 															break
 														}
 														mems++
 														ccbits |= mem[w].sig
-//line simplify.w:810
+//line simplify.gw:810
 													}
 													mems += 2
 													mem[w].lit--
-//line simplify.w:812
+//line simplify.gw:812
 													if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 														kv = w >> 1
 														mems++
 														if vmem[kv].status == varNorm {
@@ -5330,64 +5330,64 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 															}
 															vmem[kv].link = toDo
 															toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 														} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 															mems++
 															vmem[kv].status = elimQuiet
 															vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 														}
 
-//line simplify.w:814
+//line simplify.gw:814
 													}
 
-//line simplify.w:831
+//line simplify.gw:831
 													mems++
 													q, w = mem[p].up, mem[p].down
-//line simplify.w:832
+//line simplify.gw:832
 													mems += 2
 													mem[q].down = w
 													mem[w].up = q
-//line simplify.w:833
+//line simplify.gw:833
 													mems++
 													q, w = mem[p].right, mem[p].left
-//line simplify.w:834
+//line simplify.gw:834
 													mems += 2
 													mem[q].left = w
 													mem[w].right = q
-//line simplify.w:835
+//line simplify.gw:835
 													mems++
 													mem[p].left = avail
 													avail = p
 
-//line simplify.w:816
+//line simplify.gw:816
 													for p = q; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 														mems++
 														q = mem[p].lit
-//line simplify.w:818
+//line simplify.gw:818
 														mems++
 														vmem[q>>1].stable = 0
-//line simplify.w:819
+//line simplify.gw:819
 														mems++
 														ccbits |= mem[q].sig
-//line simplify.w:820
+//line simplify.gw:820
 													}
 													mems++
 													mem[cc].sig = ccbits
 
-//line simplify.w:841
+//line simplify.gw:841
 													mems += 2
 													mem[cc].cls--
-//line simplify.w:842
+//line simplify.gw:842
 													if mem[cc].cls <= 1 {
 														if mem[cc].cls == 0 {
 															panic("sat: 이럴 수는 없다 (strengthening)")
 														}
 														mems += 2
 														w = mem[mem[cc].right].lit
-//line simplify.w:847
+//line simplify.gw:847
 
-//line simplify.w:481
+//line simplify.gw:481
 														kv = w >> 1
 														mems++
 														if w&1 != 0 {
@@ -5396,7 +5396,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 																vmem[kv].status = forcedFalse
 																vmem[kv].link = toDo
 																toDo = kv
-//line simplify.w:486
+//line simplify.gw:486
 															} else if vmem[kv].status == forcedTrue {
 																goto unsat
 															}
@@ -5406,37 +5406,37 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 																vmem[kv].status = forcedTrue
 																vmem[kv].link = toDo
 																toDo = kv
-//line simplify.w:492
+//line simplify.gw:492
 															} else if vmem[kv].status == forcedFalse {
 																goto unsat
 															}
 														}
 
-//line simplify.w:848
+//line simplify.gw:848
 													}
 
-//line simplify.w:823
+//line simplify.gw:823
 													mems++
 													if cmem[cc-litHeadTop].link == 0 {
 														mems++
 														cmem[cc-litHeadTop].link = strengthened
 														strengthened = cc
-//line simplify.w:826
+//line simplify.gw:826
 													}
 
-//line simplify.w:770
+//line simplify.gw:770
 												}
 											}
 										}
 
-//line simplify.w:880
+//line simplify.gw:880
 
-//line simplify.w:541
+//line simplify.gw:541
 										for toDo != 0 {
 											k = toDo
 											mems++
 											toDo = vmem[k].link
-//line simplify.w:544
+//line simplify.gw:544
 											if vmem[k].status != elimQuiet {
 												if vmem[k].status == forcedTrue {
 													l = k + k
@@ -5446,36 +5446,36 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 												pre.erp = append(pre.erp, erpCell{Lit(l), erpDef})
 												mems++
 												vmem[k].stable = 1
-//line simplify.w:552
+//line simplify.gw:552
 
-//line simplify.w:620
+//line simplify.gw:620
 												for mems, ll = mems+1, mem[l].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 													mems++
 													cd = mem[ll].cls
-//line simplify.w:622
+//line simplify.gw:622
 													for mems, p = mems+1, mem[cd].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 														if p != ll {
 															mems++
 															w = mem[p].lit
-//line simplify.w:625
+//line simplify.gw:625
 
-//line simplify.w:639
+//line simplify.gw:639
 															mems++
 															q, r = mem[p].up, mem[p].down
-//line simplify.w:640
+//line simplify.gw:640
 															mems += 2
 															mem[q].down = r
 															mem[r].up = q
-//line simplify.w:641
+//line simplify.gw:641
 															mems++
 															vmem[w>>1].stable = 0
-//line simplify.w:642
+//line simplify.gw:642
 															mems += 2
 															mem[w].lit--
-//line simplify.w:643
+//line simplify.gw:643
 															if mem[w].lit == 0 {
 
-//line simplify.w:503
+//line simplify.gw:503
 																kv = w >> 1
 																mems++
 																if vmem[kv].status == varNorm {
@@ -5487,54 +5487,54 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 																	}
 																	vmem[kv].link = toDo
 																	toDo = kv
-//line simplify.w:513
+//line simplify.gw:513
 																} else if w&1 != 0 && vmem[kv].status == forcedFalse || w&1 == 0 && vmem[kv].status == forcedTrue {
 																	mems++
 																	vmem[kv].status = elimQuiet
 																	vmem[kv].stable = 1
-//line simplify.w:515
+//line simplify.gw:515
 																}
 
-//line simplify.w:645
+//line simplify.gw:645
 															}
 
-//line simplify.w:626
+//line simplify.gw:626
 														}
 													}
 													mems++
 													mem[mem[cd].right].left = avail
 													avail = mem[cd].left
-//line simplify.w:629
+//line simplify.gw:629
 													mems++
 													mem[cd].cls = 0
 													clausesGone++
-//line simplify.w:630
+//line simplify.gw:630
 												}
 
-//line simplify.w:553
+//line simplify.gw:553
 
-//line simplify.w:583
+//line simplify.gw:583
 												for mems, ll = mems+1, mem[l^1].down; ll >= litHeadTop; mems, ll = mems+1, mem[ll].down {
 													mems++
 													cd = mem[ll].cls
-//line simplify.w:585
+//line simplify.gw:585
 													mems++
 													p, q = mem[ll].left, mem[ll].right
-//line simplify.w:586
+//line simplify.gw:586
 													mems += 2
 													mem[p].right = q
 													mem[q].left = p
-//line simplify.w:587
+//line simplify.gw:587
 													mems++
 													mem[ll].left = avail
 													avail = ll
-//line simplify.w:588
+//line simplify.gw:588
 													mems++
 													j = mem[cd].cls - 1
-//line simplify.w:589
+//line simplify.gw:589
 													mems++
 													mem[cd].cls = j
-//line simplify.w:590
+//line simplify.gw:590
 													if j == 1 {
 														mems++
 														if p == cd {
@@ -5543,7 +5543,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 															w = mem[p].lit
 														}
 
-//line simplify.w:481
+//line simplify.gw:481
 														kv = w >> 1
 														mems++
 														if w&1 != 0 {
@@ -5552,7 +5552,7 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 																vmem[kv].status = forcedFalse
 																vmem[kv].link = toDo
 																toDo = kv
-//line simplify.w:486
+//line simplify.gw:486
 															} else if vmem[kv].status == forcedTrue {
 																goto unsat
 															}
@@ -5562,45 +5562,45 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 																vmem[kv].status = forcedTrue
 																vmem[kv].link = toDo
 																toDo = kv
-//line simplify.w:492
+//line simplify.gw:492
 															} else if vmem[kv].status == forcedFalse {
 																goto unsat
 															}
 														}
 
-//line simplify.w:598
+//line simplify.gw:598
 													}
 
-//line simplify.w:604
+//line simplify.gw:604
 													bits2 = 0
 													for mems, t2 = mems+1, mem[cd].right; t2 >= clsHeadTop; mems, t2 = mems+1, mem[t2].right {
 														mems += 2
 														bits2 |= mem[mem[t2].lit].sig
-//line simplify.w:607
+//line simplify.gw:607
 													}
 													mems++
 													mem[cd].sig = bits2
 
-//line simplify.w:600
+//line simplify.gw:600
 
-//line simplify.w:611
+//line simplify.gw:611
 													mems++
 													if cmem[cd-litHeadTop].link == 0 {
 														mems++
 														cmem[cd-litHeadTop].link = strengthened
 														strengthened = cd
-//line simplify.w:614
+//line simplify.gw:614
 													}
 
-//line simplify.w:601
+//line simplify.gw:601
 												}
 
-//line simplify.w:554
+//line simplify.gw:554
 											}
 											varsGone++
 										}
 
-//line simplify.w:563
+//line simplify.gw:563
 										if mems > par.Timeout {
 											err = ErrTimeout
 											goto finishUp
@@ -5613,42 +5613,42 @@ func (s *Solver) Simplify(ctx context.Context) (Status, error) {
 											}
 										}
 
-//line simplify.w:881
+//line simplify.gw:881
 										mems++
 										mem[c].lit = round
-//line simplify.w:882
+//line simplify.gw:882
 										mems++
 										cmem[c-litHeadTop].size = 0
-//line simplify.w:883
+//line simplify.gw:883
 									}
 
-//line simplify.w:871
+//line simplify.gw:871
 								}
 							}
 							c = csave
 
-//line simplify.w:1396
+//line simplify.gw:1396
 						}
 
-//line simplify.w:1377
+//line simplify.gw:1377
 					}
 
-//line simplify.w:1350
+//line simplify.gw:1350
 				}
 				mems++
 				cmem[c-litHeadTop].size = 0
-//line simplify.w:1352
+//line simplify.gw:1352
 			}
 		}
 
-//line simplify.w:1312
+//line simplify.gw:1312
 	}
 	round = min(round, uint32(par.MaxRounds))
 
-//line simplify.w:233
+//line simplify.gw:233
 finishUp:
 
-//line simplify.w:1418
+//line simplify.gw:1418
 	for c = litHeadTop; c < clsHeadTop; c++ {
 		mems++
 		if mem[c].cls != 0 {
@@ -5656,7 +5656,7 @@ finishUp:
 			for mems, p = mems+1, mem[c].right; p >= clsHeadTop; mems, p = mems+1, mem[p].right {
 				mems++
 				pre.cells = append(pre.cells, Lit(mem[p].lit)|first)
-//line simplify.w:1424
+//line simplify.gw:1424
 				first = 0
 			}
 		}
@@ -5673,13 +5673,13 @@ finishUp:
 		status = Unknown
 	}
 
-//line simplify.w:235
+//line simplify.gw:235
 	goto record
 unsat:
 	status, pre.unsat = Unsat, true
 record:
 
-//line simplify.w:1443
+//line simplify.gw:1443
 	if err == ErrMemory {
 		status = Unknown
 	} else {
@@ -5691,11 +5691,11 @@ record:
 		Vars: vars, VarsGone: varsGone, ClausesGone: clausesGone, Rounds: round,
 		Unsat: status == Unsat}
 
-//line simplify.w:240
+//line simplify.gw:240
 	return status, err
 }
 
-//line simplify.w:1461
+//line simplify.gw:1461
 func (s *Solver) solvePreprocessed(ctx context.Context) (Status, error) {
 	pre := s.pre
 	s.model, s.truth, s.stats = nil, nil, Stats{}
@@ -5705,7 +5705,7 @@ func (s *Solver) solvePreprocessed(ctx context.Context) (Status, error) {
 	var sol []Lit
 	if len(pre.cells) > 0 {
 
-//line simplify.w:1481
+//line simplify.gw:1481
 		red := New()
 		red.Params = s.Params
 		renum, old := make([]int, s.NumVars()+1), []int{0}
@@ -5717,7 +5717,7 @@ func (s *Solver) solvePreprocessed(ctx context.Context) (Status, error) {
 			}
 			l &^= firstLit
 
-//line simplify.w:1496
+//line simplify.gw:1496
 			if renum[l.Var()] == 0 {
 				renum[l.Var()] = red.NewVar().Var()
 				old = append(old, l.Var())
@@ -5728,13 +5728,13 @@ func (s *Solver) solvePreprocessed(ctx context.Context) (Status, error) {
 			}
 			clause = append(clause, nl)
 
-//line simplify.w:1492
+//line simplify.gw:1492
 		}
 		red.AddClause(clause...)
 
-//line simplify.w:1470
+//line simplify.gw:1470
 
-//line simplify.w:1507
+//line simplify.gw:1507
 		st, err := red.Solve(ctx)
 		s.stats = red.stats
 		if st != Sat {
@@ -5748,10 +5748,10 @@ func (s *Solver) solvePreprocessed(ctx context.Context) (Status, error) {
 			sol = append(sol, ol)
 		}
 
-//line simplify.w:1471
+//line simplify.gw:1471
 	}
 
-//line simplify.w:1525
+//line simplify.gw:1525
 	val := make([]int8, 2*s.NumVars()+2)
 	model := make([]Lit, 0, s.NumVars())
 	for i := len(sol) - 1; i >= 0; i-- {
@@ -5759,7 +5759,7 @@ func (s *Solver) solvePreprocessed(ctx context.Context) (Status, error) {
 		val[sol[i]], val[sol[i]^1] = 1, -1
 	}
 
-//line simplify.w:1545
+//line simplify.gw:1545
 	v := true
 	for i := len(pre.erp); i > 0; {
 		vv := false
@@ -5771,7 +5771,7 @@ func (s *Solver) solvePreprocessed(ctx context.Context) (Status, error) {
 				break
 			}
 
-//line simplify.w:1564
+//line simplify.gw:1564
 			if val[e.lit] == 0 {
 				model = append(model, e.lit)
 				val[e.lit], val[e.lit^1] = 1, -1
@@ -5780,13 +5780,13 @@ func (s *Solver) solvePreprocessed(ctx context.Context) (Status, error) {
 				vv = true
 			}
 
-//line simplify.w:1556
+//line simplify.gw:1556
 			if e.flag == erpFirst {
 				break
 			}
 		}
 
-//line simplify.w:1573
+//line simplify.gw:1573
 		if e.flag != erpDef {
 			v = v && vv
 			continue
@@ -5800,21 +5800,21 @@ func (s *Solver) solvePreprocessed(ctx context.Context) (Status, error) {
 		}
 		v = true
 
-//line simplify.w:1561
+//line simplify.gw:1561
 	}
 
-//line simplify.w:1532
+//line simplify.gw:1532
 	s.model = model
 	s.truth = make([]bool, s.NumVars()+1)
 	for _, l := range model {
 		s.truth[l.Var()] = !l.IsNeg()
 	}
 
-//line simplify.w:1473
+//line simplify.gw:1473
 	return Sat, nil
 }
 
-//line simplify.w:1591
+//line simplify.gw:1591
 func (s *Solver) WriteSimplified(w io.Writer) error {
 	if s.pre == nil {
 		return errors.New("sat: 전처리한 결과가 없다")
@@ -5834,7 +5834,7 @@ func (s *Solver) WriteSimplified(w io.Writer) error {
 	return err
 }
 
-//line simplify.w:1613
+//line simplify.gw:1613
 func (s *Solver) WriteERP(w io.Writer) error {
 	if s.pre == nil {
 		return errors.New("sat: 전처리한 결과가 없다")
@@ -5843,7 +5843,7 @@ func (s *Solver) WriteERP(w io.Writer) error {
 	erp := s.pre.erp
 	for i := 0; i < len(erp); {
 
-//line simplify.w:1627
+//line simplify.gw:1627
 		j, k := i+1, 0
 		for ; j < len(erp) && erp[j].flag != erpDef; j++ {
 			if erp[j].flag == erpFirst {
@@ -5863,7 +5863,7 @@ func (s *Solver) WriteERP(w io.Writer) error {
 		}
 		i = j
 
-//line simplify.w:1621
+//line simplify.gw:1621
 	}
 	_, err := io.WriteString(w, b.String())
 	return err

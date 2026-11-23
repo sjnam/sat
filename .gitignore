@@ -1,4 +1,4 @@
-# GWEB 문학적 프로그램: .w 파일만이 원본이고 나머지는 모두 생성물이다.
+# GWEB 문학적 프로그램: .gw 파일만이 원본이고 나머지는 모두 생성물이다.
 #
 # 다만 라이브러리 API의 .go(sat, io, cdcl, simplify)는 예외로 저장소에 넣는다. 이 저장소는
 # `go get`으로 남의 프로그램에 딸려 들어가는데, 그쪽에 GWEB을 깔라고 할 수는
@@ -35,7 +35,7 @@
 /simplify.log
 /simplify.toc
 
-# examples 아래도 모두 문학적 프로그램이다: .w만 원본이고 .go는 생성물이다.
+# examples 아래도 모두 문학적 프로그램이다: .gw만 원본이고 .go는 생성물이다.
 # 라이브러리와 달리 이것들은 저장소에 넣지 않는다 --- 예제를 돌려 보려는 이는
 # 어차피 저장소를 받아 `make`를 돌릴 사람이기 때문이다.
 /examples/*/*.go
@@ -46,9 +46,9 @@
 /examples/*/*.log
 /examples/*/*.toc
 
-# 연습문제 검증 프로그램도 문학적 프로그램이다: verify.w만 원본이다.
+# 연습문제 검증 프로그램도 문학적 프로그램이다: verify.gw만 원본이다.
 # 다만 verify.pdf는 예외로 저장소에 넣는다 --- 이 검증은 저자에게 보낼 것이고,
-# 읽는 이에게 GWEB을 깔라고 할 수는 없다. verify 디렉터리에는 .w와 .pdf뿐이다.
+# 읽는 이에게 GWEB을 깔라고 할 수는 없다. verify 디렉터리에는 .gw와 .pdf뿐이다.
 /taocp-7.2.2.2-exercises/*/verify/verify.go
 /taocp-7.2.2.2-exercises/*/verify/*.tex
 /taocp-7.2.2.2-exercises/*/verify/*.idx

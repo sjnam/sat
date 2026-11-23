@@ -227,7 +227,7 @@ The observation of §6 replaces that one instance with a thousand small ones.
 
 ## 10. Method
 
-The program is a GWEB literate program. [`verify.w`](verify/verify.w) is the
+The program is a GWEB literate program. [`verify.gw`](verify/verify.gw) is the
 source and `gtangle` produces the Go from it; the typeset document,
 [`verify.pdf`](verify/verify.pdf), is committed beside it so it can be read
 without installing GWEB. The SAT solver is the [`sat` package](../..) of this

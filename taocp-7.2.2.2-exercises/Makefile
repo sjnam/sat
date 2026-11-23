@@ -1,5 +1,5 @@
 # One careful reading of an exercise of TAOCP 7.2.2.2 per directory: README.md
-# is the report and verify/verify.w is the program behind it.  The readings are
+# is the report and verify/verify.gw is the program behind it.  The readings are
 # in English, but they go through luatex, like everything else here.  To add
 # one, put its directory name in EXERCISES below.
 #
@@ -22,10 +22,10 @@ VERIFY := $(foreach e,$(EXERCISES),$(e)/verify)
 
 all: build
 
-# A static pattern rule, not an implicit one: a generic `%.go: %.w` would
+# A static pattern rule, not an implicit one: a generic `%.go: %.gw` would
 # otherwise leave its output in the wrong directory.
-$(addsuffix /verify.go,$(VERIFY)): %/verify.go: %/verify.w
-	cd $* && $(GTANGLE) verify.w
+$(addsuffix /verify.go,$(VERIFY)): %/verify.go: %/verify.gw
+	cd $* && $(GTANGLE) verify.gw
 	gofmt -w $@
 
 tangle: $(addsuffix /verify.go,$(VERIFY))
@@ -46,8 +46,8 @@ vet: tangle
 # Typeset the readings; two passes resolve the cross-references.
 pdf: $(addsuffix /verify.pdf,$(VERIFY))
 
-$(addsuffix /verify.pdf,$(VERIFY)): %/verify.pdf: %/verify.w
-	cd $* && $(GWEAVE) verify.w
+$(addsuffix /verify.pdf,$(VERIFY)): %/verify.pdf: %/verify.gw
+	cd $* && $(GWEAVE) verify.gw
 	cd $* && $(LUATEX) verify.tex
 	cd $* && $(LUATEX) verify.tex
 
@@ -58,7 +58,7 @@ check: pdf
 	  echo "$$f: $$n"; [ "$$n" = 0 ] || bad=1; \
 	done; exit $$bad
 
-# clean removes everything the .w files generate, tangled Go included; `make`
+# clean removes everything the .gw files generate, tangled Go included; `make`
 # puts the Go sources back.  The one exception is the verify.pdf files, which
 # are committed so that a reading can be read without GWEB installed.
 clean:
