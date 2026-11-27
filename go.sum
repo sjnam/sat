@@ -1,6 +1,6 @@
-github.com/sjnam/bdd v0.1.0 h1:UOcsa5pxv2hOJaru6QDn25tMDLrWjkBYFjltIRiaI9E=
-github.com/sjnam/bdd v0.1.0/go.mod h1:yxsIgiX7aUfjWaEb9jGQjvPHZ0NiVGOuETaR44KBrJM=
-github.com/sjnam/dancing-cells v0.1.0 h1:oOiWuB7mKIdbSJv0cSREvZE/twCRKjmP4dyKpr+jOuI=
-github.com/sjnam/dancing-cells v0.1.0/go.mod h1:qgoikZGivQb5pOb9qgNo5W2nWGKc2Xxdh6W85VcVQL0=
-github.com/sjnam/go-sgb v0.1.0 h1:4cEdbt9sH8utLNfTyxT3DnuAAza+ArFqowwanZNzXUg=
-github.com/sjnam/go-sgb v0.1.0/go.mod h1:L4M5wPIlb1PcuVRkbPPXiT7MlkBEvRPvpEjk3e6Fmz8=
+github.com/sjnam/bdd v0.1.1 h1:wYUCiE968RqSbPyCTPZ0URndeWu6sm2NB20Ee0Peh/Y=
+github.com/sjnam/bdd v0.1.1/go.mod h1:yxsIgiX7aUfjWaEb9jGQjvPHZ0NiVGOuETaR44KBrJM=
+github.com/sjnam/dancing-cells v0.1.1 h1:kdPtJgtMM7TGYTm23k0EweQ8x4k9YI6p2eXOM9S+gSM=
+github.com/sjnam/dancing-cells v0.1.1/go.mod h1:qgoikZGivQb5pOb9qgNo5W2nWGKc2Xxdh6W85VcVQL0=
+github.com/sjnam/go-sgb v0.1.1 h1:VDJfe4VrttkcAd+mpL6g6E2oTHL9zEfgHQToHPmKUzk=
+github.com/sjnam/go-sgb v0.1.1/go.mod h1:L4M5wPIlb1PcuVRkbPPXiT7MlkBEvRPvpEjk3e6Fmz8=
